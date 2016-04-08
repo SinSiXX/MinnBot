@@ -19,7 +19,7 @@ import net.dv8tion.jda.hooks.ListenerAdapter;
 
 public class CommandManager extends ListenerAdapter {
 
-	public List<Command> commands = new LinkedList<Command>();
+	public List<Command> commands = new LinkedList<>();
 	@SuppressWarnings("unused")
 	private JDA api;
 	
@@ -27,10 +27,16 @@ public class CommandManager extends ListenerAdapter {
 
 	public void onMessageReceived(MessageReceivedEvent event) {
 		Thread t = new Thread() {
+			@SuppressWarnings({"deprecation"})
 			public void run() {
-				for (Command c : commands) {
-					c.onMessageReceived(event);
+				try {
+					for (Command c : commands) {
+						c.onMessageReceived(event);
+					}
+				} catch (Exception e) {
+					logger.logError(e);
 				}
+				stop();
 			}
 		};
 		t.start();
@@ -50,6 +56,7 @@ public class CommandManager extends ListenerAdapter {
 		return "";
 	}
 
+	@SuppressWarnings("unused")
 	public boolean removeCommand(Command com) {
 		for (Command c : commands) {
 			if (com.getAlias().equals(c.getAlias())) {

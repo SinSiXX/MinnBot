@@ -55,7 +55,7 @@ public class InfoCommand extends ListenerAdapter implements Command {
 				+ ") by my creator Minn, I was selected to work on behalf of **" + ownername + "**.\n";
 		s += "You can view my commands by typing **" + prefix + "help** in the chat.\n";
 		s += "If you want to see my **source code**,"
-				+ " here is a link to my github page: **<https://github.com/MinnDevelopment/jMinnBot.git>**\n";
+				+ " here is a link to my github page: **<https://github.com/MinnDevelopment/MinnBot.git>**\n";
 		s += "Visit the official development server for further information: **<https://discord.gg/0mcttggeFpcMByUz>**\n";
 		if (!inviteUrl.isEmpty() && bot)
 			s += "Make me join your server with this url:\n**<" + inviteUrl + ">**";

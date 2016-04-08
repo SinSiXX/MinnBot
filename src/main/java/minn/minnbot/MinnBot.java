@@ -8,12 +8,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.script.ScriptException;
 import javax.security.auth.login.LoginException;
 
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.*;
 import minn.minnbot.entities.command.owner.*;
+import minn.minnbot.util.EvalUtil;
 import minn.minnbot.util.TimeUtil;
 import minn.minnbot.gui.AccountSettings;
 import minn.minnbot.gui.MinnBotUserInterface;
@@ -28,7 +30,7 @@ import net.dv8tion.jda.hooks.ListenerAdapter;
 
 public class MinnBot extends ListenerAdapter {
 
-	public final static String about = "Version DEV - https://github.com/MinnDevelopment/jMinnBot.git";
+	public final static String about = "Version DEV - https://github.com/MinnDevelopment/MinnBot.git";
 
 	public MinnBot(String prefix, String ownerID, String inviteurl, boolean bot, Logger logger, JDA api)
 			throws UnexpectedException {
@@ -92,6 +94,12 @@ public class MinnBot extends ListenerAdapter {
 
 	public MinnBot initCommands(JDA api) {
 		List<String> errors = new LinkedList<>();
+		try {
+			EvalUtil.init();
+		} catch (ScriptException e) {
+			logger.logError(e);
+		}
+
 		// Add logger to the listeners
 		api.addEventListener(logger);
 
@@ -100,6 +108,11 @@ public class MinnBot extends ListenerAdapter {
 		// Operator/Owner Commands
 		Command com = new HelpCommand(prefix, logger, handler.commands);
 		AtomicReference<String> err = new AtomicReference<>(registerCommand(com));
+		if (!err.get().isEmpty())
+			errors.add(err.get());
+
+		com = new EvalCommand(owner, prefix, logger);
+		err.set(registerCommand(com));
 		if (!err.get().isEmpty())
 			errors.add(err.get());
 
