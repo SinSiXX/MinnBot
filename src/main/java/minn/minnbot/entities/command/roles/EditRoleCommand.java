@@ -10,6 +10,8 @@ import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.PermissionUtil;
 
+import java.awt.*;
+
 public class EditRoleCommand extends ListenerAdapter implements Command {
 
     private String prefix;
@@ -65,7 +67,11 @@ public class EditRoleCommand extends ListenerAdapter implements Command {
         String method = args[1];
         if(method.equalsIgnoreCase("color")) {
             try {
-                int color = Integer.getInteger(args[2], 16);
+                int maxC = 16777215;
+                int color = ((int) Math.floor(Math.random() * maxC));
+                if(!args[2].equalsIgnoreCase("random")) {
+                    color = Integer.parseInt(args[2], 16);
+                }
                 r.getManager().setColor(color).update();
                 event.sendMessage("Updated role color. :thumbsup::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":");
             } catch (Exception e) {
