@@ -31,9 +31,11 @@ import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 
+@SuppressWarnings("unused")
 public class MinnBot extends ListenerAdapter {
 
-	public final static String about = "Version 0.75 - https://github.com/MinnDevelopment/MinnBot.git";
+	public final static String VERSION = "Version 0.8";
+	public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
 
 	public MinnBot(String prefix, String ownerID, String inviteurl, boolean bot, Logger logger, JDA api)
 			throws UnexpectedException {
@@ -68,7 +70,6 @@ public class MinnBot extends ListenerAdapter {
 	public final JDA api;
 	private static MinnBotUserInterface console;
 	public final CommandManager handler;
-
 
 	private boolean waitForReady(JDA api) {
 		if (api == null)
@@ -114,7 +115,7 @@ public class MinnBot extends ListenerAdapter {
 		if (!err.get().isEmpty())
 			errors.add(err.get());
 
-		com = new EvalCommand(owner, prefix, logger);
+		com = new EvalCommand(owner, prefix, logger, this);
 		err.set(registerCommand(com));
 		if (!err.get().isEmpty())
 			errors.add(err.get());
@@ -150,7 +151,7 @@ public class MinnBot extends ListenerAdapter {
 			errors.add(err.get());
 
 		// User commands
-		com = new StatsCommand(logger, prefix, about);
+		com = new StatsCommand(logger, prefix, ABOUT);
 		err.set(registerCommand(com));
 		if (!err.get().isEmpty())
 			errors.add(err.get());

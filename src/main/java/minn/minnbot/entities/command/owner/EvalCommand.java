@@ -1,5 +1,6 @@
 package minn.minnbot.entities.command.owner;
 
+import minn.minnbot.MinnBot;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.events.CommandEvent;
@@ -13,11 +14,13 @@ public class EvalCommand extends ListenerAdapter implements Command {
     private User owner;
     private String prefix;
     private Logger logger;
+    private MinnBot bot;
 
-    public EvalCommand(User owner, String prefix, Logger logger) {
+    public EvalCommand(User owner, String prefix, Logger logger, MinnBot bot) {
         this.owner = owner;
         this.prefix = prefix;
         this.logger = logger;
+        this.bot = bot;
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -41,7 +44,7 @@ public class EvalCommand extends ListenerAdapter implements Command {
 
     @Override
     public void onCommand(CommandEvent event) {
-        EvalUtil.eval(event.allArguments, event.event, (String s) -> {
+        EvalUtil.eval(event.allArguments, event.event, bot, (String s) -> {
             if(s != null) {
                 event.sendMessage(s);
             } else {

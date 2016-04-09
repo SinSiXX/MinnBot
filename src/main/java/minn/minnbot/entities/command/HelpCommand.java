@@ -49,8 +49,7 @@ public class HelpCommand extends ListenerAdapter implements Command {
 				if (!(c instanceof HelpCommand)) {
 					String usage = c.usage().replace("`", "");
 					String alias = c.getAlias().replace("`", "");
-					s += "\n" + ((c.requiresOwner()) ? "[OP] " : "") + alias
-							+ ((!usage.isEmpty()) ? "\t | " + usage : "");
+					s += "\n" + ((c.requiresOwner()) ? "[OP] " : "") + alias;
 				}
 			}
 			event.sendMessage(s + "```");

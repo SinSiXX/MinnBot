@@ -67,10 +67,15 @@ public class EditRoleCommand extends ListenerAdapter implements Command {
         String method = args[1];
         if(method.equalsIgnoreCase("color")) {
             try {
-                int maxC = 16777215;
-                int color = ((int) Math.floor(Math.random() * maxC));
+                int maxC = 16777215; // HEX - FFFFFF
+                int color = ((int) Math.floor(Math.random() * maxC)); // Random between 000000 - FFFFFF
                 if(!args[2].equalsIgnoreCase("random")) {
-                    color = Integer.parseInt(args[2], 16);
+                    try{
+                        color = Integer.parseInt(args[2].replace("#", ""), 16); // In case the user wants a specific color instead.
+                    } catch (NumberFormatException e) {
+                        event.sendMessage("Invalid hex value `" + args[2] + "`. Example `FF0C3D` or `#45EAF2`");
+                        return;
+                    }
                 }
                 r.getManager().setColor(color).update();
                 event.sendMessage("Updated role color. :thumbsup::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":");
