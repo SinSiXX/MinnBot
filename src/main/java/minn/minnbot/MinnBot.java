@@ -15,6 +15,9 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.*;
 import minn.minnbot.entities.command.owner.*;
+import minn.minnbot.entities.command.roles.CopyRoleCommand;
+import minn.minnbot.entities.command.roles.CreateRoleCommand;
+import minn.minnbot.entities.command.roles.EditRoleCommand;
 import minn.minnbot.util.EvalUtil;
 import minn.minnbot.util.TimeUtil;
 import minn.minnbot.gui.AccountSettings;
@@ -30,7 +33,7 @@ import net.dv8tion.jda.hooks.ListenerAdapter;
 
 public class MinnBot extends ListenerAdapter {
 
-	public final static String about = "Version DEV - https://github.com/MinnDevelopment/MinnBot.git";
+	public final static String about = "Version 0.75 - https://github.com/MinnDevelopment/MinnBot.git";
 
 	public MinnBot(String prefix, String ownerID, String inviteurl, boolean bot, Logger logger, JDA api)
 			throws UnexpectedException {
@@ -187,6 +190,22 @@ public class MinnBot extends ListenerAdapter {
 		if (!err.get().isEmpty())
 			errors.add(err.get());
 
+		// Role manager
+		com = new CreateRoleCommand(logger, prefix);
+		err.set(registerCommand(com));
+		if (!err.get().isEmpty())
+			errors.add(err.get());
+
+		com = new CopyRoleCommand(logger, prefix);
+		err.set(registerCommand(com));
+		if (!err.get().isEmpty())
+			errors.add(err.get());
+
+		com = new EditRoleCommand(prefix, logger);
+		err.set(registerCommand(com));
+		if (!err.get().isEmpty())
+			errors.add(err.get());
+
 		// Log the outcome
 		if (!errors.isEmpty()) {
 			console.writeError("[ERROR] Some commands could not load up:");
@@ -261,66 +280,6 @@ public class MinnBot extends ListenerAdapter {
 			throw e;
 		}
 
-	}
-
-	public static void relaunch(MinnBotUserInterface console)
-			throws IOException, LoginException, InterruptedException {
-		MinnBot.console = console;
-		AccountSettings as = new AccountSettings(console);
-		console.setAccountSettings(as);
-		try {
-			JSONObject obj = new JSONObject(new String(Files.readAllBytes(Paths.get("BotConfig.json"))));
-			String token = obj.getString("token").replace(" ", "");
-			boolean isBot = false;
-			JDA api;
-			try {
-				api = new JDABuilder().setBotToken(token).setAudioEnabled(false).setAutoReconnect(true).buildBlocking();
-				isBot = true;
-			} catch (LoginException e) {
-				try {
-					String email = obj.getString("email");
-					String pass = obj.getString("password");
-					api = new JDABuilder().setEmail(email).setPassword(pass).setAudioEnabled(false)
-							.setAutoReconnect(true).buildBlocking();
-				} catch (Exception e1) {
-					throw e;
-				}
-			}
-			String pre = obj.getString("prefix");
-			String ownerId = obj.getString("owner");
-			String inviteUrl = obj.getString("inviteurl");
-			MinnBot bot = new MinnBot(pre, ownerId, inviteUrl, isBot, console.logger, api);
-			api.addEventListener(bot.initCommands(api));
-			as.setApi(api);
-			MinnBotUserInterface.bot = bot;
-		} catch (IllegalArgumentException e) {
-			if (e.getMessage().isEmpty())
-				console.writeError("The config was not populated.\n" + "Please enter a bot token.");
-			e.printStackTrace();
-			throw e;
-		} catch (LoginException e) {
-			console.writeError("The provided login information was invalid.\n"
-					+ "Please provide a valid token or email and password combination.");
-			throw e;
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			throw e;
-		} catch (IOException e) {
-			JSONObject obj = new JSONObject();
-			obj.put("prefix", "");
-			obj.put("owner", "");
-			obj.put("token", "");
-			obj.put("inviteurl", "");
-			try {
-				Files.write(Paths.get("BotConfig.json"), obj.toString(4).getBytes());
-				console.writeError(
-						"No config file was found. BotConfig.json has been generated.\nPlease fill the fields with correct information!");
-			} catch (IOException e1) {
-				console.writeError("No config file was found and we failed to generate one.");
-				e1.printStackTrace();
-			}
-			throw e;
-		}
 	}
 
 	public static void main(String[] a) {

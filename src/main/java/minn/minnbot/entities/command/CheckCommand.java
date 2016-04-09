@@ -89,13 +89,22 @@ public class CheckCommand extends ListenerAdapter implements Command {
 	}
 
 	private int serversInCommon(User u, JDA api) {
-		java.util.List<Guild> guilds = api.getGuilds();
-		int count = 0;
-		for (Guild g : guilds) {
-			if (g.getRolesForUser(u) != null)
-				count++;
+		try {
+			java.util.List<Guild> guilds = api.getGuilds();
+			int count = 0;
+			for (Guild g : guilds) {
+				for (User user : g.getUsers()) {
+					if (user == u) {
+						count++;
+						break;
+					}
+				}
+			}
+			return count;
+		} catch (Exception e) {
+			logger.logError(e);
+			return 1;
 		}
-		return count;
 	}
 
 	private String getJoinDate(User u, Guild g) {

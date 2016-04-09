@@ -228,7 +228,7 @@ public class MinnBotUserInterface extends JFrame {
                 if (bot.api != null) {
                     owner = bot.owner;
                     btnStop.getActionListeners()[0].actionPerformed(null);
-                    MinnBot.relaunch(c);
+                    MinnBot.launch(c);
                     btnAccount.setEnabled(true);
                     btnGenerateCommandJson.setEnabled(true);
                     btnLaunch.setEnabled(false);
