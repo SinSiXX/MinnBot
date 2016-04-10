@@ -134,8 +134,9 @@ public class LoggerImpl extends ListenerAdapter implements Logger {
 		if(!logErrors)
 			return false;
 		try {
-			String s = TimeUtil.timeStamp() + " " + e.getMessage();
+			String s = TimeUtil.timeStamp() + " " + e.getClass().getSimpleName() + ": " + e.getMessage();
 			console.writeError(s);
+			e.printStackTrace();
 			// errorLogs.add(s);
 		} catch (Exception ex) {
 			ex.printStackTrace();

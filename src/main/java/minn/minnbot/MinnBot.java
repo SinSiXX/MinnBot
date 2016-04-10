@@ -1,6 +1,7 @@
 package minn.minnbot;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
@@ -34,7 +35,7 @@ import net.dv8tion.jda.hooks.ListenerAdapter;
 @SuppressWarnings("unused")
 public class MinnBot extends ListenerAdapter {
 
-	public final static String VERSION = "Version 0.8";
+	public final static String VERSION = "Version 0.81";
 	public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
 
 	public MinnBot(String prefix, String ownerID, String inviteurl, boolean bot, Logger logger, JDA api)
@@ -96,7 +97,7 @@ public class MinnBot extends ListenerAdapter {
 		console.writeln(stamp + "[MINNBOT] " + toLog);
 	}
 
-	public MinnBot initCommands(JDA api) {
+	public MinnBot initCommands(JDA api) throws UnknownHostException {
 		List<String> errors = new LinkedList<>();
 		try {
 			EvalUtil.init();
@@ -187,6 +188,21 @@ public class MinnBot extends ListenerAdapter {
 			errors.add(err.get());
 
 		com = new InfoCommand(prefix, logger, owner, inviteurl, bot);
+		err.set(registerCommand(com));
+		if (!err.get().isEmpty())
+			errors.add(err.get());
+
+		com = new ResponseCommand(prefix, logger);
+		err.set(registerCommand(com));
+		if (!err.get().isEmpty())
+			errors.add(err.get());
+
+		com = new PingCommand(prefix, logger);
+		err.set(registerCommand(com));
+		if (!err.get().isEmpty())
+			errors.add(err.get());
+
+		com = new UptimeCommand(prefix, logger);
 		err.set(registerCommand(com));
 		if (!err.get().isEmpty())
 			errors.add(err.get());

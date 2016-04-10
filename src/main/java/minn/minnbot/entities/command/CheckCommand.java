@@ -51,12 +51,12 @@ public class CheckCommand extends ListenerAdapter implements Command {
         String s = "```md\n";
         s += "[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]";
         s += "\n[ Id ][" + u.getId() + "]";
-        s += "\n[OnlineStatus][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
+        s += "\n[Status][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
         s += "\n\n[Game][" + ((u.getCurrentGame() == null) ? "Ready to play!" : u.getCurrentGame()) + "]";
-        s += "\n[JoinDate][" + getJoinDate(u, event.event.getGuild()) + "]";
-        s += "\n[Creation--Time][" + TimeUtil.getCreationTime(Long.valueOf(u.getId())) + "]";
-        s += "\n[Known servers][" + serversInCommon(u, event.event.getJDA()) + "]";
-        s += "\n\n[AvatarURL][ " + u.getAvatarUrl() + " ]";
+        s += "\n[Join][" + getJoinDate(u, event.event.getGuild()) + "]";
+        s += "\n[Creation][" + TimeUtil.getCreationTime(Long.valueOf(u.getId())) + "]";
+        s += "\n[Known guilds][" + serversInCommon(u, event.event.getJDA()) + "]";
+        s += "\n\n[Avatar][ " + u.getAvatarUrl() + " ]";
         s += "\n\n" + getRolesForUser(u, event.event.getGuild());
         try {
             event.sendMessage(s + "```");
@@ -64,12 +64,12 @@ public class CheckCommand extends ListenerAdapter implements Command {
             s = "```md\n";
             s += "[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]";
             s += "\n[ Id ][" + u.getId() + "]";
-            s += "\n[OnlineStatus][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
+            s += "\n[Status][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
             s += "\n\n[Game][" + ((u.getCurrentGame() == null) ? "Ready to play!" : u.getCurrentGame()) + "]";
-            s += "\n[JoinDate][" + getJoinDate(u, event.event.getGuild()) + "]";
-            s += "\n[Creation--Time][" + TimeUtil.getCreationTime(Long.getLong(u.getId())) + "]";
-            s += "\n[Known servers][" + serversInCommon(u, event.event.getJDA()) + "]";
-            s += "\n\n[AvatarURL][ " + u.getAvatarUrl() + " ]";
+            s += "\n[Join][" + getJoinDate(u, event.event.getGuild()) + "]";
+            s += "\n[Creation][" + TimeUtil.getCreationTime(Long.getLong(u.getId())) + "]";
+            s += "\n[Known guilds][" + serversInCommon(u, event.event.getJDA()) + "]";
+            s += "\n\n[Avatar][ " + u.getAvatarUrl() + " ]";
             event.sendMessage(s + "```");
         }
     }
