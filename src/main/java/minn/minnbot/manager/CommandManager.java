@@ -9,6 +9,7 @@ import java.util.List;
 
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.TagCommand;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -103,6 +104,14 @@ public class CommandManager extends ListenerAdapter {
 			logger.logError(e);
 		}
 		return f;
+	}
+
+	public void saveTags() {
+		for(Command c : commands) {
+			if(c instanceof TagCommand) {
+				((TagCommand) c).onShutdown(null);
+			}
+		}
 	}
 
 }

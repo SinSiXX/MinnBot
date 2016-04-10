@@ -207,6 +207,11 @@ public class MinnBot extends ListenerAdapter {
 		if (!err.get().isEmpty())
 			errors.add(err.get());
 
+		com = new TagCommand(prefix, logger, api);
+		err.set(registerCommand(com));
+		if (!err.get().isEmpty())
+			errors.add(err.get());
+
 		// Role manager
 		com = new CreateRoleCommand(logger, prefix);
 		err.set(registerCommand(com));
