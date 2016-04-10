@@ -1,9 +1,5 @@
-# jMinnBot
+# MinnBot
 Simple to setup Discord Chat Bot.
-
-# Download
-
-Download the runnable jar [here](https://www.dropbox.com/s/sr4he6s2px32z0l/jMinnBot4D-with-all-dependencies.jar?dl=0).
 
 # How to use
 
@@ -11,7 +7,7 @@ Download the runnable jar [here](https://www.dropbox.com/s/sr4he6s2px32z0l/jMinn
 2. Create a bot account for discord.
 3. Invite the bot account to a guild.
 4. Run the jar and click "launch".
-5. Populate the automatically generated jar 
+5. Populate the automatically generated json file 
 <div class="highlight highlight-text-json">
 <pre>
 {
