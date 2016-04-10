@@ -7,21 +7,21 @@ import minn.minnbot.entities.impl.BlockTag;
 import minn.minnbot.entities.impl.TagImpl;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
+import net.dv8tion.jda.utils.PermissionUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.MalformedParametersException;
-import java.nio.charset.MalformedInputException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.IllegalFormatException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -89,8 +89,8 @@ public class TagCommand extends ListenerAdapter implements Command {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-       if(event.isPrivate())
-           return;
+        if (event.isPrivate())
+            return;
         if (isCommand(event.getMessage().getContent())) {
             logger.logCommandUse(event.getMessage());
             onCommand(new CommandEvent(event));
@@ -136,11 +136,11 @@ public class TagCommand extends ListenerAdapter implements Command {
                 }
                 String tagName = event.arguments[1];
                 String tagResponse = "";
-                for(int i = 2; i < event.arguments.length; i++) {
+                for (int i = 2; i < event.arguments.length; i++) {
                     tagResponse += " " + event.arguments[i];
                 }
                 for (Tag t : tags) {
-                    if (t.name().equals(tagName)) {
+                    if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
                         target = t;
                         break;
                     }
@@ -149,7 +149,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                     event.sendMessage("Not a tag.");
                     return;
                 }
-                if (event.event.getAuthor() != target.getOwner()) {
+                if (event.event.getAuthor() != target.getOwner() && !PermissionUtil.checkPermission(event.event.getAuthor(), Permission.MANAGE_ROLES, event.event.getGuild())) {
                     event.sendMessage("You are not authorized to edit this tag.");
                     return;
                 }
@@ -160,7 +160,7 @@ public class TagCommand extends ListenerAdapter implements Command {
             if (method.equalsIgnoreCase("del")) {
                 String tagName = event.arguments[1];
                 for (Tag t : tags) {
-                    if (t.name().equals(tagName)) {
+                    if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
                         target = t;
                         break;
                     }
@@ -169,7 +169,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                     event.sendMessage("Not a tag.");
                     return;
                 }
-                if (event.event.getAuthor() != target.getOwner() || event.event.getGuild() != target.getGuild()) {
+                if (event.event.getAuthor() != target.getOwner() && !PermissionUtil.checkPermission(event.event.getAuthor(), Permission.MANAGE_ROLES, event.event.getGuild())) {
                     event.sendMessage("You are not authorized to edit this tag.");
                     return;
                 }
@@ -184,7 +184,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                 }
                 String tagName = event.arguments[1];
                 String tagResponse = "";
-                for(int i = 2; i < event.arguments.length; i++) {
+                for (int i = 2; i < event.arguments.length; i++) {
                     tagResponse += " " + event.arguments[i];
                 }
                 if (tagName.isEmpty() || tagResponse.isEmpty()) {
@@ -192,12 +192,12 @@ public class TagCommand extends ListenerAdapter implements Command {
                     return;
                 }
                 for (Tag t : tags) {
-                    if (t.name().equals(tagName)) {
+                    if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
                         target = t;
                         break;
                     }
                 }
-                if (target != null && target.getGuild() == event.event.getGuild()) {
+                if (target != null) {
                     event.sendMessage("Already a tag.");
                     return;
                 }
