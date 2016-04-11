@@ -1,0 +1,46 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'eu.appsatori.fatjar'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+idea.module {
+	downloadJavadoc = true
+
+}
+
+eclipse.classpath {
+    downloadJavadoc = true
+    downloadSources = true
+}
+
+
+
+repositories {
+    jcenter()
+}
+dependencies {
+    compile "net.dv8tion:JDA:1.4.0_237"
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
+    }
+}
+
+task myfatJar(type: Jar) {
+    baseName = project.name + '-with-all-dependencies'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    manifest {
+        attributes 'Main-Class': 'minn.minnbot.MinnBot'
+    }
+}
