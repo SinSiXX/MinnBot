@@ -220,7 +220,7 @@ public class TagCommand extends ListenerAdapter implements Command {
             }
             String tagName = event.allArguments;
             for (Tag t : tags) {
-                if (t.name().equals(tagName)) {
+                if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
                     target = t;
                     break;
                 }
@@ -229,7 +229,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                 event.sendMessage("Not a tag.");
                 return;
             }
-            event.sendMessage(target.response());
+            event.sendMessage("\u0001" + target.response());
         } catch (Exception e) {
             logger.logError(e);
         }
