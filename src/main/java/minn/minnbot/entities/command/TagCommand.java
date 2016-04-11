@@ -183,10 +183,15 @@ public class TagCommand extends ListenerAdapter implements Command {
                     return;
                 }
                 String tagName = event.arguments[1];
+                if(tagName.equalsIgnoreCase("add") || tagName.equalsIgnoreCase("del") || tagName.equalsIgnoreCase("edt")) {
+                    event.sendMessage("Tagname `" + tagName + "` is not allowed.");
+                    return;
+                }
                 String tagResponse = "";
                 for (int i = 2; i < event.arguments.length; i++) {
                     tagResponse += " " + event.arguments[i];
                 }
+                tagResponse = ((tagResponse.startsWith(" ") && tagResponse.length() > 1) ? tagResponse.substring(1) : tagResponse);
                 if (tagName.isEmpty() || tagResponse.isEmpty()) {
                     event.sendMessage("Empty names or responses are not allowed.");
                     return;
@@ -203,7 +208,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                 }
                 Tag t = new TagImpl(event.event.getAuthor(), event.event.getGuild(), tagName, tagResponse);
                 tags.add(t);
-                event.sendMessage("Created tag `" + t.name() + "`.");
+                event.sendMessage("Created tag `"+ t.name() + "`.");
                 return;
             }
             String tagName = event.allArguments;
@@ -213,7 +218,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                     break;
                 }
             }
-            if (target == null && target.getGuild() != event.event.getGuild()) {
+            if (target == null || target.getGuild() != event.event.getGuild()) {
                 event.sendMessage("Not a tag.");
                 return;
             }
@@ -233,7 +238,7 @@ public class TagCommand extends ListenerAdapter implements Command {
             String command = message.split(" ", 2)[0];
             if (command.equalsIgnoreCase("tag"))
                 return true;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }
