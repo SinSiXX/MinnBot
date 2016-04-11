@@ -1,0 +1,6 @@
+{
+  "name": "MinnBot",
+  "tagline": "Discord Chat Bot by Minn.",
+  "body": "# MinnBot\r\nSimple to setup Discord Chat Bot.\r\n\r\n# How to use\r\n\r\n1. Download the runnable jar [here](https://www.dropbox.com/s/sr4he6s2px32z0l/jMinnBot4D-with-all-dependencies.jar?dl=0).\r\n2. Create a bot account for discord.\r\n3. Invite the bot account to a guild.\r\n4. Run the jar and click \"launch\".\r\n5. Populate the automatically generated json file \r\n<div class=\"highlight highlight-text-json\">\r\n<pre>\r\n{\r\n    \"owner\": \"86699011792191488\",\r\n    \"prefix\": \"!\",\r\n    \"token\": \"AOIHIPUHD34534.JKHOS6876OH6IKHJ.OHOIHJF\",\r\n\t  \"inviteurl\":\"https://discordapp.com/oauth2/authorize?&client_id=13468425138731684&scope=bot&permissions=67108863\"\r\n}\r\n</pre>\r\n</div>\r\n6. Click \"launch\" again.\r\n7. Make sure the bot has permission to both read and write messages in the channel you want to use the bot in.\r\n8. Type (i.e.) !help or !info in a channel and read the instructions.\r\n\r\n# Support\r\n\r\nOfficial development discord: [MinnBot Development](https://discord.gg/0mcttggeFpaqAWLI)\r\n\r\n# Requirements\r\n\r\n<ul>\r\n<li>JDA: https://github.com/DV8FromTheWorld/JDA/</li>\r\n<li>Java 8: https://www.java.com/en/download/</li>\r\n</ul>\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
