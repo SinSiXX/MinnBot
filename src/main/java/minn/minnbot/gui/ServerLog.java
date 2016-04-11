@@ -55,7 +55,7 @@ public class ServerLog extends JFrame {
 
 		choice.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				String item = (String) choice.getSelectedItem();
+				String item = choice.getSelectedItem();
 				for (Guild g : log.guilds) {
 					if (!g.getName().equals(item))
 						continue;
@@ -82,7 +82,7 @@ public class ServerLog extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				enabled = !enabled;
 				if (enabled) {
-					String item = (String) choice.getSelectedItem();
+					String item = choice.getSelectedItem();
 					for (Guild g : log.guilds) {
 						if (!g.getName().equals(item))
 							continue;

@@ -5,19 +5,27 @@ import net.dv8tion.jda.events.Event;
 
 public interface Logger {
 	
-	public void toggleErrorLog();
+	void toggleErrorLog();
 	
-	public void toggleMessageLog();
+	void toggleMessageLog();
 
-	public boolean logMessage(Message m);
+	boolean logMessage(Message m);
 	
-	public boolean logCommandUse(Message m);
+	boolean logCommandUse(Message m);
 	
-	public boolean logEvent(Event e);
+	boolean logEvent(Event e);
 
-	public boolean logError(Throwable e);
+	boolean logError(Throwable e);
 	
-	public boolean toggleDebug();
-	
-	public int[] getNumbers();
+	boolean toggleDebug();
+
+	/**
+	 *Array with stat numbers: <b>0)</b> messages
+	 * <b>1)</b> commands
+	 * <b>2)</b> events
+	 * <b>3(</b> privateMessages
+	 * <b>4)</b> guildMessages
+	 * <b>5)</b> startTimeInMillis
+	 */
+	int[] getNumbers();
 }

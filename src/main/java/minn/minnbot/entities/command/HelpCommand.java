@@ -47,19 +47,20 @@ public class HelpCommand extends ListenerAdapter implements Command {
 			String s = "**__Example: " + prefix + rngAlias + "__**```xml";
 			for (Command c : commands) {
 				if (!(c instanceof HelpCommand)) {
-					String usage = c.usage().replace("`", "");
 					String alias = c.getAlias().replace("`", "");
-					s += "\n" + ((c.requiresOwner()) ? "[OP] " : "") + alias
-							+ ((!usage.isEmpty()) ? "\t | " + usage : "");
+					s += "\n" + ((c.requiresOwner()) ? "[OP] " : "") + alias;
 				}
 			}
 			event.sendMessage(s + "```");
 			return;
 		}
+		String cmd = event.allArguments.split(" ",2)[0];
+		if(!event.allArguments.startsWith(prefix))
+			cmd = prefix + cmd;
 		for (Command c : commands) {
-			if (c.isCommand(event.allArguments)) {
+			if (c.isCommand(cmd)) {
 				if (!c.usage().isEmpty())
-					event.sendMessage("Usage page for " + event.allArguments + ": " + c.usage());
+					event.sendMessage("Usage page for " + cmd + ": " + c.usage());
 				else
 					event.sendMessage("No usage page given.");
 				return;

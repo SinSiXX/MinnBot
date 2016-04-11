@@ -23,11 +23,11 @@ public class EditRoleCommand extends ListenerAdapter implements Command {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.isPrivate())
+        if (event.isPrivate())
             return;
-        else if(isCommand(event.getMessage().getContent())) {
-            if(!PermissionUtil.checkPermission(event.getAuthor(), Permission.MANAGE_ROLES, event.getGuild()))
-                event.getChannel().sendMessageAsync("You are not allowed to manage roles. :thumbsdown::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":", null);
+        else if (isCommand(event.getMessage().getContent())) {
+            if (!PermissionUtil.checkPermission(event.getAuthor(), Permission.MANAGE_ROLES, event.getGuild()))
+                event.getChannel().sendMessageAsync("You are not allowed to manage roles. :thumbsdown::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":", null);
             else {
                 logger.logCommandUse(event.getMessage());
                 onCommand(new CommandEvent(event));
@@ -49,28 +49,33 @@ public class EditRoleCommand extends ListenerAdapter implements Command {
 
     @Override
     public void onCommand(CommandEvent event) {
-        if(!PermissionUtil.checkPermission(event.event.getJDA().getSelfInfo(), Permission.MANAGE_ROLES, event.event.getGuild())) {
-            event.sendMessage("I am unable to manage roles. :thumbsdown::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":");
+        if (!PermissionUtil.checkPermission(event.event.getJDA().getSelfInfo(), Permission.MANAGE_ROLES, event.event.getGuild())) {
+            event.sendMessage("I am unable to manage roles. :thumbsdown::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":");
             return;
         }
         String[] args = event.allArguments.split("\\Q | \\E", 3);
-        if(args.length < 3) {
+        if (args.length < 3) {
             event.sendMessage("Syntax error. Use the help command for further instructions.");
             return;
         }
         Role r = RoleUtil.getRoleByName(args[0], event.event.getGuild());
-        if(r == null) {
+        if (r == null) {
             event.sendMessage("There is no role with the name \"" + event.allArguments + "\" "
-                    + ":thumbsdown::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":\nType `" + prefix + "help " + prefix + "copyrole` for more information.");
+                    + ":thumbsdown::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":\nType `" + prefix + "help " + prefix + "copyrole` for more information.");
             return;
         }
         String method = args[1];
-        if(method.equalsIgnoreCase("color")) {
+        if (method.equalsIgnoreCase("color")) {
             try {
-                int maxC = 16777215;
-                int color = ((int) Math.floor(Math.random() * maxC));
-                if(!args[2].equalsIgnoreCase("random")) {
-                    color = Integer.parseInt(args[2], 16);
+                int maxC = 16777215; // HEX - FFFFFF
+                int color = ((int) Math.floor(Math.random() * maxC)); // Random between 000000 - FFFFFF
+                if (!args[2].equalsIgnoreCase("random")) {
+                    try {
+                        color = Integer.parseInt(args[2].replace("#", ""), 16); // In case the user wants a specific color instead.
+                    } catch (NumberFormatException e) {
+                        event.sendMessage("Invalid hex value `" + args[2] + "`. Example `" + Integer.toHexString(color) + "` or `#" + Integer.toHexString(color) + "`");
+                        return;
+                    }
                 }
                 r.getManager().setColor(color).update();
                 event.sendMessage("Updated role color. :thumbsup::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":");

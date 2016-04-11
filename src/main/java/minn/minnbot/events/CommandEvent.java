@@ -5,16 +5,22 @@ import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.Arrays;
+
 public class CommandEvent {
 
 	public final String allArguments;
-	public final String[] arguments;
+	public String[] arguments;
 	public final MessageReceivedEvent event;
 	public final boolean isPrivate;
 	public final String timeStamp;
 
 	public CommandEvent(MessageReceivedEvent event) {
-		arguments = event.getMessage().getContent().split(" ");
+		try {
+			arguments = event.getMessage().getContent().split(" ", 2)[1].split(" ");
+		} catch (IndexOutOfBoundsException e) {
+			arguments = new String[0];
+		}
 		String checked;
 		try {
 			checked = event.getMessage().getContent().split(" ", 2)[1];

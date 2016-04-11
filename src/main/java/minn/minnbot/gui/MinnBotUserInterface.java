@@ -105,12 +105,13 @@ public class MinnBotUserInterface extends JFrame {
 		btnAccount.setEnabled(false);
 		panel_2.add(btnAccount);
 
-		JButton btnGenerateCommandJson = new JButton("Generate Command Json");
+		JButton btnGenerateCommandJson = new JButton("Cache Information as Jsons.");
 		btnGenerateCommandJson.setForeground(Color.WHITE);
 		btnGenerateCommandJson.setBackground(Color.DARK_GRAY);
 		btnGenerateCommandJson.addActionListener(e -> {
             try {
                 bot.handler.generateJson("commands.json");
+				bot.handler.saveTags();
             } catch (Exception e1) {
                 errorArea.append("\nThe bot must be launched to generate the commands.");
             }
@@ -138,6 +139,7 @@ public class MinnBotUserInterface extends JFrame {
                     btnGenerateCommandJson.setEnabled(false);
                     btnLaunch.setEnabled(true);
                     btnRestart.setEnabled(false);
+					bot.handler.saveTags();
                     if (sLog != null) {
                         bot.api.removeEventListener(sLog);
                         sLog.setVisible(false);

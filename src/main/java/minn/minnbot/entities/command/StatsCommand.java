@@ -6,6 +6,7 @@ import java.util.Vector;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
@@ -87,7 +88,7 @@ public class StatsCommand extends ListenerAdapter implements Command {
 		String users = "[Users][" + api.getUsers().size() + "]";
 		String channels = "[Channels][" + api.getPrivateChannels().size() + api.getTextChannels().size()
 				+ api.getVoiceChannels().size() + "]";
-		String uptime = "[Uptime][" + uptime(stats[5]) + "]";
+		String uptime = "[Uptime][" + TimeUtil.uptime(stats[5]) + "]";
 		String mem = "[Memory][" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576L
 				+ "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB]\n";
 		// InetAddress discord = InetAddress.getByName("discordapp.com");
@@ -102,48 +103,6 @@ public class StatsCommand extends ListenerAdapter implements Command {
 				+ channels + "```";
 		return msg;
 	}
-
-	private String uptime(int inMillis) {
-		long nHours = 0L;
-		long nMinutes = 0L;
-		long nSeconds = 0L;
-		long nDays = 0L;
-		String[] times = new String[4];
-		String[] timeDataPlural = { " Days", " Hours", " Minutes", " Seconds" };
-		String[] timeDataSingular = { " Day", " Hour", " Minute", " Second" };
-		nSeconds = (int) (inMillis / 1000L) % 60;
-		nMinutes = (int) (inMillis / 60000L % 60L);
-		nHours = (int) (inMillis / 3600000L % 24L);
-		nDays = (int) (inMillis / 86400000L);
-		times[3] = "" + nSeconds;
-		times[2] = "" + nMinutes;
-		times[1] = "" + nHours;
-		times[0] = "" + nDays;
-		int[] numbers = { Integer.parseInt(times[0]), Integer.parseInt(times[1]), Integer.parseInt(times[2]),
-				Integer.parseInt(times[3]) };
-		Vector<String> list = new Vector<String>();
-		for (int i = 0; i < 4; i++) {
-			if (numbers[i] > 0) {
-				if (numbers[i] > 1) {
-					list.add(numbers[i] + timeDataPlural[i]);
-				} else {
-					list.add(numbers[i] + timeDataSingular[i]);
-				}
-			}
-		}
-		String time = "";
-		for (int i = 0; i < list.size(); i++) {
-			if (i == 0) {
-				time = time + (String) list.get(i);
-			} else if (i == list.size() - 1) {
-				time = time + " and " + (String) list.get(i);
-			} else if (i > 0) {
-				time = time + ", " + (String) list.get(i);
-			}
-		}
-		return time;
-	}
-
 	@Override
 	public boolean isCommand(String message) {
 		return message.equalsIgnoreCase(prefix + "stats");
