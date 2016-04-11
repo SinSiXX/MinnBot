@@ -30,11 +30,13 @@ public class TagCommand extends ListenerAdapter implements Command {
     private List<Tag> tags;
     private String prefix;
     private Logger logger;
+    private User owner;
 
-    public TagCommand(String prefix, Logger logger, JDA api) {
+    public TagCommand(String prefix, Logger logger, JDA api, User pOwner) {
         this.prefix = prefix;
         this.logger = logger;
         this.tags = new LinkedList<>();
+        this.owner = pOwner;
         tags.add(new BlockTag("del"));
         tags.add(new BlockTag("edt"));
         tags.add(new BlockTag("add"));
@@ -169,7 +171,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                     event.sendMessage("Not a tag.");
                     return;
                 }
-                if (event.event.getAuthor() != target.getOwner() && !PermissionUtil.checkPermission(event.event.getAuthor(), Permission.MANAGE_ROLES, event.event.getGuild())) {
+                if (event.event.getAuthor() != target.getOwner() && !PermissionUtil.checkPermission(event.event.getAuthor(), Permission.MANAGE_SERVER, event.event.getGuild())) {
                     event.sendMessage("You are not authorized to edit this tag.");
                     return;
                 }
@@ -178,12 +180,17 @@ public class TagCommand extends ListenerAdapter implements Command {
                 return;
             }
             if (method.equalsIgnoreCase("add")) {
+                User user = event.event.getAuthor();
+                if (!PermissionUtil.checkPermission(user, Permission.MANAGE_SERVER, event.event.getGuild())&& user != owner) {
+                    event.sendMessage("You are missing the permission to manage the server. Ask someone with the required permissions to add the tag for you.");
+                    return;
+                }
                 if (event.arguments.length < 3) {
                     event.sendMessage("Syntax error. Missing arguments.");
                     return;
                 }
                 String tagName = event.arguments[1];
-                if(tagName.equalsIgnoreCase("add") || tagName.equalsIgnoreCase("del") || tagName.equalsIgnoreCase("edt")) {
+                if (tagName.equalsIgnoreCase("add") || tagName.equalsIgnoreCase("del") || tagName.equalsIgnoreCase("edt")) {
                     event.sendMessage("Tagname `" + tagName + "` is not allowed.");
                     return;
                 }
@@ -208,7 +215,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                 }
                 Tag t = new TagImpl(event.event.getAuthor(), event.event.getGuild(), tagName, tagResponse);
                 tags.add(t);
-                event.sendMessage("Created tag `"+ t.name() + "`.");
+                event.sendMessage("Created tag `" + t.name() + "`.");
                 return;
             }
             String tagName = event.allArguments;
