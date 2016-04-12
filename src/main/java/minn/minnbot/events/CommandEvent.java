@@ -5,8 +5,6 @@ import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
-import java.util.Arrays;
-
 public class CommandEvent {
 
 	public final String allArguments;
@@ -34,11 +32,15 @@ public class CommandEvent {
 	}
 
 	public void sendMessage(String content) {
+		if(content.length() >= 2000)
+			throw new IllegalArgumentException("Reached character limit.");
 		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE))
 			event.getChannel().sendMessageAsync(content, null);
 	}
 
 	public Message sendMessageBlocking(String content) {
+		if(content.length() >= 2000)
+			throw new IllegalArgumentException("Reached character limit.");
 		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE))
 			return event.getChannel().sendMessage(content);
 		return null;
