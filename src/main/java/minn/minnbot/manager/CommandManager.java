@@ -1,22 +1,22 @@
 package minn.minnbot.manager;
 
+import minn.minnbot.MinnBot;
+import minn.minnbot.entities.Command;
+import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.TagCommand;
+import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.hooks.ListenerAdapter;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
-
-import minn.minnbot.entities.Command;
-import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.command.TagCommand;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import net.dv8tion.jda.JDA;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -27,6 +27,18 @@ public class CommandManager extends ListenerAdapter {
 	private Logger logger;
 
 	public void onMessageReceived(MessageReceivedEvent event) {
+		if(event.getAuthor().isBot())
+			return;
+		if(MinnBot.powersaving) {
+			try {
+				for (Command c : commands) {
+					c.onMessageReceived(event);
+				}
+			} catch (Exception e) {
+				logger.logError(e);
+			}
+			return;
+		}
 		Thread t = new Thread() {
 			@SuppressWarnings({"deprecation"})
 			public void run() {
@@ -70,11 +82,9 @@ public class CommandManager extends ListenerAdapter {
 
 	private JSONObject jsonfy(Command command) {
 		String alias = command.getAlias();
-//		String name = command.getClass().getSimpleName();
 		String usage = command.usage();
 		boolean ownerOnly = command.requiresOwner();
 		JSONObject obj = new JSONObject();
-//		obj.put("name", name);
 		obj.put("aliase", alias);
 		obj.put("usage", usage);
 		obj.put("owner", ownerOnly);

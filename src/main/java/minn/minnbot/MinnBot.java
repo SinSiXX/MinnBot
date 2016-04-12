@@ -33,7 +33,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot extends ListenerAdapter {
 
-    public final static String VERSION = "Version 0.81";
+    public static boolean powersaving = false;
+
+    public final static String VERSION = "Version 0.9";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     private static MinnBotUserInterface console;
     public final User owner;
@@ -67,6 +69,7 @@ public class MinnBot extends ListenerAdapter {
         this.bot = true;
         this.handler = new CommandManager(api, this.logger);
         api.addEventListener(handler);
+        log("Powersaving: " + powersaving);
     }
 
     public static void launch(MinnBotUserInterface console) throws IOException, InterruptedException, LoginException {
@@ -91,6 +94,9 @@ public class MinnBot extends ListenerAdapter {
                     throw e;
                 }
             }
+            try {
+                powersaving = obj.getBoolean("powersaving");
+            } catch (Exception ignored) {}
             String pre = obj.getString("prefix");
             String inviteUrl = obj.getString("inviteurl");
             String ownerId = obj.getString("owner");
@@ -98,6 +104,7 @@ public class MinnBot extends ListenerAdapter {
             api.addEventListener(bot.initCommands(api));
             as.setApi(api);
             MinnBotUserInterface.bot = bot;
+            bot.log("Setup completed.");
         } catch (IllegalArgumentException e) {
             if (e.getMessage().isEmpty())
                 console.writeError("The config was not populated.\n" + "Please enter a bot token.");
@@ -116,6 +123,7 @@ public class MinnBot extends ListenerAdapter {
             obj.put("owner", "");
             obj.put("token", "");
             obj.put("inviteurl", "");
+            obj.put("powersaving", false);
             try {
                 Files.write(Paths.get("BotConfig.json"), obj.toString(4).getBytes());
                 console.writeError(
@@ -156,7 +164,7 @@ public class MinnBot extends ListenerAdapter {
         return handler.commands;
     }
 
-    public void log(String toLog) {
+    private void log(String toLog) {
         String stamp = TimeUtil.timeStamp();
         console.writeln(stamp + "[MINNBOT] " + toLog);
     }
@@ -304,7 +312,7 @@ public class MinnBot extends ListenerAdapter {
         return this;
     }
 
-    public String registerCommand(Command com) {
+    private String registerCommand(Command com) {
         return handler.registerCommand(com);
     }
 
