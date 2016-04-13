@@ -14,7 +14,8 @@ Simple to setup Discord Chat Bot.
     "owner": "86699011792191488",
     "prefix": "!",
     "token": "AOIHIPUHD34534.JKHOS6876OH6IKHJ.OHOIHJF",
-	  "inviteurl":"https://discordapp.com/oauth2/authorize?&client_id=13468425138731684&scope=bot&permissions=67108863"
+    "inviteurl":"https://discordapp.com/oauth2/authorize?&client_id=13468425138731684&scope=bot&permissions=67108863",
+    "powersaving": false
 }
 </pre>
 </div>
