@@ -3,6 +3,7 @@ package minn.minnbot;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.*;
+import minn.minnbot.entities.command.custom.HelpSplitter;
 import minn.minnbot.entities.command.owner.*;
 import minn.minnbot.entities.command.roles.CopyRoleCommand;
 import minn.minnbot.entities.command.roles.CreateRoleCommand;
@@ -33,10 +34,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot extends ListenerAdapter {
 
-    public static boolean powersaving = false;
-
-    public final static String VERSION = "Version 0.9";
+    public final static String VERSION = "Version 0.92";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
+    public static boolean powersaving = false;
     private static MinnBotUserInterface console;
     public final User owner;
     public final JDA api;
@@ -45,6 +45,7 @@ public class MinnBot extends ListenerAdapter {
     private final Logger logger;
     private final String inviteurl;
     private final boolean bot;
+
     public MinnBot(String prefix, String ownerID, String inviteurl, boolean bot, Logger logger, JDA api)
             throws UnexpectedException {
         if (!bot) {
@@ -96,7 +97,8 @@ public class MinnBot extends ListenerAdapter {
             }
             try {
                 powersaving = obj.getBoolean("powersaving");
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             String pre = obj.getString("prefix");
             String inviteUrl = obj.getString("inviteurl");
             String ownerId = obj.getString("owner");
@@ -183,49 +185,136 @@ public class MinnBot extends ListenerAdapter {
         // Add each command and check for exceptions
 
         // Operator/Owner Commands
-        Command com = new HelpCommand(prefix, logger, handler.commands);
-        AtomicReference<String> err = new AtomicReference<>(registerCommand(com));
+
+        HelpSplitter splitter = new HelpSplitter("Operator", "op", prefix);
+        AtomicReference<String> err = new AtomicReference<>(registerCommand(splitter));
         if (!err.get().isEmpty())
             errors.add(err.get());
+
+        Command com = new HelpCommand(prefix, logger, handler.commands);
+        err = new AtomicReference<>(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new EvalCommand(owner, prefix, logger, this);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new NameCommand(owner, prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new GameCommand(prefix, logger, owner);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new ShutdownCommand(prefix, owner, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new DebugCommand(owner, prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new LeaveCommand(prefix, logger, owner);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new FlushCommand(prefix, logger, owner);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         // User commands
+
+        splitter = new HelpSplitter("Public commands", "public", prefix);
+        err.set(registerCommand(splitter));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+
         com = new StatsCommand(logger, prefix, ABOUT);
         err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new CheckCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new SayCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new InfoCommand(prefix, logger, owner, inviteurl, bot);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new ResponseCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new PingCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new UptimeCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new TagCommand(prefix, logger, api, owner);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+
+        // Moderation commands
+
+        splitter = new HelpSplitter("Moderation commands" , "moderation", prefix);
+        err.set(registerCommand(splitter));
         if (!err.get().isEmpty())
             errors.add(err.get());
 
@@ -233,72 +322,64 @@ public class MinnBot extends ListenerAdapter {
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new UnsilenceCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
-
-        com = new CheckCommand(prefix, logger);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
-
-        com = new SayCommand(prefix, logger);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new PurgeCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new SoftbanCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new ClearCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
-
-        com = new InfoCommand(prefix, logger, owner, inviteurl, bot);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
-
-        com = new ResponseCommand(prefix, logger);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
-
-        com = new PingCommand(prefix, logger);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
-
-        com = new UptimeCommand(prefix, logger);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
-
-        com = new TagCommand(prefix, logger, api, owner);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
+        else
+            splitter.add(com);
 
         // Role manager
+
+        splitter = new HelpSplitter("Role managing commands", "roles", prefix);
+        err.set(registerCommand(splitter));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+
         com = new CreateRoleCommand(logger, prefix);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new CopyRoleCommand(logger, prefix);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         com = new EditRoleCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
+        else
+            splitter.add(com);
 
         // Log the outcome
         if (!errors.isEmpty()) {

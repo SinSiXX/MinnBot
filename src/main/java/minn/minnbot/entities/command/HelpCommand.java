@@ -1,12 +1,13 @@
 package minn.minnbot.entities.command;
 
-import java.util.List;
-
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.custom.HelpSplitter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
+
+import java.util.List;
 
 public class HelpCommand extends ListenerAdapter implements Command {
 
@@ -60,7 +61,7 @@ public class HelpCommand extends ListenerAdapter implements Command {
 		for (Command c : commands) {
 			if (c.isCommand(cmd)) {
 				if (!c.usage().isEmpty())
-					event.sendMessage("Usage page for " + cmd + ": " + c.usage());
+					event.sendMessage("Usage page for " + ((c instanceof HelpSplitter) ? "`" + c.getAlias() + "`" : cmd) + ": " + c.usage());
 				else
 					event.sendMessage("No usage page given.");
 				return;
