@@ -1,10 +1,10 @@
 package minn.minnbot.gui;
 
-import java.awt.TextArea;
-
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
+
+import java.awt.*;
 
 public class GuildListener extends ListenerAdapter {
 

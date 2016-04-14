@@ -1,16 +1,12 @@
 package minn.minnbot.entities.command;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class ResponseCommand extends ListenerAdapter implements Command {
-
-    private String prefix;
-    private Logger logger;
+public class ResponseCommand extends CommandAdapter {
 
     public ResponseCommand(String prefix, Logger logger) {
         this.prefix = prefix;
@@ -22,18 +18,6 @@ public class ResponseCommand extends ListenerAdapter implements Command {
             logger.logCommandUse(event.getMessage());
             onCommand(new CommandEvent(event));
         }
-    }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null");
-        this.logger = logger;
     }
 
     @Override
@@ -70,11 +54,5 @@ public class ResponseCommand extends ListenerAdapter implements Command {
     public String getAlias() {
         return "test";
     }
-
-    @Override
-    public boolean requiresOwner() {
-        return false;
-    }
-
 
 }

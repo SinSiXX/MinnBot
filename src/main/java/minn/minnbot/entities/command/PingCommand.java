@@ -1,17 +1,17 @@
 package minn.minnbot.entities.command;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
-public class PingCommand extends ListenerAdapter implements Command {
+public class PingCommand extends CommandAdapter {
 
-    private String prefix;
-    private Logger logger;
     private InetAddress address;
 
     public PingCommand(String prefix, Logger logger) throws UnknownHostException {
@@ -30,18 +30,6 @@ public class PingCommand extends ListenerAdapter implements Command {
             logger.logCommandUse(event.getMessage());
             onCommand(new CommandEvent(event));
         }
-    }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null");
-        this.logger = logger;
     }
 
     @Override
@@ -81,11 +69,5 @@ public class PingCommand extends ListenerAdapter implements Command {
     public String getAlias() {
         return "ping";
     }
-
-    @Override
-    public boolean requiresOwner() {
-        return false;
-    }
-
 
 }

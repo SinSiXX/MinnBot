@@ -1,8 +1,8 @@
 package minn.minnbot.entities.command;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.Tag;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.entities.impl.BlockTag;
 import minn.minnbot.entities.impl.TagImpl;
 import minn.minnbot.events.CommandEvent;
@@ -13,7 +13,6 @@ import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.PermissionUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,14 +25,14 @@ import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TagCommand extends ListenerAdapter implements Command {
+public class TagCommand extends CommandAdapter {
 
     private List<Tag> tags;
-    private String prefix;
-    private Logger logger;
     private User owner;
 
     public TagCommand(String prefix, Logger logger, JDA api, User pOwner) {
+        if(api != null)
+            api.addEventListener(this);
         this.prefix = prefix;
         this.logger = logger;
         this.tags = new LinkedList<>();
@@ -64,13 +63,13 @@ public class TagCommand extends ListenerAdapter implements Command {
         }
     }
 
-    @Override
     public void onShutdown(ShutdownEvent event) {
         JSONArray arr = getAsJsonArray();
-        if (new File("tags").exists())
-            new File("tags").delete();
+        if (new File("tags.json").exists())
+            new File("tags.json").delete();
         try {
             Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
+            logger.logError(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
         } catch (IOException e) {
             logger.logError(e);
         }
@@ -109,18 +108,6 @@ public class TagCommand extends ListenerAdapter implements Command {
             logger.logCommandUse(event.getMessage());
             onCommand(new CommandEvent(event));
         }
-    }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null.");
-        this.logger = logger;
     }
 
     @Override
@@ -267,7 +254,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                 event.sendMessage("Not a tag.");
                 return;
             }
-            event.sendMessage("\u0001" + target.response());
+            event.sendMessage("\u0001 " + target.response());
         } catch (Exception e) {
             logger.logError(e);
         }
@@ -302,11 +289,5 @@ public class TagCommand extends ListenerAdapter implements Command {
     public String getAlias() {
         return "tag <method> <tag> <response>";
     }
-
-    @Override
-    public boolean requiresOwner() {
-        return false;
-    }
-
 
 }

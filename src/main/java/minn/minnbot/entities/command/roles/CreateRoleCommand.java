@@ -1,17 +1,13 @@
 package minn.minnbot.entities.command.roles;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.PermissionUtil;
 
-public class CreateRoleCommand extends ListenerAdapter implements Command{
-
-    private String prefix;
-    private Logger logger;
+public class CreateRoleCommand extends CommandAdapter {
 
     public CreateRoleCommand(Logger logger, String prefix) {
         this.prefix = prefix;
@@ -29,18 +25,6 @@ public class CreateRoleCommand extends ListenerAdapter implements Command{
                 onCommand(new CommandEvent(event));
             }
         }
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null");
-        this.logger = logger;
-    }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
     }
 
     @Override
@@ -78,8 +62,4 @@ public class CreateRoleCommand extends ListenerAdapter implements Command{
         return "createrole <name>";
     }
 
-    @Override
-    public boolean requiresOwner() {
-        return false;
-    }
 }

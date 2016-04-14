@@ -1,16 +1,14 @@
 package minn.minnbot.entities.command.owner;
 
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.Command;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class FlushCommand extends ListenerAdapter implements Command {
-	private String prefix;
-	private Logger logger;
+public class FlushCommand extends CommandAdapter {
+
 	private User owner;
 	
 	public FlushCommand(String prefix, Logger logger, User owner) {
@@ -26,18 +24,6 @@ public class FlushCommand extends ListenerAdapter implements Command {
 			logger.logCommandUse(event.getMessage());
 			onCommand(new CommandEvent(event));
 		}
-	}
-
-	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger can not be null.");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
 	}
 
 	@Override
@@ -75,11 +61,6 @@ public class FlushCommand extends ListenerAdapter implements Command {
 		if (parts.length < 1)
 			return false;
 		return parts[0].equalsIgnoreCase(prefix + "flush");
-	}
-
-	@Override
-	public String usage() {
-		return "";
 	}
 
 	@Override

@@ -3,42 +3,19 @@ package minn.minnbot.entities.command;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.custom.HelpSplitter;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
 import java.util.List;
 
-public class HelpCommand extends ListenerAdapter implements Command {
+public class HelpCommand extends CommandAdapter {
 
-	private final String prefix;
-	private Logger logger;
 	private List<Command> commands;
 
 	public HelpCommand(String prefix, Logger logger, List<Command> commands) {
 		this.prefix = prefix;
 		this.logger = logger;
 		this.commands = commands;
-	}
-
-	public void onMessageReceived(MessageReceivedEvent event) {
-		String message = event.getMessage().getContent();
-		if (isCommand(message)) {
-			logger.logCommandUse(event.getMessage());
-			onCommand(new CommandEvent(event));
-		}
-	}
-
-	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger cannot be null");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
 	}
 
 	@Override
@@ -93,11 +70,6 @@ public class HelpCommand extends ListenerAdapter implements Command {
 	@Override
 	public String getAlias() {
 		return "help <command>";
-	}
-
-	@Override
-	public boolean requiresOwner() {
-		return false;
 	}
 
 }

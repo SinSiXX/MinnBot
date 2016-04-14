@@ -1,30 +1,19 @@
 package minn.minnbot.gui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.TextArea;
+import minn.minnbot.MinnBot;
+import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.impl.LoggerImpl;
+import net.dv8tion.jda.JDA;
+import org.eclipse.wb.swing.FocusTraversalOnArray;
+
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.SoftBevelBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.SoftBevelBorder;
-
-
-import minn.minnbot.MinnBot;
-import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.impl.LoggerImpl;
-import org.eclipse.wb.swing.FocusTraversalOnArray;
-
-import net.dv8tion.jda.JDA;
-import net.dv8tion.jda.entities.User;
 
 public class MinnBotUserInterface extends JFrame {
 
@@ -226,9 +215,7 @@ public class MinnBotUserInterface extends JFrame {
 		btnRestart.addActionListener(e -> {
             // FIXME
             try {
-                User owner;
                 if (bot.api != null) {
-                    owner = bot.owner;
                     btnStop.getActionListeners()[0].actionPerformed(null);
                     MinnBot.launch(c);
                     btnAccount.setEnabled(true);

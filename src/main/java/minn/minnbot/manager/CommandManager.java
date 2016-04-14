@@ -4,6 +4,7 @@ import minn.minnbot.MinnBot;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.TagCommand;
+import minn.minnbot.entities.throwable.Info;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
@@ -107,7 +108,7 @@ public class CommandManager extends ListenerAdapter {
 		File f = new File(path);
 		try {
 			Files.write(Paths.get(path), array.toString(4).getBytes());
-			logger.logError(new Exception("Generated Commands as Json: " + path));
+			logger.logError(new Info("Generated Commands as Json: " + path));
 		} catch (JSONException e) {
 			logger.logError(e);
 		} catch (IOException e) {

@@ -1,16 +1,13 @@
 package minn.minnbot.entities.command.owner;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class GameCommand extends ListenerAdapter implements Command {
+public class GameCommand extends CommandAdapter {
 
-	private final String prefix;
-	private Logger logger;
 	private final User owner;
 	
 	public GameCommand(String prefix, Logger logger, User owner) {
@@ -25,18 +22,6 @@ public class GameCommand extends ListenerAdapter implements Command {
 			logger.logCommandUse(event.getMessage());
 			onCommand(new CommandEvent(event));
 		}
-	}
-
-	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger can not be null.");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
 	}
 
 	@Override

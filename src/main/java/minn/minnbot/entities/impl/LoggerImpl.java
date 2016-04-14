@@ -1,14 +1,15 @@
 package minn.minnbot.entities.impl;
 
-import java.util.List;
-
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.Event;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
+
+import java.util.List;
 
 public class LoggerImpl extends ListenerAdapter implements Logger {
 
@@ -136,8 +137,10 @@ public class LoggerImpl extends ListenerAdapter implements Logger {
 		try {
 			String s = TimeUtil.timeStamp() + " " + e.getClass().getSimpleName() + ": " + e.getMessage();
 			console.writeError(s);
+			if(e instanceof Info)
+				return true;
 			e.printStackTrace();
-			// errorLogs.add(s);
+			return true;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

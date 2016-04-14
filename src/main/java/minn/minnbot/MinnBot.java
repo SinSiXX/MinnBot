@@ -17,7 +17,6 @@ import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 import org.json.JSONObject;
 
 import javax.script.ScriptException;
@@ -32,7 +31,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings("unused")
-public class MinnBot extends ListenerAdapter {
+public class MinnBot {
 
     public final static String VERSION = "Version 0.92";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
@@ -103,7 +102,7 @@ public class MinnBot extends ListenerAdapter {
             String inviteUrl = obj.getString("inviteurl");
             String ownerId = obj.getString("owner");
             MinnBot bot = new MinnBot(pre, ownerId, inviteUrl, isBot, console.logger, api);
-            api.addEventListener(bot.initCommands(api));
+            bot.initCommands(api);
             as.setApi(api);
             MinnBotUserInterface.bot = bot;
             bot.log("Setup completed.");
@@ -153,7 +152,7 @@ public class MinnBot extends ListenerAdapter {
                 while (!t.isAvailable())
                     try {
                         Thread.sleep(100);
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException ignored) {
                     }
             });
         } catch (Exception e) {

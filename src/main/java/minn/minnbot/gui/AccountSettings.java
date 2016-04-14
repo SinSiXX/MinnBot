@@ -1,26 +1,15 @@
 package minn.minnbot.gui;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-
-import javax.swing.JFrame;
-
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.managers.AccountManager;
 import net.dv8tion.jda.utils.AvatarUtil;
 
-import java.awt.Color;
-import java.awt.Dimension;
-
-import javax.swing.JTextField;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import javax.swing.JTextArea;
-import java.awt.TextArea;
-import java.awt.Font;
-import javax.swing.JScrollPane;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
 
 public class AccountSettings extends JFrame {
 

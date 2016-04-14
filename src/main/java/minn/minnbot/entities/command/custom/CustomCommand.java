@@ -1,7 +1,7 @@
 package minn.minnbot.entities.command.custom;
 
-import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.Command;
+import minn.minnbot.entities.Logger;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;

@@ -1,19 +1,15 @@
 package minn.minnbot.entities.command;
 
-import java.util.List;
-
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class SilenceCommand extends ListenerAdapter implements Command {
+import java.util.List;
 
-	private final String prefix;
-	private Logger logger;
+public class SilenceCommand extends CommandAdapter {
 
 	public SilenceCommand(String prefix, Logger logger) {
 		this.prefix = prefix;
@@ -39,18 +35,6 @@ public class SilenceCommand extends ListenerAdapter implements Command {
 			logger.logCommandUse(event.getMessage());
 			onCommand(new CommandEvent(event));
 		}
-	}
-
-	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger cannot be null");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
 	}
 
 	@Override
@@ -89,11 +73,6 @@ public class SilenceCommand extends ListenerAdapter implements Command {
 	@Override
 	public String getAlias() {
 		return "silence <mention>";
-	}
-
-	@Override
-	public boolean requiresOwner() {
-		return false;
 	}
 
 }
