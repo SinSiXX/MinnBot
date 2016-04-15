@@ -41,7 +41,7 @@ public class StatsCommand extends CommandAdapter {
 						long start = System.currentTimeMillis();
 						Message m = event.sendMessageBlocking(msg);
 						if (m != null) {
-							m.updateMessage(msg.replace("{ping}", (System.currentTimeMillis() - start) + "ms"));
+							m.updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + "ms"), null);
 							for (int i = 0; i < 10; i++) {
 								try {
 									Thread.sleep(3000);
@@ -49,7 +49,7 @@ public class StatsCommand extends CommandAdapter {
 								}
 								msg = stats(event, ping);
 								start = System.currentTimeMillis();
-								m.updateMessage(msg);
+								m.updateMessageAsync(msg,null);
 								ping = System.currentTimeMillis() - start;
 							}
 						}

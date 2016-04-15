@@ -31,8 +31,6 @@ public class TagCommand extends CommandAdapter {
     private User owner;
 
     public TagCommand(String prefix, Logger logger, JDA api, User pOwner) {
-        if(api != null)
-            api.addEventListener(this);
         this.prefix = prefix;
         this.logger = logger;
         this.tags = new LinkedList<>();
@@ -117,15 +115,18 @@ public class TagCommand extends CommandAdapter {
             String s = "**__Guild Tags:__** ";
             boolean moreThanOne = false;
             for (Tag t : tags) {
+                if(t.getGuild() == null)
+                    continue;
                 if (t.getGuild() == event.event.getGuild()) {
                     s += "`" + t.name() + "` ";
                     moreThanOne = true;
                 }
             }
-            if (moreThanOne)
+            if (moreThanOne) {
                 event.sendMessage(s);
-            else
+            } else {
                 event.sendMessage("No tags found.");
+            }
             return;
         }
         try {

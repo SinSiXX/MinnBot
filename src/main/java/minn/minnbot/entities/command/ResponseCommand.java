@@ -24,7 +24,7 @@ public class ResponseCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         try {
             long start = System.currentTimeMillis();
-            event.event.getChannel().sendMessageAsync("__**Response Time:**__ ", (Message m) -> m.updateMessage("__**Response Time:**__ " + (System.currentTimeMillis() - start) + "ms"));
+            event.event.getChannel().sendMessageAsync("__**Response Time:**__ ", (Message m) -> m.updateMessageAsync("__**Response Time:**__ " + (System.currentTimeMillis() - start) + "ms", null));
         } catch(Exception e) {
             logger.logThrowable(e);
         }

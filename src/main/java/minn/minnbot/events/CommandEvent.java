@@ -40,18 +40,19 @@ public class CommandEvent {
 	public void sendMessage(String content) {
 		if(content.length() >= 2000)
 			throw new IllegalArgumentException("Reached character limit.");
-		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE))
+		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE)) {
 			event.getChannel().sendMessageAsync(content, ((MinnBot.powersaving) ? (Message m) ->
-				CommandEvent.checked() : null));
-		if(MinnBot.powersaving) {
-			while(!checked){
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+					CommandEvent.checked() : null));
+			if (MinnBot.powersaving) {
+				while (!checked) {
+					try {
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
+				checked = false;
 			}
-			checked = false;
 		}
 	}
 
