@@ -18,7 +18,7 @@ public class UptimeCommand extends CommandAdapter {
         try {
             this.address = InetAddress.getByName("discordapp.com");
         } catch (UnknownHostException e) {
-            logger.logError(e);
+            logger.logThrowable(e);
             throw e;
         }
     }
@@ -29,7 +29,7 @@ public class UptimeCommand extends CommandAdapter {
             int[] nums = logger.getNumbers();
             event.sendMessage("**__Uptime:__** ***" + TimeUtil.uptime(nums[5]) + "***");
         } catch (Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 

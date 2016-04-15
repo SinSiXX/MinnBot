@@ -33,8 +33,7 @@ public class FlushCommand extends CommandAdapter {
 			Thread t = new Thread() {
 				@SuppressWarnings("deprecation")
 				public void run() {
-					java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getJDA(),
-							event.event.getChannel()).retrieve(100);
+					java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getChannel()).retrieve(100);
 					for (Message m : hist) {
 						if (m.getAuthor() == u) {
 							Thread t = new Thread() {
@@ -51,7 +50,7 @@ public class FlushCommand extends CommandAdapter {
 			};
 			t.start();
 		} catch (Exception e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		}
 	}
 

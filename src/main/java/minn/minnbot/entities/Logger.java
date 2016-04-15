@@ -15,7 +15,7 @@ public interface Logger {
 
     boolean logEvent(Event e);
 
-    boolean logError(Throwable e);
+    boolean logThrowable(Throwable e);
 
     boolean toggleDebug();
 

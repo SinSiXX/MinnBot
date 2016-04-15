@@ -8,10 +8,11 @@ import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.Event;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
+import net.dv8tion.jda.utils.SimpleLog;
 
 import java.util.List;
 
-public class LoggerImpl extends ListenerAdapter implements Logger, Thread.UncaughtExceptionHandler {
+public class LoggerImpl extends ListenerAdapter implements Logger, Thread.UncaughtExceptionHandler, SimpleLog.LogListener {
 
     private int messages = 0;
     private int privateMessages = 0;
@@ -33,6 +34,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
         this.startTime = System.currentTimeMillis();
         console.writeEvent(TimeUtil.timeStamp() + "[MINNBOT] Ready!");
         console.writeln(TimeUtil.timeStamp() + "[MINNBOT] Ready!");
+        SimpleLog.addListener(this);
     }
 
     @Override
@@ -70,7 +72,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             messages++;
             return true;
         } catch (Exception e) {
-            logError(e);
+            logThrowable(e);
             return false;
         }
     }
@@ -94,7 +96,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             } else
                 return false;
         } catch (Exception e) {
-            logError(e);
+            logThrowable(e);
             return false;
         }
     }
@@ -131,7 +133,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     }
 
     @Override
-    public boolean logError(Throwable e) {
+    public boolean logThrowable(Throwable e) {
         if (!logErrors && !(e instanceof Info))
             return false;
         String s;
@@ -169,6 +171,18 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
      */
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        logError(e);
+        logThrowable(e);
+    }
+
+    @Override
+    public void onLog(SimpleLog log, SimpleLog.Level level, Object msg) {
+        if (level.getPriority() < SimpleLog.Level.INFO.getPriority()) //lower than info
+            return;
+        logThrowable(new Info('[' + log.name + "] " + msg.toString()));
+    }
+
+    @Override
+    public void onError(SimpleLog simpleLog, Throwable throwable) {
+        logThrowable(throwable);
     }
 }

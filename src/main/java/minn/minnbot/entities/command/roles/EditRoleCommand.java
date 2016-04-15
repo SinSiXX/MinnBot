@@ -62,7 +62,7 @@ public class EditRoleCommand extends CommandAdapter {
                 r.getManager().setColor(color).update();
                 event.sendMessage("Updated role color. :thumbsup::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":");
             } catch (Exception e) {
-                logger.logError(e);
+                logger.logThrowable(e);
                 event.sendMessage("Something went wrong: " + e.getMessage());
             }
         } else if (method.equalsIgnoreCase("name")) {

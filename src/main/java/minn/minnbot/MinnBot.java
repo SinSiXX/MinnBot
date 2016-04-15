@@ -45,11 +45,7 @@ public class MinnBot {
     private final String inviteurl;
     private final boolean bot;
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public MinnBot(String prefix, String ownerID, String inviteurl, boolean bot, Logger logger, JDA api)
+    public MinnBot(String prefix, String ownerID, String inviteurl, Logger logger, JDA api)
             throws Exception {
         if (prefix.contains(" "))
             throw new IllegalArgumentException("Prefix contains illegal characters. (i.e. space)");
@@ -64,7 +60,7 @@ public class MinnBot {
         try {
             log("Owner: " + owner.getUsername() + "#" + owner.getDiscriminator());
         } catch (NullPointerException e) {
-            logger.logError(new NullPointerException(
+            logger.logThrowable(new NullPointerException(
                     "Owner could not be retrieved from the given id. Do you share a guild with this bot? - Caused by id: \""
                             + ownerID + "\""));
         }
@@ -82,21 +78,8 @@ public class MinnBot {
         try {
             JSONObject obj = new JSONObject(new String(Files.readAllBytes(Paths.get("BotConfig.json"))));
             String token = obj.getString("token").replace(" ", "");
-            boolean isBot = false;
             JDA api;
-            try {
-                api = new JDABuilder().setBotToken(token).setAudioEnabled(false).setAutoReconnect(true).buildBlocking();
-                isBot = true;
-            } catch (LoginException e) {
-                try {
-                    String email = obj.getString("email");
-                    String pass = obj.getString("password");
-                    api = new JDABuilder().setEmail(email).setPassword(pass).setAudioEnabled(false)
-                            .setAutoReconnect(true).buildBlocking();
-                } catch (Exception e1) {
-                    throw e;
-                }
-            }
+            api = new JDABuilder().setBotToken(token).setAudioEnabled(false).setAutoReconnect(true).buildBlocking();
             try {
                 powersaving = obj.getBoolean("powersaving");
             } catch (Exception ignored) {
@@ -104,14 +87,11 @@ public class MinnBot {
             String pre = obj.getString("prefix");
             String inviteUrl = obj.getString("inviteurl");
             String ownerId = obj.getString("owner");
-            MinnBot bot = new MinnBot(pre, ownerId, inviteUrl, isBot, console.logger, api);
+            MinnBot bot = new MinnBot(pre, ownerId, inviteUrl, console.logger, api);
             bot.initCommands(api);
             as.setApi(api);
             MinnBotUserInterface.bot = bot;
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) bot.getLogger());
-            if(Thread.currentThread().getUncaughtExceptionHandler().equals(bot.getLogger())) {
-                throw new Info("Exception handler ready.");
-            }
             bot.log("Setup completed.");
         } catch (IllegalArgumentException e) {
             if (e.getMessage().isEmpty())
@@ -151,6 +131,10 @@ public class MinnBot {
         console.pack();
     }
 
+    public Logger getLogger() {
+        return logger;
+    }
+
     private boolean waitForReady(JDA api) {
         if (api == null)
             throw new IllegalArgumentException("JDA instance can not be null.");
@@ -173,9 +157,9 @@ public class MinnBot {
     }
 
     public void log(String toLog) {
-        if(toLog.isEmpty())
+        if (toLog.isEmpty())
             return;
-        logger.logError(new Info(toLog));
+        logger.logThrowable(new Info(toLog));
     }
 
     public MinnBot initCommands(JDA api) throws UnknownHostException {
@@ -183,7 +167,7 @@ public class MinnBot {
         try {
             EvalUtil.init();
         } catch (ScriptException e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
 
         // Add logger to the listeners
@@ -320,7 +304,7 @@ public class MinnBot {
 
         // Moderation commands
 
-        splitter = new HelpSplitter("Moderation commands" , "moderation", prefix);
+        splitter = new HelpSplitter("Moderation commands", "moderation", prefix);
         err.set(registerCommand(splitter));
         if (!err.get().isEmpty())
             errors.add(err.get());

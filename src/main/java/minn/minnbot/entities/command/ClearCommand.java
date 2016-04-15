@@ -44,8 +44,7 @@ public class ClearCommand extends CommandAdapter {
 						amount = Integer.parseInt(event.allArguments);
 					} catch (NumberFormatException e) {
 					}
-					java.util.List<Message> hist = new MessageHistory(event.event.getJDA(),
-							event.event.getTextChannel()).retrieve(amount);
+					java.util.List<Message> hist = new MessageHistory(event.event.getTextChannel()).retrieve(amount);
 					for (Message m : hist) {
 						Thread t = new Thread() {
 							public void run() {
@@ -63,7 +62,7 @@ public class ClearCommand extends CommandAdapter {
 			t.start();
 
 		} catch (Exception e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		}
 	}
 

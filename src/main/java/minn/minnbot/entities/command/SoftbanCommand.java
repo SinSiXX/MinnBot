@@ -44,7 +44,7 @@ public class SoftbanCommand extends CommandAdapter {
         } catch (IndexOutOfBoundsException e) {
            event.sendMessage("Unablet to softban without mention. " + EmoteUtil.getRngThumbsdowns());
         } catch (Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 

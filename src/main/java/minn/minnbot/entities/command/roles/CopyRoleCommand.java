@@ -54,7 +54,7 @@ public class CopyRoleCommand extends CommandAdapter {
             event.sendMessage("Copied role: `" + r.getName() + "` :thumbsup::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":");
         } catch (Exception e) {
             event.sendMessage("Something went wrong. Check error log. :thumbsdown::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":");
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 

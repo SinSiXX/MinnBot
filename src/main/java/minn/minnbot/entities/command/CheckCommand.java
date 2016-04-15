@@ -89,7 +89,7 @@ public class CheckCommand extends CommandAdapter {
             }
             return count;
         } catch (Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
             return 1;
         }
     }

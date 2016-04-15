@@ -39,8 +39,7 @@ public class PurgeCommand extends CommandAdapter {
 			Thread t = new Thread() {
 				@SuppressWarnings("deprecation")
 				public void run() {
-					java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getJDA(),
-							event.event.getChannel()).retrieve(100);
+					java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getChannel()).retrieve(100);
 					for (Message m : hist) {
 						if (m.getAuthor() == u) {
 							Thread t = new Thread() {
@@ -61,7 +60,7 @@ public class PurgeCommand extends CommandAdapter {
 		} catch (IndexOutOfBoundsException e) {
 			event.sendMessage("I am unable to purge without mention reference. Usage: " + usage());
 		} catch (Exception e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		}
 	}
 

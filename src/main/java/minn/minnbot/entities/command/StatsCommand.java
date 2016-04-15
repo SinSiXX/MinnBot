@@ -54,7 +54,7 @@ public class StatsCommand extends CommandAdapter {
 							}
 						}
 					} catch (Exception e1) {
-						logger.logError(e1);
+						logger.logThrowable(e1);
 					}
 					running = false;
 				}

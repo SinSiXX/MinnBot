@@ -60,7 +60,7 @@ public class SilenceCommand extends CommandAdapter {
 			if (command.equalsIgnoreCase("silence"))
 				return true;
 		} catch (Exception e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		}
 		return false;
 	}

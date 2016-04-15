@@ -54,11 +54,11 @@ public class TagCommand extends CommandAdapter {
                         Guild guild = api.getGuildById(guildId);
                         tags.add(new TagImpl(owner, guild, name, response));
                     } catch (Exception e) {
-                        logger.logError(new MalformedParametersException("tags.json contains broken objects."));
+                        logger.logThrowable(new MalformedParametersException("tags.json contains broken objects."));
                     }
                 }
             } catch (Exception e) {
-                logger.logError(e);
+                logger.logThrowable(e);
             }
         }
     }
@@ -69,9 +69,9 @@ public class TagCommand extends CommandAdapter {
             new File("tags.json").delete();
         try {
             Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
-            logger.logError(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
+            logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
         } catch (IOException e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 
@@ -84,7 +84,7 @@ public class TagCommand extends CommandAdapter {
             obj.put("owner", tag.getOwner().getId());
             return obj;
         } catch (Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
             return null;
         }
     }
@@ -256,7 +256,7 @@ public class TagCommand extends CommandAdapter {
             }
             event.sendMessage("\u0001 " + target.response());
         } catch (Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 

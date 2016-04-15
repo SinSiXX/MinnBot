@@ -36,7 +36,7 @@ public class CommandManager extends ListenerAdapter {
 					c.onMessageReceived(event);
 				}
 			} catch (Exception e) {
-				logger.logError(e);
+				logger.logThrowable(e);
 			}
 			return;
 		}
@@ -49,7 +49,7 @@ public class CommandManager extends ListenerAdapter {
 						c.onMessageReceived(event);
 					}
 				} catch (Exception e) {
-					logger.logError(e);
+					logger.logThrowable(e);
 				}
 			}
 		};
@@ -108,11 +108,11 @@ public class CommandManager extends ListenerAdapter {
 		File f = new File(path);
 		try {
 			Files.write(Paths.get(path), array.toString(4).getBytes());
-			logger.logError(new Info("Generated Commands as Json: " + path));
+			logger.logThrowable(new Info("Generated Commands as Json: " + path));
 		} catch (JSONException e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		} catch (IOException e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		}
 		return f;
 	}

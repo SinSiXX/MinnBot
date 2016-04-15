@@ -33,7 +33,7 @@ public class EvalCommand extends CommandAdapter {
             if(s != null) {
                 event.sendMessage(s);
             } else {
-                logger.logError(new UnknownError("Evaluation returned null."));
+                logger.logThrowable(new UnknownError("Evaluation returned null."));
             }
         });
     }
