@@ -121,7 +121,7 @@ public class AccountSettings extends JFrame {
 					textArea.setEditable(false);
 					manager.update();
 				} catch (Exception e2) {
-					i.writeError("[MINNBOT] " + e2.getMessage());
+					i.writeEvent("[MINNBOT] " + e2.getMessage());
 				}
 			}
 		});
@@ -166,7 +166,7 @@ public class AccountSettings extends JFrame {
 			textArea.append("Avatar change.\n");
 			avatarField.setText("C:\\Path\\Picture.jpg");
 		} catch (UnsupportedEncodingException e) {
-			i.writeError("[ACCOUNT-MANAGER] " + e.getMessage());
+			i.writeEvent("[ACCOUNT-MANAGER] " + e.getMessage());
 		}
 	}
 

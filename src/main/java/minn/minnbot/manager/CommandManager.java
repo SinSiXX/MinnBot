@@ -43,6 +43,7 @@ public class CommandManager extends ListenerAdapter {
 		Thread t = new Thread() {
 			@SuppressWarnings({"deprecation"})
 			public void run() {
+				this.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
 				try {
 					for (Command c : commands) {
 						c.onMessageReceived(event);
@@ -50,7 +51,6 @@ public class CommandManager extends ListenerAdapter {
 				} catch (Exception e) {
 					logger.logError(e);
 				}
-				stop();
 			}
 		};
 		t.start();

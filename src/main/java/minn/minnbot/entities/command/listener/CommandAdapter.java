@@ -6,7 +6,7 @@ import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class CommandAdapter extends ListenerAdapter implements Command {
+public abstract class CommandAdapter extends ListenerAdapter implements Command {
 
     protected Logger logger;
     protected String prefix;
@@ -19,31 +19,23 @@ public class CommandAdapter extends ListenerAdapter implements Command {
         }
     }
 
-    public void setLogger(Logger logger) {
+    public final void setLogger(Logger logger) {
         if (logger == null)
             throw new IllegalArgumentException("Logger can not be null");
         this.logger = logger;
     }
 
-    public Logger getLogger() {
+    public final Logger getLogger() {
         return logger;
     }
 
-    public void onCommand(CommandEvent event) {
-        logger.logError(new UnsupportedOperationException("Unimplemented method. onCommand()"));
-    }
+    public abstract void onCommand(CommandEvent event);
 
-    public boolean isCommand(String message) {
-        return false;
-    }
+    public abstract boolean isCommand(String message);
 
-    public String usage() {
-        return "";
-    }
+    public String usage() { return ""; }
 
-    public String getAlias() {
-        return "";
-    }
+    public abstract String getAlias();
 
     public boolean requiresOwner() {
         return false;

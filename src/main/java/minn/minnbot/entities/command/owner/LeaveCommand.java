@@ -26,18 +26,6 @@ public class LeaveCommand extends CommandAdapter {
 	}
 
 	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger can not be null.");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
-	}
-
-	@Override
 	public void onCommand(CommandEvent event) {
 		try {
 			Guild g = event.event.getJDA().getGuildById(event.allArguments);

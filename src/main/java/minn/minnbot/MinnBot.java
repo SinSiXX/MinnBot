@@ -8,11 +8,11 @@ import minn.minnbot.entities.command.owner.*;
 import minn.minnbot.entities.command.roles.CopyRoleCommand;
 import minn.minnbot.entities.command.roles.CreateRoleCommand;
 import minn.minnbot.entities.command.roles.EditRoleCommand;
+import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.AccountSettings;
 import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.manager.CommandManager;
 import minn.minnbot.util.EvalUtil;
-import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
 import net.dv8tion.jda.entities.Guild;
@@ -45,16 +45,19 @@ public class MinnBot {
     private final String inviteurl;
     private final boolean bot;
 
+    public Logger getLogger() {
+        return logger;
+    }
+
     public MinnBot(String prefix, String ownerID, String inviteurl, boolean bot, Logger logger, JDA api)
-            throws UnexpectedException {
-        if (!bot) {
-            throw new IllegalArgumentException();
-        } else if (prefix.contains(" "))
+            throws Exception {
+        if (prefix.contains(" "))
             throw new IllegalArgumentException("Prefix contains illegal characters. (i.e. space)");
         this.api = api;
         if (!waitForReady(this.api))
             throw new UnexpectedException("Guilds were unreachable");
         this.logger = logger;
+
         this.prefix = prefix;
         log("Prefix: " + prefix);
         this.owner = this.api.getUserById(ownerID);
@@ -72,7 +75,7 @@ public class MinnBot {
         log("Powersaving: " + powersaving);
     }
 
-    public static void launch(MinnBotUserInterface console) throws IOException, InterruptedException, LoginException {
+    public static void launch(MinnBotUserInterface console) throws Exception {
         MinnBot.console = console;
         AccountSettings as = new AccountSettings(console);
         console.setAccountSettings(as);
@@ -105,14 +108,18 @@ public class MinnBot {
             bot.initCommands(api);
             as.setApi(api);
             MinnBotUserInterface.bot = bot;
+            Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) bot.getLogger());
+            if(Thread.currentThread().getUncaughtExceptionHandler().equals(bot.getLogger())) {
+                throw new Info("Exception handler ready.");
+            }
             bot.log("Setup completed.");
         } catch (IllegalArgumentException e) {
             if (e.getMessage().isEmpty())
-                console.writeError("The config was not populated.\n" + "Please enter a bot token.");
+                console.writeEvent("The config was not populated.\n" + "Please enter a bot token.");
             e.printStackTrace();
             throw e;
         } catch (LoginException e) {
-            console.writeError("The provided login information was invalid.\n"
+            console.writeEvent("The provided login information was invalid.\n"
                     + "Please provide a valid token or email and password combination.");
             throw e;
         } catch (InterruptedException e) {
@@ -127,10 +134,10 @@ public class MinnBot {
             obj.put("powersaving", false);
             try {
                 Files.write(Paths.get("BotConfig.json"), obj.toString(4).getBytes());
-                console.writeError(
+                console.writeEvent(
                         "No config file was found. BotConfig.json has been generated.\nPlease fill the fields with correct information!");
             } catch (IOException e1) {
-                console.writeError("No config file was found and we failed to generate one.");
+                console.writeEvent("No config file was found and we failed to generate one.");
                 e1.printStackTrace();
             }
             throw e;
@@ -165,9 +172,10 @@ public class MinnBot {
         return handler.commands;
     }
 
-    private void log(String toLog) {
-        String stamp = TimeUtil.timeStamp();
-        console.writeln(stamp + "[MINNBOT] " + toLog);
+    public void log(String toLog) {
+        if(toLog.isEmpty())
+            return;
+        logger.logError(new Info(toLog));
     }
 
     public MinnBot initCommands(JDA api) throws UnknownHostException {
@@ -382,9 +390,9 @@ public class MinnBot {
 
         // Log the outcome
         if (!errors.isEmpty()) {
-            console.writeError("[ERROR] Some commands could not load up:");
+            console.writeEvent("[ERROR] Some commands could not load up:");
             for (String e : errors) {
-                console.writeError("[COMMAND] " + e);
+                console.writeEvent("[COMMAND] " + e);
             }
         } else {
             log("[COMMANDS] Setup completed without exceptions.");
