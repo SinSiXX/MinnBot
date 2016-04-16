@@ -23,11 +23,11 @@ public class GifCommand extends CommandAdapter {
     @SuppressWarnings("deprecation")
     public void onCommand(CommandEvent event) {
         try {
-            String term = event.allArguments.replace(" ", "+");
-            String url = "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&rating=pg-13&tag=" + URLEncoder.encode(term).replace("%2B", "+");
+            String term = event.allArguments;
+            String url = "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&rating=pg-13&tag=" + URLEncoder.encode(term);
             if (!term.isEmpty()) {
                 term = term.replace(" ", "+");
-                url = "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&rating=pg-13&tag=" + URLEncoder.encode(term).replace("%2B", "+");
+                url = "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&rating=pg-13&tag=" + URLEncoder.encode(term);
             }
             System.out.println(url);
             com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest.get(url)
