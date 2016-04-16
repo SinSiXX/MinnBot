@@ -23,6 +23,7 @@ public class GifCommand extends CommandAdapter {
     @SuppressWarnings("deprecation")
     public void onCommand(CommandEvent event) {
         try {
+            // get request for giphy
             String term = event.allArguments;
             String url = "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&rating=pg-13&tag=" + URLEncoder.encode(term);
             if (!term.isEmpty()) {
