@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot extends ListenerAdapter {
 
-    public final static String VERSION = "Version 0.81";
+    public final static String VERSION = "Version 1.0b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     private static MinnBotUserInterface console;
     public final User owner;
