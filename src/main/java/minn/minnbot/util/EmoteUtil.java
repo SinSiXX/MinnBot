@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class EmoteUtil {
 
-    public static String getRngThumbsdowns() {
+    public static String getRngThumbsdown() {
         return ":thumbsdown::skin-tone-" + (new Random().nextInt(5) + 1) + ":";
     }
 

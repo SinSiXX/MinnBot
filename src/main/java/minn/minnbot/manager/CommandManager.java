@@ -5,6 +5,7 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.TagCommand;
 import minn.minnbot.entities.throwable.Info;
+import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
@@ -43,7 +44,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot())
+        if (event.getAuthor().isBot() || IgnoreUtil.isIgnored(event.getAuthor(), event.getGuild(), event.getTextChannel()))
             return;
         if (MinnBot.powersaving) {
             try {

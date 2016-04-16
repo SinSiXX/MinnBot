@@ -191,7 +191,7 @@ public class TagCommand extends CommandAdapter {
                 }
                 String tagName = event.arguments[1];
                 if (tagName.equalsIgnoreCase("add") || tagName.equalsIgnoreCase("del") || tagName.equalsIgnoreCase("edt") || tagName.equalsIgnoreCase("json")) {
-                    event.sendMessage("Tagname `" + tagName + "` is not allowed. " + EmoteUtil.getRngThumbsdowns());
+                    event.sendMessage("Tagname `" + tagName + "` is not allowed. " + EmoteUtil.getRngThumbsdown());
                     return;
                 }
                 String tagResponse = "";
@@ -230,18 +230,18 @@ public class TagCommand extends CommandAdapter {
                     }
                 }
                 if (target == null) {
-                    event.sendMessage("Not a valid tagname. " + EmoteUtil.getRngThumbsdowns());
+                    event.sendMessage("Not a valid tagname. " + EmoteUtil.getRngThumbsdown());
                     return;
                 }
                 JSONObject obj = jsonfy(target);
                 if (obj != null) {
                     if (obj.toString(4).length() >= 2000) {
-                        event.sendMessage("Unable to print jsonfied tag. Reached charecter limit of 2000." + EmoteUtil.getRngThumbsdowns());
+                        event.sendMessage("Unable to print jsonfied tag. Reached charecter limit of 2000." + EmoteUtil.getRngThumbsdown());
                         return;
                     }
                     event.sendMessage("```JSON\n" + obj.toString(4) + "```");
                 } else
-                    event.sendMessage("Unable to jsonfy given tag. " + EmoteUtil.getRngThumbsdowns());
+                    event.sendMessage("Unable to jsonfy given tag. " + EmoteUtil.getRngThumbsdown());
                 return;
             }
             String tagName = event.allArguments;

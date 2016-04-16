@@ -42,7 +42,7 @@ public class SoftbanCommand extends CommandAdapter {
             event.event.getGuild().getManager().unBan(target);
             event.sendMessage("Softbanned `" + target.getUsername() + "`. " + EmoteUtil.getRngThumbsup());
         } catch (IndexOutOfBoundsException e) {
-           event.sendMessage("Unablet to softban without mention. " + EmoteUtil.getRngThumbsdowns());
+           event.sendMessage("Unablet to softban without mention. " + EmoteUtil.getRngThumbsdown());
         } catch (Exception e) {
             logger.logThrowable(e);
         }

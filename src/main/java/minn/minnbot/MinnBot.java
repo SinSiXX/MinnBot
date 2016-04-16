@@ -186,8 +186,6 @@ public class MinnBot {
         err = new AtomicReference<>(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
-        else
-            splitter.add(com);
 
         com = new EvalCommand(owner, prefix, logger, this);
         err.set(registerCommand(com));
@@ -232,6 +230,13 @@ public class MinnBot {
             splitter.add(com);
 
         com = new FlushCommand(prefix, logger, owner);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new IgnoreCommand(prefix, logger, owner);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
@@ -301,6 +306,12 @@ public class MinnBot {
         else
             splitter.add(com);
 
+        com = new GifCommand(prefix,logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
 
         // Moderation commands
 
