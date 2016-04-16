@@ -1,23 +1,20 @@
 package minn.minnbot.entities.command;
 
-import java.io.IOException;
-import java.util.Vector;
-
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class StatsCommand extends ListenerAdapter implements Command {
+import java.io.IOException;
 
-	private Logger logger;
-	private String prefix;
+public class StatsCommand extends CommandAdapter {
+
 	private boolean running = false;
 	private String about;
+	private long ping;
 
 	public StatsCommand(Logger logger, String prefix, String about) {
 		this.logger = logger;
@@ -34,37 +31,30 @@ public class StatsCommand extends ListenerAdapter implements Command {
 	}
 
 	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger cannot be null.");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
-	}
-
-	@Override
 	public void onCommand(CommandEvent event) {
 		if (!running) {
 			Thread t = new Thread() {
 				public void run() {
 					String msg;
 					try {
-						msg = stats(event);
+						msg = stats(event, -1);
+						long start = System.currentTimeMillis();
 						Message m = event.sendMessageBlocking(msg);
 						if (m != null) {
+							m.updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + "ms"), null);
 							for (int i = 0; i < 10; i++) {
 								try {
 									Thread.sleep(3000);
 								} catch (InterruptedException e) {
 								}
-								m.updateMessage(stats(event));
+								msg = stats(event, ping);
+								start = System.currentTimeMillis();
+								m.updateMessageAsync(msg,null);
+								ping = System.currentTimeMillis() - start;
 							}
 						}
 					} catch (Exception e1) {
-						logger.logError(e1);
+						logger.logThrowable(e1);
 					}
 					running = false;
 				}
@@ -76,30 +66,27 @@ public class StatsCommand extends ListenerAdapter implements Command {
 		}
 	}
 
-	private String stats(CommandEvent event) throws IOException {
+	private String stats(CommandEvent event, long ms) throws IOException {
 		int[] stats = logger.getNumbers();
 		JDA api = event.event.getJDA();
-		String messages = "[Messages][" + stats[0] + "]";
-		String commands = "[Commands][" + stats[1] + "]";
-		String events = "[Events][" + stats[2] + "]";
-		String privateMessages = "[Private-Messages][" + stats[3] + "]";
-		String guildMessages = "[Guild-Messages][" + stats[4] + "]";
-		String guilds = "[Servers][" + api.getGuilds().size() + "]";
-		String users = "[Users][" + api.getUsers().size() + "]";
-		String channels = "[Channels][" + api.getPrivateChannels().size() + api.getTextChannels().size()
+		/* Ping */String ping = (ms < 1) ? "[Ping][{ping}]" : "[Ping][" + ms + "]";
+		/* Mess */String messages = "[Messages][" + stats[0] + "]";
+		/* Comm */String commands = "[Commands][" + stats[1] + "]";
+		/* Evnt */String events = "[Events][" + stats[2] + "]";
+		/* Priv */String privateMessages = "[Private-Messages][" + stats[3] + "]";
+		/* Gild */String guildMessages = "[Guild-Messages][" + stats[4] + "]";
+		/* Glds */String guilds = "[Servers][" + api.getGuilds().size() + "]";
+		/* Usrs */String users = "[Users][" + api.getUsers().size() + "]";
+		/* Chns */String channels = "[Channels]: [Private][" + api.getPrivateChannels().size() + "] [Text][" + api.getTextChannels().size() + "] [Voice]["
 				+ api.getVoiceChannels().size() + "]";
-		String uptime = "[Uptime][" + TimeUtil.uptime(stats[5]) + "]";
-		String mem = "[Memory][" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576L
-				+ "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB]\n";
-		// InetAddress discord = InetAddress.getByName("discordapp.com");
-		// long prePing = System.currentTimeMillis();
-		// discord.isReachable(200);
-		// long pastPing = System.currentTimeMillis();
-		// String ping = "[Ping][" + ((pastPing - prePing) >= 200 ? ">200" :
-		// (pastPing - prePing)) + "]";
+		/* Uptm */String uptime = "[Uptime][" + TimeUtil.uptime(stats[5]) + "]";
+		/* mems */String mem = "[Memory][" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576L
+				+ "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB]";
+		/* Rsps */String responses = "[Responses][" + event.event.getJDA().getResponseTotal() + "]";
+
 		String msg = "```md\nStatistics: " + about + "\n\n[Connection]:\n" + uptime + "\n" + mem
-				+ /* "\n" + ping + */ "\n\n[Messages]:\n" + messages + "\n" + privateMessages + "\n" + guildMessages
-				+ "\n\n[Usages]:\n" + commands + "\n" + events + "\n\n[Entities]:\n" + guilds + "\n" + users + "\n"
+				+ "\n" + ping + "\n\n[Messages]:\n" + messages + "\n" + privateMessages + "\n" + guildMessages
+				+ "\n\n[Usages]:\n" + commands + "\n" + responses + "\n" + events + "\n\n[Entities]:\n" + guilds + "\n" + users + "\n"
 				+ channels + "```";
 		return msg;
 	}
@@ -108,18 +95,8 @@ public class StatsCommand extends ListenerAdapter implements Command {
 		return message.equalsIgnoreCase(prefix + "stats");
 	}
 
-	@Override
-	public String usage() {
-		return "";
-	}
-
-	@Override
-
 	public String getAlias() {
 		return "stats";
 	}
 
-	public boolean requiresOwner() {
-		return false;
-	}
 }

@@ -1,16 +1,12 @@
 package minn.minnbot.entities.command;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class ResponseCommand extends ListenerAdapter implements Command {
-
-    private String prefix;
-    private Logger logger;
+public class ResponseCommand extends CommandAdapter {
 
     public ResponseCommand(String prefix, Logger logger) {
         this.prefix = prefix;
@@ -25,24 +21,12 @@ public class ResponseCommand extends ListenerAdapter implements Command {
     }
 
     @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null");
-        this.logger = logger;
-    }
-
-    @Override
     public void onCommand(CommandEvent event) {
         try {
             long start = System.currentTimeMillis();
-            event.event.getChannel().sendMessageAsync("__**Response Time:**__ ", (Message m) -> m.updateMessage("__**Response Time:**__ " + (System.currentTimeMillis() - start) + "ms"));
+            event.event.getChannel().sendMessageAsync("__**Response Time:**__ ", (Message m) -> m.updateMessageAsync("__**Response Time:**__ " + (System.currentTimeMillis() - start) + "ms", null));
         } catch(Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 
@@ -70,11 +54,5 @@ public class ResponseCommand extends ListenerAdapter implements Command {
     public String getAlias() {
         return "test";
     }
-
-    @Override
-    public boolean requiresOwner() {
-        return false;
-    }
-
 
 }

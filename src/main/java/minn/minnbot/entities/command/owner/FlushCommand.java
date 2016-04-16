@@ -1,16 +1,14 @@
 package minn.minnbot.entities.command.owner;
 
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.Command;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class FlushCommand extends ListenerAdapter implements Command {
-	private String prefix;
-	private Logger logger;
+public class FlushCommand extends CommandAdapter {
+
 	private User owner;
 	
 	public FlushCommand(String prefix, Logger logger, User owner) {
@@ -29,26 +27,13 @@ public class FlushCommand extends ListenerAdapter implements Command {
 	}
 
 	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger can not be null.");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
-	}
-
-	@Override
 	public void onCommand(CommandEvent event) {
 		try {
 			User u = event.event.getJDA().getSelfInfo();
 			Thread t = new Thread() {
 				@SuppressWarnings("deprecation")
 				public void run() {
-					java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getJDA(),
-							event.event.getChannel()).retrieve(100);
+					java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getChannel()).retrieve(100);
 					for (Message m : hist) {
 						if (m.getAuthor() == u) {
 							Thread t = new Thread() {
@@ -65,7 +50,7 @@ public class FlushCommand extends ListenerAdapter implements Command {
 			};
 			t.start();
 		} catch (Exception e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		}
 	}
 
@@ -75,11 +60,6 @@ public class FlushCommand extends ListenerAdapter implements Command {
 		if (parts.length < 1)
 			return false;
 		return parts[0].equalsIgnoreCase(prefix + "flush");
-	}
-
-	@Override
-	public String usage() {
-		return "";
 	}
 
 	@Override

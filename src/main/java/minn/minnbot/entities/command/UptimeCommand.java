@@ -1,18 +1,15 @@
 package minn.minnbot.entities.command;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.TimeUtil;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-import java.net.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
-public class UptimeCommand extends ListenerAdapter implements Command {
+public class UptimeCommand extends CommandAdapter {
 
-    private String prefix;
-    private Logger logger;
     private InetAddress address;
 
     public UptimeCommand(String prefix, Logger logger) throws UnknownHostException {
@@ -21,28 +18,9 @@ public class UptimeCommand extends ListenerAdapter implements Command {
         try {
             this.address = InetAddress.getByName("discordapp.com");
         } catch (UnknownHostException e) {
-            logger.logError(e);
+            logger.logThrowable(e);
             throw e;
         }
-    }
-
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if (isCommand(event.getMessage().getContent())) {
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
-        }
-    }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null");
-        this.logger = logger;
     }
 
     @Override
@@ -51,7 +29,7 @@ public class UptimeCommand extends ListenerAdapter implements Command {
             int[] nums = logger.getNumbers();
             event.sendMessage("**__Uptime:__** ***" + TimeUtil.uptime(nums[5]) + "***");
         } catch (Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 
@@ -79,11 +57,5 @@ public class UptimeCommand extends ListenerAdapter implements Command {
     public String getAlias() {
         return "uptime";
     }
-
-    @Override
-    public boolean requiresOwner() {
-        return false;
-    }
-
 
 }

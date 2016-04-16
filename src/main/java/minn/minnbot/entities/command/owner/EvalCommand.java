@@ -1,19 +1,16 @@
 package minn.minnbot.entities.command.owner;
 
 import minn.minnbot.MinnBot;
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.EvalUtil;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class EvalCommand extends ListenerAdapter implements Command {
+public class EvalCommand extends CommandAdapter {
 
     private User owner;
-    private String prefix;
-    private Logger logger;
     private MinnBot bot;
 
     public EvalCommand(User owner, String prefix, Logger logger, MinnBot bot) {
@@ -31,24 +28,12 @@ public class EvalCommand extends ListenerAdapter implements Command {
     }
 
     @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null.");
-        this.logger = logger;
-    }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    @Override
     public void onCommand(CommandEvent event) {
         EvalUtil.eval(event.allArguments, event.event, bot, (String s) -> {
             if(s != null) {
                 event.sendMessage(s);
             } else {
-                logger.logError(new UnknownError("Evaluation returned null."));
+                logger.logThrowable(new UnknownError("Evaluation returned null."));
             }
         });
     }

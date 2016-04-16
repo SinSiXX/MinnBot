@@ -1,19 +1,15 @@
 package minn.minnbot.entities.command.roles;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.RoleUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Role;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.PermissionUtil;
 
-public class CopyRoleCommand extends ListenerAdapter implements Command {
-
-    private String prefix;
-    private Logger logger;
+public class CopyRoleCommand extends CommandAdapter {
 
     public CopyRoleCommand(Logger logger, String prefix) {
         this.prefix = prefix;
@@ -31,18 +27,6 @@ public class CopyRoleCommand extends ListenerAdapter implements Command {
                 onCommand(new CommandEvent(event));
             }
         }
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null");
-        this.logger = logger;
-    }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
     }
 
     @Override
@@ -70,7 +54,7 @@ public class CopyRoleCommand extends ListenerAdapter implements Command {
             event.sendMessage("Copied role: `" + r.getName() + "` :thumbsup::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":");
         } catch (Exception e) {
             event.sendMessage("Something went wrong. Check error log. :thumbsdown::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":");
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 
@@ -97,10 +81,5 @@ public class CopyRoleCommand extends ListenerAdapter implements Command {
     @Override
     public String getAlias() {
         return "copyrole <copy-name>";
-    }
-
-    @Override
-    public boolean requiresOwner() {
-        return false;
     }
 }

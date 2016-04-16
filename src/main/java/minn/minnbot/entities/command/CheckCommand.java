@@ -1,7 +1,7 @@
 package minn.minnbot.entities.command;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
@@ -9,12 +9,8 @@ import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.Role;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class CheckCommand extends ListenerAdapter implements Command {
-
-    private String prefix;
-    private Logger logger;
+public class CheckCommand extends CommandAdapter {
 
     public CheckCommand(String prefix, Logger logger) {
         this.prefix = prefix;
@@ -26,18 +22,6 @@ public class CheckCommand extends ListenerAdapter implements Command {
             logger.logCommandUse(event.getMessage());
             onCommand(new CommandEvent(event));
         }
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null");
-        this.logger = logger;
-    }
-
-    @Override
-    public Logger getLogger() {
-        return logger;
     }
 
     @Override
@@ -105,7 +89,7 @@ public class CheckCommand extends ListenerAdapter implements Command {
             }
             return count;
         } catch (Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
             return 1;
         }
     }
@@ -148,11 +132,6 @@ public class CheckCommand extends ListenerAdapter implements Command {
     @Override
     public String getAlias() {
         return "check <mention>";
-    }
-
-    @Override
-    public boolean requiresOwner() {
-        return false;
     }
 
 }

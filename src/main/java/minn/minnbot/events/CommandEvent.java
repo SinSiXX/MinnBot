@@ -1,11 +1,10 @@
 package minn.minnbot.events;
 
+import minn.minnbot.MinnBot;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-
-import java.util.Arrays;
 
 public class CommandEvent {
 
@@ -14,6 +13,11 @@ public class CommandEvent {
 	public final MessageReceivedEvent event;
 	public final boolean isPrivate;
 	public final String timeStamp;
+	private static boolean checked;
+
+	public static void checked() {
+		checked = true;
+	}
 
 	public CommandEvent(MessageReceivedEvent event) {
 		try {
@@ -34,11 +38,27 @@ public class CommandEvent {
 	}
 
 	public void sendMessage(String content) {
-		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE))
-			event.getChannel().sendMessageAsync(content, null);
+		if(content.length() >= 2000)
+			throw new IllegalArgumentException("Reached character limit.");
+		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE)) {
+			event.getChannel().sendMessageAsync(content, ((MinnBot.powersaving) ? (Message m) ->
+					CommandEvent.checked() : null));
+			if (MinnBot.powersaving) {
+				while (!checked) {
+					try {
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				checked = false;
+			}
+		}
 	}
 
 	public Message sendMessageBlocking(String content) {
+		if(content.length() >= 2000)
+			throw new IllegalArgumentException("Reached character limit.");
 		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE))
 			return event.getChannel().sendMessage(content);
 		return null;

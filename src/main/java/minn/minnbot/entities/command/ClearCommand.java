@@ -1,18 +1,14 @@
 package minn.minnbot.entities.command;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.MessageHistory;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class ClearCommand extends ListenerAdapter implements Command {
-
-	private String prefix;
-	private Logger logger;
+public class ClearCommand extends CommandAdapter {
 
 	public ClearCommand(String prefix, Logger logger) {
 		this.logger = logger;
@@ -20,7 +16,7 @@ public class ClearCommand extends ListenerAdapter implements Command {
 	}
 
 	public void onMessageReceived(MessageReceivedEvent event) {
-		if(event.isPrivate())
+		if (event.isPrivate())
 			return;
 		if (isCommand(event.getMessage().getContent())) {
 			if (!event.getTextChannel().checkPermission(event.getAuthor(), Permission.MESSAGE_MANAGE)) {
@@ -37,18 +33,6 @@ public class ClearCommand extends ListenerAdapter implements Command {
 	}
 
 	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger can not be null.");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
-	}
-
-	@Override
 	public void onCommand(CommandEvent event) {
 		try {
 			Thread t = new Thread() {
@@ -60,8 +44,7 @@ public class ClearCommand extends ListenerAdapter implements Command {
 						amount = Integer.parseInt(event.allArguments);
 					} catch (NumberFormatException e) {
 					}
-					java.util.List<Message> hist = new MessageHistory(event.event.getJDA(),
-							event.event.getTextChannel()).retrieve(amount);
+					java.util.List<Message> hist = new MessageHistory(event.event.getTextChannel()).retrieve(amount);
 					for (Message m : hist) {
 						Thread t = new Thread() {
 							public void run() {
@@ -79,7 +62,7 @@ public class ClearCommand extends ListenerAdapter implements Command {
 			t.start();
 
 		} catch (Exception e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		}
 	}
 
@@ -99,11 +82,6 @@ public class ClearCommand extends ListenerAdapter implements Command {
 	@Override
 	public String getAlias() {
 		return "clear <amount>";
-	}
-
-	@Override
-	public boolean requiresOwner() {
-		return false;
 	}
 
 }

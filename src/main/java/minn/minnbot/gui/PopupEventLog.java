@@ -1,14 +1,9 @@
 package minn.minnbot.gui;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.TextArea;
+import javax.swing.*;
+import java.awt.*;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-public class PopupErrorLog extends JFrame {
+public class PopupEventLog extends JFrame {
 
 	private static final long serialVersionUID = 4147401599586295405L;
 	
@@ -19,14 +14,14 @@ public class PopupErrorLog extends JFrame {
 	}
 
 	public void flush() {
-		textArea.setText("Error Logs");
+		textArea.setText("Event Logs");
 	}
 	
-	public PopupErrorLog() {
+	public PopupEventLog() {
 		this.setResizable(false);
 		setMinimumSize(new Dimension(655, 300));
 //		setMinimumSize(new Dimension(640, 300));
-		setTitle("Error log");
+		setTitle("Event log");
 		getContentPane().setLayout(null);
 
 		JPanel panel = new JPanel();
@@ -39,9 +34,9 @@ public class PopupErrorLog extends JFrame {
 		
 		textArea = new TextArea();
 		textArea.setEditable(false);
-		textArea.setFont(new Font("Consolas", Font.PLAIN, 12));
-		textArea.setText("Error Logs");
-		textArea.setForeground(new Color(255, 51, 0));
+		textArea.setFont(new Font("Century", Font.BOLD, 10));
+		textArea.setText("Event Logs");
+		textArea.setForeground(new Color(255, 126, 47));
 		textArea.setBackground(new Color(0, 0, 0));
 		textArea.setBounds(0, 0, 647, 271);
 		panel.add(textArea);

@@ -1,18 +1,18 @@
 package minn.minnbot.entities.command;
 
-import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.Tag;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.entities.impl.BlockTag;
 import minn.minnbot.entities.impl.TagImpl;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.PermissionUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,11 +25,9 @@ import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TagCommand extends ListenerAdapter implements Command {
+public class TagCommand extends CommandAdapter {
 
     private List<Tag> tags;
-    private String prefix;
-    private Logger logger;
     private User owner;
 
     public TagCommand(String prefix, Logger logger, JDA api, User pOwner) {
@@ -54,38 +52,49 @@ public class TagCommand extends ListenerAdapter implements Command {
                         Guild guild = api.getGuildById(guildId);
                         tags.add(new TagImpl(owner, guild, name, response));
                     } catch (Exception e) {
-                        logger.logError(new MalformedParametersException("tags.json contains broken objects."));
+                        logger.logThrowable(new MalformedParametersException("tags.json contains broken objects."));
                     }
                 }
             } catch (Exception e) {
-                logger.logError(e);
+                logger.logThrowable(e);
             }
         }
     }
 
-    @Override
     public void onShutdown(ShutdownEvent event) {
-        JSONArray arr = jsonfy();
-        if (new File("tags").exists())
-            new File("tags").delete();
+        JSONArray arr = getAsJsonArray();
+        if (new File("tags.json").exists())
+            new File("tags.json").delete();
         try {
             Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
+            logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
         } catch (IOException e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 
-    private JSONArray jsonfy() {
+    private JSONObject jsonfy(Tag tag) {
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("name", tag.name());
+            obj.put("guild", tag.getGuild().getId());
+            obj.put("response", tag.response());
+            obj.put("owner", tag.getOwner().getId());
+            return obj;
+        } catch (Exception e) {
+            logger.logThrowable(e);
+            return null;
+        }
+    }
+
+    private JSONArray getAsJsonArray() {
         JSONArray arr = new JSONArray();
         for (Tag t : tags) {
             if (t instanceof BlockTag)
                 continue;
-            JSONObject obj = new JSONObject();
-            obj.put("name", t.name());
-            obj.put("guild", t.getGuild().getId());
-            obj.put("response", t.response());
-            obj.put("owner", t.getOwner().getId());
-            arr.put(obj);
+            JSONObject obj = jsonfy(t);
+            if (obj != null)
+                arr.put(obj);
         }
         return arr;
     }
@@ -100,33 +109,24 @@ public class TagCommand extends ListenerAdapter implements Command {
     }
 
     @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        if (logger == null)
-            throw new IllegalArgumentException("Logger cannot be null.");
-        this.logger = logger;
-    }
-
-    @Override
     public void onCommand(CommandEvent event) {
         Tag target = null;
         if (event.allArguments.isEmpty()) {
             String s = "**__Guild Tags:__** ";
             boolean moreThanOne = false;
             for (Tag t : tags) {
+                if(t.getGuild() == null)
+                    continue;
                 if (t.getGuild() == event.event.getGuild()) {
                     s += "`" + t.name() + "` ";
                     moreThanOne = true;
                 }
             }
-            if (moreThanOne)
+            if (moreThanOne) {
                 event.sendMessage(s);
-            else
+            } else {
                 event.sendMessage("No tags found.");
+            }
             return;
         }
         try {
@@ -156,7 +156,7 @@ public class TagCommand extends ListenerAdapter implements Command {
                     return;
                 }
                 target.setResponse(tagResponse);
-                event.sendMessage("Successfully edited tag!");
+                event.sendMessage("Successfully edited tag! " + EmoteUtil.getRngOkHand());
                 return;
             }
             if (method.equalsIgnoreCase("del")) {
@@ -181,7 +181,7 @@ public class TagCommand extends ListenerAdapter implements Command {
             }
             if (method.equalsIgnoreCase("add")) {
                 User user = event.event.getAuthor();
-                if (!PermissionUtil.checkPermission(user, Permission.MANAGE_SERVER, event.event.getGuild())&& user != owner) {
+                if (!PermissionUtil.checkPermission(user, Permission.MANAGE_SERVER, event.event.getGuild()) && user != owner) {
                     event.sendMessage("You are missing the permission to manage the server. Ask someone with the required permissions to add the tag for you.");
                     return;
                 }
@@ -190,8 +190,8 @@ public class TagCommand extends ListenerAdapter implements Command {
                     return;
                 }
                 String tagName = event.arguments[1];
-                if (tagName.equalsIgnoreCase("add") || tagName.equalsIgnoreCase("del") || tagName.equalsIgnoreCase("edt")) {
-                    event.sendMessage("Tagname `" + tagName + "` is not allowed.");
+                if (tagName.equalsIgnoreCase("add") || tagName.equalsIgnoreCase("del") || tagName.equalsIgnoreCase("edt") || tagName.equalsIgnoreCase("json")) {
+                    event.sendMessage("Tagname `" + tagName + "` is not allowed. " + EmoteUtil.getRngThumbsdown());
                     return;
                 }
                 String tagResponse = "";
@@ -215,12 +215,38 @@ public class TagCommand extends ListenerAdapter implements Command {
                 }
                 Tag t = new TagImpl(event.event.getAuthor(), event.event.getGuild(), tagName, tagResponse);
                 tags.add(t);
-                event.sendMessage("Created tag `" + t.name() + "`.");
+                event.sendMessage("Created tag `" + t.name() + "`. " + EmoteUtil.getRngOkHand());
+                return;
+            }
+            if (method.equalsIgnoreCase("json")) {
+                String tagName = event.arguments[1];
+                if (tagName.equalsIgnoreCase("add") || tagName.equalsIgnoreCase("del") || tagName.equalsIgnoreCase("edt") || tagName.equalsIgnoreCase("json")) {
+                    return;
+                }
+                for (Tag t : tags) {
+                    if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
+                        target = t;
+                        break;
+                    }
+                }
+                if (target == null) {
+                    event.sendMessage("Not a valid tagname. " + EmoteUtil.getRngThumbsdown());
+                    return;
+                }
+                JSONObject obj = jsonfy(target);
+                if (obj != null) {
+                    if (obj.toString(4).length() >= 2000) {
+                        event.sendMessage("Unable to print jsonfied tag. Reached charecter limit of 2000." + EmoteUtil.getRngThumbsdown());
+                        return;
+                    }
+                    event.sendMessage("```JSON\n" + obj.toString(4) + "```");
+                } else
+                    event.sendMessage("Unable to jsonfy given tag. " + EmoteUtil.getRngThumbsdown());
                 return;
             }
             String tagName = event.allArguments;
             for (Tag t : tags) {
-                if (t.name().equals(tagName)) {
+                if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
                     target = t;
                     break;
                 }
@@ -229,9 +255,9 @@ public class TagCommand extends ListenerAdapter implements Command {
                 event.sendMessage("Not a tag.");
                 return;
             }
-            event.sendMessage(target.response());
+            event.sendMessage("\u0001 " + target.response());
         } catch (Exception e) {
-            logger.logError(e);
+            logger.logThrowable(e);
         }
     }
 
@@ -252,18 +278,17 @@ public class TagCommand extends ListenerAdapter implements Command {
 
     @Override
     public String usage() {
-        return "tag <method*> <tag> <response> `*methods: del, edt, add`";
+        return "tag <method> <tag> <response> " +
+                "\nMethods:" +
+                "\n> `del` - delete tag." +
+                "\n> `edt` - edit tag." +
+                "\n> `add` - add new tag." +
+                "\n> `json` - print tag as a json object.";
     }
 
     @Override
     public String getAlias() {
         return "tag <method> <tag> <response>";
     }
-
-    @Override
-    public boolean requiresOwner() {
-        return false;
-    }
-
 
 }

@@ -1,22 +1,15 @@
 package minn.minnbot.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Choice;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.TextArea;
+import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.entities.Guild;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-import net.dv8tion.jda.JDA;
-import net.dv8tion.jda.entities.Guild;
-import javax.swing.JToggleButton;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class ServerLog extends JFrame {
 

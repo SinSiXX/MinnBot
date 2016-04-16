@@ -1,18 +1,14 @@
 package minn.minnbot.entities.command;
 
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.Command;
+import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
 
-public class PurgeCommand extends ListenerAdapter implements Command {
-
-	private String prefix;
-	private Logger logger;
+public class PurgeCommand extends CommandAdapter {
 
 	public PurgeCommand(String prefix, Logger logger) {
 		this.prefix = prefix;
@@ -37,26 +33,13 @@ public class PurgeCommand extends ListenerAdapter implements Command {
 	}
 
 	@Override
-	public void setLogger(Logger logger) {
-		if (logger == null)
-			throw new IllegalArgumentException("Logger can not be null.");
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
-	}
-
-	@Override
 	public void onCommand(CommandEvent event) {
 		try {
 			User u = event.event.getMessage().getMentionedUsers().get(0);
 			Thread t = new Thread() {
 				@SuppressWarnings("deprecation")
 				public void run() {
-					java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getJDA(),
-							event.event.getChannel()).retrieve(100);
+					java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getChannel()).retrieve(100);
 					for (Message m : hist) {
 						if (m.getAuthor() == u) {
 							Thread t = new Thread() {
@@ -77,7 +60,7 @@ public class PurgeCommand extends ListenerAdapter implements Command {
 		} catch (IndexOutOfBoundsException e) {
 			event.sendMessage("I am unable to purge without mention reference. Usage: " + usage());
 		} catch (Exception e) {
-			logger.logError(e);
+			logger.logThrowable(e);
 		}
 	}
 
@@ -97,11 +80,6 @@ public class PurgeCommand extends ListenerAdapter implements Command {
 	@Override
 	public String getAlias() {
 		return "purge <mention>";
-	}
-
-	@Override
-	public boolean requiresOwner() {
-		return false;
 	}
 
 }
