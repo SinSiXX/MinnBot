@@ -66,7 +66,7 @@ public class MinnBot {
         }
         this.inviteurl = inviteurl;
         this.bot = true;
-        this.handler = new CommandManager(api, this.logger);
+        this.handler = new CommandManager(api, this.logger, owner);
         api.addEventListener(handler);
         log("Powersaving: " + powersaving);
     }
@@ -187,56 +187,56 @@ public class MinnBot {
         if (!err.get().isEmpty())
             errors.add(err.get());
 
-        com = new EvalCommand(owner, prefix, logger, this);
+        com = new EvalCommand(prefix, logger, this);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new NameCommand(owner, prefix, logger);
+        com = new NameCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new GameCommand(prefix, logger, owner);
+        com = new GameCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new ShutdownCommand(prefix, owner, logger);
+        com = new ShutdownCommand(prefix,logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new DebugCommand(owner, prefix, logger);
+        com = new DebugCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new LeaveCommand(prefix, logger, owner);
+        com = new LeaveCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new FlushCommand(prefix, logger, owner);
+        com = new FlushCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new IgnoreCommand(prefix, logger, owner);
+        com = new IgnoreCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());

@@ -7,6 +7,7 @@ import minn.minnbot.entities.command.TagCommand;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
@@ -27,11 +28,14 @@ public class CommandManager extends ListenerAdapter {
     @SuppressWarnings("unused")
     private JDA api;
 
+    private User owner;
+
     private Logger logger;
 
-    public CommandManager(JDA api, Logger logger) {
+    public CommandManager(JDA api, Logger logger, User owner) {
         this.api = api;
         this.logger = logger;
+        this.owner = owner;
     }
 
     public void onShutdown(ShutdownEvent event) {
@@ -49,6 +53,11 @@ public class CommandManager extends ListenerAdapter {
         if (MinnBot.powersaving) {
             try {
                 for (Command c : commands) {
+                    if(c.requiresOwner()) {
+                        if(event.getAuthor() == owner)
+                            c.onMessageReceived(event);
+                        continue;
+                    }
                     c.onMessageReceived(event);
                 }
             } catch (Exception e) {
@@ -62,6 +71,11 @@ public class CommandManager extends ListenerAdapter {
                 this.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
                 try {
                     for (Command c : commands) {
+                        if(c.requiresOwner()) {
+                            if(event.getAuthor() == owner)
+                                c.onMessageReceived(event);
+                            continue;
+                        }
                         c.onMessageReceived(event);
                     }
                 } catch (Exception e) {
@@ -120,9 +134,7 @@ public class CommandManager extends ListenerAdapter {
         try {
             Files.write(Paths.get(path), array.toString(4).getBytes());
             logger.logThrowable(new Info("Generated Commands as Json: " + path));
-        } catch (JSONException e) {
-            logger.logThrowable(e);
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             logger.logThrowable(e);
         }
         return f;

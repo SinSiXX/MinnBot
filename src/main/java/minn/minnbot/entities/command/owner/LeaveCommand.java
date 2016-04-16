@@ -4,25 +4,12 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Guild;
-import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class LeaveCommand extends CommandAdapter {
 
-	private User owner;
-
-	public LeaveCommand(String prefix, Logger logger, User owner) {
+	public LeaveCommand(String prefix, Logger logger) {
 		this.prefix = prefix;
 		this.logger = logger;
-		this.owner = owner;
-	}
-
-	@Override
-	public void onMessageReceived(MessageReceivedEvent event) {
-		if (event.getAuthor() == owner && isCommand(event.getMessage().getContent())) {
-			logger.logCommandUse(event.getMessage());
-			onCommand(new CommandEvent(event));
-		}
 	}
 
 	@Override

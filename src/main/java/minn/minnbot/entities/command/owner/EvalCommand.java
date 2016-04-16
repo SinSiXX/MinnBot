@@ -5,26 +5,15 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.EvalUtil;
-import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class EvalCommand extends CommandAdapter {
 
-    private User owner;
     private MinnBot bot;
 
-    public EvalCommand(User owner, String prefix, Logger logger, MinnBot bot) {
-        this.owner = owner;
+    public EvalCommand(String prefix, Logger logger, MinnBot bot) {
         this.prefix = prefix;
         this.logger = logger;
         this.bot = bot;
-    }
-
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.getAuthor() == owner && isCommand(event.getMessage().getContent())) {
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
-        }
     }
 
     @Override

@@ -69,6 +69,8 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public boolean logMessage(Message m) {
+        if(!logMessages)
+            return false;
         try {
             String stamp = TimeUtil.timeStamp();
             String s = stamp + "[" + m.getAuthor() + "] " + m.getContent();
