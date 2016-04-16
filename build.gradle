@@ -1,0 +1,27 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id 'application'
+}
+
+repositories {
+    jcenter()
+}
+
+mainClassName = 'minn.minnbot.MinnBot'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
+}
+
+task listJars << {
+    configurations.compile.each { File file -> println file.name }
+}
+
+task myfatJar(type: Jar) {
+    baseName = project.name + '-with-all-dependencies'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    manifest {
+        attributes 'Main-Class': 'minn.minnbot.MinnBot'
+    }
+}
