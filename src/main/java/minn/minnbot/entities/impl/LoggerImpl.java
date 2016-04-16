@@ -10,6 +10,7 @@ import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.SimpleLog;
 
+import java.rmi.UnexpectedException;
 import java.util.List;
 
 public class LoggerImpl extends ListenerAdapter implements Logger, Thread.UncaughtExceptionHandler, SimpleLog.LogListener {
@@ -48,11 +49,17 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        messages++;
-        if (event.isPrivate())
-            privateMessages++;
-        else
+        if(event == null) {
+            logThrowable(new UnexpectedException("MessageReceivedEvent was null."));
+            return;
+        }
+        if (!event.isPrivate()) {
             guildMessages++;
+            messages++;
+        } else {
+            privateMessages++;
+            messages++;
+        }
         logMessage(event.getMessage());
 
         // if(messages > 2000)
@@ -62,14 +69,11 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public boolean logMessage(Message m) {
-        if (!logMessages)
-            return false;
         try {
             String stamp = TimeUtil.timeStamp();
             String s = stamp + "[" + m.getAuthor() + "] " + m.getContent();
             console.writeln(s);
             // messageLogs.add(s);
-            messages++;
             return true;
         } catch (Exception e) {
             logThrowable(e);
@@ -111,7 +115,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
      * Array with stat numbers: <b>0)</b> messages
      * <b>1)</b> commands
      * <b>2)</b> events
-     * <b>3(</b> privateMessages
+     * <b>3)</b> privateMessages
      * <b>4)</b> guildMessages
      * <b>5)</b> startTimeInMillis
      */
