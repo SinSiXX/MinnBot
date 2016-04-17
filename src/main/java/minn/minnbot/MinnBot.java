@@ -12,6 +12,7 @@ import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.AccountSettings;
 import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.manager.CommandManager;
+import minn.minnbot.manager.ModLogManager;
 import minn.minnbot.util.EvalUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
@@ -33,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot {
 
-    public final static String VERSION = "Version 1.1b";
+    public final static String VERSION = "Version 1.4b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     public static boolean powersaving = false;
     private static MinnBotUserInterface console;
@@ -52,6 +53,9 @@ public class MinnBot {
         this.api = api;
         if (!waitForReady(this.api))
             throw new UnexpectedException("Guilds were unreachable");
+        // mb-mod-log
+        new ModLogManager(api);
+
         this.logger = logger;
 
         this.prefix = prefix;
