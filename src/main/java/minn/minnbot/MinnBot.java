@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot {
 
-    public final static String VERSION = "Version 1.01b";
+    public final static String VERSION = "Version 1.1b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     public static boolean powersaving = false;
     private static MinnBotUserInterface console;
@@ -307,6 +307,13 @@ public class MinnBot {
             splitter.add(com);
 
         com = new GifCommand(prefix,logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new CatCommand(prefix,logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
