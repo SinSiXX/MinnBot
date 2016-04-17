@@ -34,7 +34,7 @@ public class ModLogManager extends ListenerAdapter {
 
     public void onGuildMemberUnban(GuildMemberUnbanEvent event) {
         Guild guild = event.getGuild();
-        User user = event.getUser();
+        User user = event.getJDA().getUserById(event.getUserId());
         TextChannel log = null;
         for (TextChannel c : guild.getTextChannels()) {
             if (c.getName().equalsIgnoreCase("mb-mod-log")) {

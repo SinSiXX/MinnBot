@@ -14,9 +14,19 @@ import java.net.URLEncoder;
 
 public class GifCommand extends CommandAdapter {
 
-    public GifCommand(String prefix, Logger logger) {
+    private String key;
+
+    public GifCommand(String prefix, Logger logger, String key) throws UnirestException {
         this.prefix = prefix;
         this.logger = logger;
+        this.key = key;
+
+        String url = "http://api.giphy.com/v1/gifs/random?api_key=" + key + "&rating=pg-13&tag=cat";
+        com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest.get(url)
+                .header("accept", "application/json").asJson();
+        if (jsonResponse.getBody().getObject().getJSONObject("meta").getInt("status") > 299) {
+            logger.logThrowable(new IllegalArgumentException("Giphy key is invalid"));
+        }
     }
 
     @Override
@@ -25,20 +35,18 @@ public class GifCommand extends CommandAdapter {
         try {
             // get request for giphy
             String term = event.allArguments;
-            String url = "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&rating=pg-13&tag=" + URLEncoder.encode(term);
+            String url = "http://api.giphy.com/v1/gifs/random?api_key=" + key + "&rating=pg-13&tag=" + URLEncoder.encode(term);
             if (!term.isEmpty()) {
                 term = term.replace(" ", "+");
-                url = "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&rating=pg-13&tag=" + URLEncoder.encode(term);
+                url = "http://api.giphy.com/v1/gifs/random?api_key=" + key + "&rating=pg-13&tag=" + URLEncoder.encode(term);
             }
-            System.out.println(url);
             com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest.get(url)
                     .header("accept", "application/json").asJson();
-            System.out.println(jsonResponse.getBody().toString());
             JSONObject obj = new JSONObject(jsonResponse.getBody().toString());
-            if(obj.getJSONObject("meta").getInt("status") == 404) {
+            if (obj.getJSONObject("meta").getInt("status") == 404) {
                 event.sendMessage("Forbidden.");
                 return;
-            } else if(obj.getJSONObject("meta").getInt("status") != 200) {
+            } else if (obj.getJSONObject("meta").getInt("status") != 200) {
                 event.sendMessage("Something went wrong with your search request.");
                 return;
             }

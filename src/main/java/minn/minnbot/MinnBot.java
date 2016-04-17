@@ -1,5 +1,6 @@
 package minn.minnbot;
 
+import com.mashape.unirest.http.exceptions.UnirestException;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.*;
@@ -37,6 +38,7 @@ public class MinnBot {
     public final static String VERSION = "Version 1.4b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     public static boolean powersaving = false;
+    private static String giphy;
     private static MinnBotUserInterface console;
     public final User owner;
     public final JDA api;
@@ -91,6 +93,9 @@ public class MinnBot {
             String pre = obj.getString("prefix");
             String inviteUrl = obj.getString("inviteurl");
             String ownerId = obj.getString("owner");
+            String giphy = obj.getString("giphy");
+            if (giphy != null && !giphy.isEmpty() && !giphy.equalsIgnoreCase("http://api.giphy.com/submit"))
+                MinnBot.giphy = giphy;
             MinnBot bot = new MinnBot(pre, ownerId, inviteUrl, console.logger, api);
             bot.initCommands(api);
             as.setApi(api);
@@ -116,6 +121,7 @@ public class MinnBot {
             obj.put("token", "");
             obj.put("inviteurl", "");
             obj.put("powersaving", false);
+            obj.put("giphy", "http://api.giphy.com/submit");
             try {
                 Files.write(Paths.get("BotConfig.json"), obj.toString(4).getBytes());
                 console.writeEvent(
@@ -212,7 +218,7 @@ public class MinnBot {
         else
             splitter.add(com);
 
-        com = new ShutdownCommand(prefix,logger);
+        com = new ShutdownCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
@@ -310,14 +316,25 @@ public class MinnBot {
         else
             splitter.add(com);
 
-        com = new GifCommand(prefix,logger);
+        try {
+            com = new GifCommand(prefix, logger, giphy);
+            err.set(registerCommand(com));
+            if (!err.get().isEmpty())
+                errors.add(err.get());
+            else
+                splitter.add(com);
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+
+        com = new CatCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new CatCommand(prefix,logger);
+        com = new MemeCommand(prefix,logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
