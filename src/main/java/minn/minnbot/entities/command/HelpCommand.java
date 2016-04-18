@@ -5,17 +5,20 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.custom.HelpSplitter;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import net.dv8tion.jda.entities.User;
 
 import java.util.List;
 
 public class HelpCommand extends CommandAdapter {
 
     private List<Command> commands;
+    private User owner;
 
-    public HelpCommand(String prefix, Logger logger, List<Command> commands) {
+    public HelpCommand(String prefix, Logger logger, List<Command> commands, User owner) {
         this.prefix = prefix;
         this.logger = logger;
         this.commands = commands;
+        this.owner = owner;
     }
 
     @Override
@@ -24,6 +27,8 @@ public class HelpCommand extends CommandAdapter {
             String rngAlias = commands.get(((int) Math.floor((Math.random() * commands.size())))).getAlias();
             String s = "**__Example: " + prefix + rngAlias + "__**\n";
             for (Command c : commands) {
+                if(c.requiresOwner() && event.event.getAuthor() != owner)
+                    continue;
                 if (c instanceof HelpSplitter) {
                     if ((s + c.usage()).length() > 1000) {
                         event.sendMessage(s);
@@ -72,7 +77,7 @@ public class HelpCommand extends CommandAdapter {
 
     @Override
     public String usage() {
-        return "```xml\n" + prefix + "help <command>```";
+        return "```xml\nhelp\nhelp <command>\nhelp <category>```\n**__Examples:__** `help public`, `help help`";
     }
 
     @Override

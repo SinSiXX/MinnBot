@@ -3,7 +3,12 @@ package minn.minnbot;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.audio.MinnPlayer;
 import minn.minnbot.entities.command.*;
+import minn.minnbot.entities.command.audio.CurrentCommand;
+import minn.minnbot.entities.command.audio.JoinCommand;
+import minn.minnbot.entities.command.audio.LeaveVoiceCommand;
+import minn.minnbot.entities.command.audio.PlayCommand;
 import minn.minnbot.entities.command.custom.HelpSplitter;
 import minn.minnbot.entities.command.owner.*;
 import minn.minnbot.entities.command.roles.CopyRoleCommand;
@@ -47,6 +52,8 @@ public class MinnBot {
     private final Logger logger;
     private final String inviteurl;
     private final boolean bot;
+    private static boolean audio;
+    private MinnPlayer player;
 
     public MinnBot(String prefix, String ownerID, String inviteurl, Logger logger, JDA api)
             throws Exception {
@@ -84,8 +91,9 @@ public class MinnBot {
         try {
             JSONObject obj = new JSONObject(new String(Files.readAllBytes(Paths.get("BotConfig.json"))));
             String token = obj.getString("token").replace(" ", "");
+            audio = obj.getBoolean("audio");
             JDA api;
-            api = new JDABuilder().setBotToken(token).setAudioEnabled(false).setAutoReconnect(true).buildBlocking();
+            api = new JDABuilder().setBotToken(token).setAudioEnabled(audio).setAutoReconnect(true).buildBlocking();
             try {
                 powersaving = obj.getBoolean("powersaving");
             } catch (Exception ignored) {
@@ -121,6 +129,7 @@ public class MinnBot {
             obj.put("token", "");
             obj.put("inviteurl", "");
             obj.put("powersaving", false);
+            obj.put("audio", false);
             obj.put("giphy", "http://api.giphy.com/submit");
             try {
                 Files.write(Paths.get("BotConfig.json"), obj.toString(4).getBytes());
@@ -187,12 +196,12 @@ public class MinnBot {
 
         // Operator/Owner Commands
 
-        HelpSplitter splitter = new HelpSplitter("Operator", "op", prefix);
+        HelpSplitter splitter = new HelpSplitter("Operator", "op", prefix, true);
         AtomicReference<String> err = new AtomicReference<>(registerCommand(splitter));
         if (!err.get().isEmpty())
             errors.add(err.get());
 
-        Command com = new HelpCommand(prefix, logger, handler.commands);
+        Command com = new HelpCommand(prefix, logger, handler.commands, owner);
         err = new AtomicReference<>(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
@@ -255,7 +264,7 @@ public class MinnBot {
 
         // User commands
 
-        splitter = new HelpSplitter("Public commands", "public", prefix);
+        splitter = new HelpSplitter("Public commands", "public", prefix, false);
         err.set(registerCommand(splitter));
         if (!err.get().isEmpty())
             errors.add(err.get());
@@ -341,9 +350,46 @@ public class MinnBot {
         else
             splitter.add(com);
 
+        // Voice
+        if(audio) {
+            splitter = new HelpSplitter("Voice commands", "voice", prefix, false);
+            err.set(registerCommand(splitter));
+            if (!err.get().isEmpty())
+                errors.add(err.get());
+
+            com = new LeaveVoiceCommand(prefix, logger);
+            err.set(registerCommand(com));
+            if (!err.get().isEmpty())
+                errors.add(err.get());
+            else
+                splitter.add(com);
+
+            PlayCommand pCom = new PlayCommand(prefix, logger);
+            err.set(registerCommand(pCom));
+            if (!err.get().isEmpty())
+                errors.add(err.get());
+            else {
+                splitter.add(pCom);
+                player = pCom.getPlayer();
+            }
+            com = new JoinCommand(prefix, logger, player);
+            err.set(registerCommand(com));
+            if (!err.get().isEmpty())
+                errors.add(err.get());
+            else
+                splitter.add(com);
+
+            com = new CurrentCommand(prefix, logger, player);
+            err.set(registerCommand(com));
+            if (!err.get().isEmpty())
+                errors.add(err.get());
+            else
+                splitter.add(com);
+
+        }
         // Moderation commands
 
-        splitter = new HelpSplitter("Moderation commands", "moderation", prefix);
+        splitter = new HelpSplitter("Moderation commands", "moderation", prefix, false);
         err.set(registerCommand(splitter));
         if (!err.get().isEmpty())
             errors.add(err.get());
@@ -385,7 +431,7 @@ public class MinnBot {
 
         // Role manager
 
-        splitter = new HelpSplitter("Role managing commands", "roles", prefix);
+        splitter = new HelpSplitter("Role managing commands", "roles", prefix, false);
         err.set(registerCommand(splitter));
         if (!err.get().isEmpty())
             errors.add(err.get());

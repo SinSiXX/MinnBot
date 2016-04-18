@@ -73,6 +73,11 @@ public class GifCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "gif";
+        return "gif <query>";
+    }
+
+    public String usage() {
+        return "Either search for tags: `gif cute cat` to get a random gif with fitting tags.\n" +
+                " Or just type `gif` to see something completely random from the giphy database.";
     }
 }

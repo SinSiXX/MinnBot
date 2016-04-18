@@ -67,6 +67,6 @@ public class MemeCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "meme";
+        return "meme <template> <text> | <text>";
     }
 }
