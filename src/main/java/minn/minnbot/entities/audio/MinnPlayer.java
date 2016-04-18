@@ -63,10 +63,12 @@ public class MinnPlayer extends FilePlayer {
 
     protected void playNext() {
         System.out.println(TimeUtil.timeStamp() + " [INFO] Playing next...");
+        reset();
         while (!playlist.isEmpty()) {
             try {
                 // Try to pick first file
                 setAudioFile(playlist.get(0));
+                play();
                 // Catch exception
             } catch (IOException | UnsupportedAudioFileException e) {
                 System.err.println(TimeUtil.timeStamp() + " [ERROR] " + e.getMessage());
@@ -87,13 +89,6 @@ public class MinnPlayer extends FilePlayer {
         current = playlist.get(0);
         playlist.remove(0);
         System.out.println(TimeUtil.timeStamp() + " [INFO] Selected: " + current.getName());
-        // super.stop();
-        try {
-            setAudioFile(current);
-            restart();
-        } catch (IOException | UnsupportedAudioFileException ignore) {
-            ignore.printStackTrace();
-        }
         System.out.println(TimeUtil.timeStamp() + " [INFO] Now playing selected file.");
     }
 

@@ -45,6 +45,9 @@ public class PlayCommand extends CommandAdapter {
             return;
         }
         File f = new File(folder.getPath() + "\\" + atts.get(0).getFileName());
+        if(f.exists()) {
+            f = new File(folder.getPath() + "\\" + atts.get(0).getFileName() + " -- " + Long.toHexString(System.currentTimeMillis()));
+        }
         if (atts.get(0).download(f)) {
             try {
                 player.add(f);
