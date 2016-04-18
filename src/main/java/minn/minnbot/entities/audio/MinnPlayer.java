@@ -32,9 +32,9 @@ public class MinnPlayer extends FilePlayer {
             current = f;
             setAudioFile(current);
             if (!isStarted())
-                super.play();
+                play();
             else
-                super.restart();
+                restart();
             return;
         }
         playlist.add(f);
@@ -65,12 +65,17 @@ public class MinnPlayer extends FilePlayer {
         System.out.println(TimeUtil.timeStamp() + " [INFO] Playing next...");
         while (!playlist.isEmpty()) {
             try {
-                super.setAudioFile(playlist.get(0));
+                // Try to pick first file
+                setAudioFile(playlist.get(0));
+                // Catch exception
             } catch (IOException | UnsupportedAudioFileException e) {
                 System.err.println(TimeUtil.timeStamp() + " [ERROR] " + e.getMessage());
                 playlist.remove(0);
+
+                // Continue because the file was unusable
                 continue;
             }
+            // Break loop because a file was usable
             break;
         }
         if (playlist.isEmpty()) {
@@ -83,12 +88,18 @@ public class MinnPlayer extends FilePlayer {
         playlist.remove(0);
         System.out.println(TimeUtil.timeStamp() + " [INFO] Selected: " + current.getName());
         // super.stop();
-        super.restart();
+        try {
+            setAudioFile(current);
+            restart();
+        } catch (IOException | UnsupportedAudioFileException ignore) {
+            ignore.printStackTrace();
+        }
         System.out.println(TimeUtil.timeStamp() + " [INFO] Now playing selected file.");
     }
 
     @Override
     public void stop() {
+        new Exception().printStackTrace();
         System.out.println(TimeUtil.timeStamp() + " [INFO] Playback stopped.");
         playNext();
     }
