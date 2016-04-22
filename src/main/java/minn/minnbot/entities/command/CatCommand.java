@@ -38,4 +38,9 @@ public class CatCommand extends CommandAdapter {
     public String getAlias() {
         return "cat";
     }
+
+    @Override
+    public String example() {
+        return "cat";
+    }
 }

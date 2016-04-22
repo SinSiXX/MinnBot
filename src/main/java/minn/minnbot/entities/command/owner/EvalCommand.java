@@ -47,4 +47,9 @@ public class EvalCommand extends CommandAdapter {
         return true;
     }
 
+    @Override
+    public String example() {
+        return "eval return event.getMessage()";
+    }
+
 }

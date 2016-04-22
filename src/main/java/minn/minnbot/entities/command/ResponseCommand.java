@@ -55,4 +55,9 @@ public class ResponseCommand extends CommandAdapter {
         return "test";
     }
 
+    @Override
+    public String example() {
+        return "test";
+    }
+
 }

@@ -134,4 +134,9 @@ public class CheckCommand extends CommandAdapter {
         return "check <mention>";
     }
 
+    @Override
+    public String example() {
+        return "check <@158174948488118272>";
+    }
+
 }

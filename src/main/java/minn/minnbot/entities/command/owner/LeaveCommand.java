@@ -53,4 +53,10 @@ public class LeaveCommand extends CommandAdapter {
 	public boolean requiresOwner() {
 		return true;
 	}
+
+	@Override
+	public String example() {
+		return "leave 140412328733704192";
+	}
+
 }

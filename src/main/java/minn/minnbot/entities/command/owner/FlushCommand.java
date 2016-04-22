@@ -68,4 +68,10 @@ public class FlushCommand extends CommandAdapter {
 	public boolean requiresOwner() {
 		return true;
 	}
+
+	@Override
+	public String example() {
+		return "flush";
+	}
+
 }

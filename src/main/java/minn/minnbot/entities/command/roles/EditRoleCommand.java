@@ -98,4 +98,9 @@ public class EditRoleCommand extends CommandAdapter {
         return "editrole <rolename> | <method> | <input>";
     }
 
+    @Override
+    public String example() {
+        return "editrole Mods | color | 43FFC2";
+    }
+
 }

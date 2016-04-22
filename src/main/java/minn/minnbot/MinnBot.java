@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot {
 
-    public final static String VERSION = "Version 1.4b";
+    public final static String VERSION = "Version 1.8b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     public static boolean powersaving = false;
     private static String giphy;
@@ -269,6 +269,13 @@ public class MinnBot {
         if (!err.get().isEmpty())
             errors.add(err.get());
 
+        com = new ExampleCommand(prefix, logger, handler.commands);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
         com = new StatsCommand(logger, prefix, ABOUT);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
@@ -344,6 +351,27 @@ public class MinnBot {
             splitter.add(com);
 
         com = new MemeCommand(prefix,logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new YodaCommand(prefix,logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new QRCodeCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new FeedbackCommand(prefix,logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());

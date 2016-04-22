@@ -80,4 +80,10 @@ public class GifCommand extends CommandAdapter {
         return "Either search for tags: `gif cute cat` to get a random gif with fitting tags.\n" +
                 " Or just type `gif` to see something completely random from the giphy database.";
     }
+
+    @Override
+    public String example() {
+        return "gif cats";
+    }
+
 }

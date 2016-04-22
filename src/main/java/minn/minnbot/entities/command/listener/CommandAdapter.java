@@ -19,23 +19,27 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
         }
     }
 
+    public final Logger getLogger() {
+        return logger;
+    }
+
     public final void setLogger(Logger logger) {
         if (logger == null)
             throw new IllegalArgumentException("Logger can not be null");
         this.logger = logger;
     }
 
-    public final Logger getLogger() {
-        return logger;
-    }
-
     public abstract void onCommand(CommandEvent event);
 
     public abstract boolean isCommand(String message);
 
-    public String usage() { return ""; }
+    public String usage() {
+        return "";
+    }
 
     public abstract String getAlias();
+
+    public abstract String example();
 
     public boolean requiresOwner() {
         return false;

@@ -44,4 +44,9 @@ public class GameCommand extends CommandAdapter {
 		return true;
 	}
 
+	@Override
+	public String example() {
+		return "game boobs";
+	}
+
 }

@@ -38,4 +38,9 @@ public class SayCommand extends CommandAdapter {
 		return "`say <arguments>`";
 	}
 
+	@Override
+	public String example() {
+		return "say SOMETHING LEWD!!!";
+	}
+
 }

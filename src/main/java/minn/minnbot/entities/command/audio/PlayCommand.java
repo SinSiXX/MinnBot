@@ -28,7 +28,7 @@ public class PlayCommand extends CommandAdapter {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.isPrivate())
+        if (event.isPrivate())
             return;
         super.onMessageReceived(event);
     }
@@ -39,28 +39,44 @@ public class PlayCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        List<Message.Attachment> atts = event.event.getMessage().getAttachments();
-        if (atts.size() < 1) {
-            event.sendMessage(usage());
-            return;
-        }
-        File f = new File(folder.getPath() + "\\" + atts.get(0).getFileName());
-        if(f.exists()) {
-            f = new File(folder.getPath() + "\\" + atts.get(0).getFileName() + " -- " + Long.toHexString(System.currentTimeMillis()));
-        }
-        if (atts.get(0).download(f)) {
-            try {
-                player.add(f);
-                f.deleteOnExit();
-                event.sendMessage("Added file to queue.");
-            } catch (UnsupportedAudioFileException e) {
-                event.sendMessage("File extension is not allowed. `" + e.getMessage() + "`");
-            } catch (IOException e) {
-                event.sendMessage("File is not a file. `" + e.getMessage() + "`");
+        Thread t = new Thread(() -> {
+            List<Message.Attachment> atts = event.event.getMessage().getAttachments();
+            if (atts.size() < 1) {
+                event.sendMessage(usage());
+                return;
             }
-        } else {
-            event.sendMessage("I was unable to download attached file.");
-        }
+            File f = new File(folder.getPath() + "\\" + atts.get(0).getFileName());
+            if (f.exists()) {
+                f = new File(folder.getPath() + "\\" + atts.get(0).getFileName() + " -- " + Long.toHexString(System.currentTimeMillis()));
+            }
+            boolean downloaded = false;
+            for (int i = 0; i < 10; i++) {
+                if (atts.get(0).download(f)) {
+                    downloaded = true;
+                    break;
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {
+
+                }
+            }
+            if (downloaded) {
+                try {
+                    player.add(f);
+                    f.deleteOnExit();
+                    event.sendMessage("Added file to queue.");
+                } catch (UnsupportedAudioFileException e) {
+                    event.sendMessage("File extension is not allowed. `" + e.getMessage() + "`");
+                } catch (IOException e) {
+                    event.sendMessage("File is not a file. `" + e.getMessage() + "`");
+                }
+            } else {
+                event.sendMessage("I was unable to download attached file.");
+            }
+        });
+        t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+        t.start();
     }
 
     @Override
@@ -79,4 +95,10 @@ public class PlayCommand extends CommandAdapter {
     public String getAlias() {
         return "play";
     }
+
+    @Override
+    public String example() {
+        return "play";
+    }
+
 }

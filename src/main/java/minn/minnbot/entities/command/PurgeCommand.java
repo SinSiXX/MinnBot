@@ -82,4 +82,9 @@ public class PurgeCommand extends CommandAdapter {
 		return "purge <mention>";
 	}
 
+	@Override
+	public String example() {
+		return "purge <@158174948488118272>";
+	}
+
 }

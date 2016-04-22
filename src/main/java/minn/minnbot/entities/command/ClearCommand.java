@@ -84,4 +84,9 @@ public class ClearCommand extends CommandAdapter {
 		return "clear <amount>";
 	}
 
+	@Override
+	public String example() {
+		return "clear 50";
+	}
+
 }

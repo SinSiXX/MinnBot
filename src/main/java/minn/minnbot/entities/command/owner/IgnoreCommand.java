@@ -114,4 +114,10 @@ public class IgnoreCommand extends CommandAdapter {
     public boolean requiresOwner() {
         return true;
     }
+
+    @Override
+    public String example() {
+        return "ignore channel #general";
+    }
+
 }

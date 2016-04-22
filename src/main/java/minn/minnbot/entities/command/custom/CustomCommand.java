@@ -67,6 +67,11 @@ public class CustomCommand extends ListenerAdapter implements Command {
 	}
 
 	@Override
+	public String example() {
+		return ""; // TODO
+	}
+
+	@Override
 	public boolean requiresOwner() {
 		// TODO Auto-generated method stub
 		return false;

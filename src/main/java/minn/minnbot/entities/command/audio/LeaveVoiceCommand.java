@@ -47,4 +47,10 @@ public class LeaveVoiceCommand extends CommandAdapter{
     public String getAlias() {
         return "vLeave";
     }
+
+    @Override
+    public String example() {
+        return "vLeave";
+    }
+
 }

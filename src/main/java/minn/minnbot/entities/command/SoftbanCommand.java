@@ -64,4 +64,8 @@ public class SoftbanCommand extends CommandAdapter {
         return "softban <mention>";
     }
 
+    @Override
+    public String example() {
+        return "softban <@158174948488118272>";
+    }
 }

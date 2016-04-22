@@ -85,4 +85,9 @@ public class HelpSplitter implements Command {
     public boolean requiresOwner() {
         return operator;
     }
+
+    @Override
+    public String example() {
+        return "help " + name;
+    }
 }

@@ -25,19 +25,19 @@ public class HelpCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         if (event.allArguments.isEmpty()) {
             String rngAlias = commands.get(((int) Math.floor((Math.random() * commands.size())))).getAlias();
-            String s = "**__Example: " + prefix + rngAlias + "__**\n";
+            String s = "**__Example: " + prefix + "public__**\n";
             for (Command c : commands) {
                 if(c.requiresOwner() && event.event.getAuthor() != owner)
                     continue;
                 if (c instanceof HelpSplitter) {
-                    if ((s + c.usage()).length() > 1000) {
+                    if ((s + c.getAlias()).length() > 1000) {
                         event.sendMessage(s);
                         s = "\n";
                     }
-                    if (c.usage().length() > 800) {
-                        event.sendMessage("`" + c.getAlias() + "` " + c.usage());
+                    if (c.getAlias().length() > 800) {
+                        event.sendMessage("`" + c.getAlias() + "`");
                     } else {
-                        s += "`" + c.getAlias() + "` " + c.usage() + "\n";
+                        s += "`" + c.getAlias() + "`\n";
                     }
                 }
             }
@@ -83,6 +83,11 @@ public class HelpCommand extends CommandAdapter {
     @Override
     public String getAlias() {
         return "help <command>";
+    }
+
+    @Override
+    public String example() {
+        return "help gif";
     }
 
 }

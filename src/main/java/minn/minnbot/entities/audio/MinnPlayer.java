@@ -61,14 +61,14 @@ public class MinnPlayer extends FilePlayer {
         return previous;
     }
 
-    protected void playNext() {
+    protected void playNext() { // FIXME
         System.out.println(TimeUtil.timeStamp() + " [INFO] Playing next...");
-        reset();
+        // reset();
         while (!playlist.isEmpty()) {
             try {
                 // Try to pick first file
                 setAudioFile(playlist.get(0));
-                play();
+                super.play();
                 // Catch exception
             } catch (IOException | UnsupportedAudioFileException e) {
                 System.err.println(TimeUtil.timeStamp() + " [ERROR] " + e.getMessage());

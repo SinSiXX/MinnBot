@@ -43,4 +43,9 @@ public class NameCommand extends CommandAdapter {
 	public boolean requiresOwner() {
 		return true;
 	}
+
+	@Override
+	public String example() {
+		return "name MinnBot";
+	}
 }

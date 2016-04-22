@@ -71,4 +71,10 @@ public class JoinCommand extends CommandAdapter {
     public String getAlias() {
         return "joinme";
     }
+
+    @Override
+    public String example() {
+        return "joinme";
+    }
+
 }

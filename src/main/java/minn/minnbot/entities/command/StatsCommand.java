@@ -113,4 +113,8 @@ public class StatsCommand extends CommandAdapter {
         return "stats";
     }
 
+    @Override
+    public String example() {
+        return "stats";
+    }
 }

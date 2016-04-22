@@ -62,11 +62,17 @@ public class MemeCommand extends CommandAdapter {
     }
 
     public String usage() {
-        return "`meme <template> <text> | <text>` Templates: http://memegen.link/templates";
+        return "`meme <template> <text> | <text>` Templates: http://memegen.link/templates\nExample: `meme fry not sure if clear | or not`";
     }
 
     @Override
     public String getAlias() {
         return "meme <template> <text> | <text>";
     }
+
+    @Override
+    public String example() {
+        return "meme doge Such Example | Much helpful";
+    }
+
 }

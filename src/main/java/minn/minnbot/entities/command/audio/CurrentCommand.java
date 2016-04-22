@@ -60,4 +60,9 @@ public class CurrentCommand extends CommandAdapter{
     public String getAlias() {
         return "current";
     }
+
+    @Override
+    public String example() {
+        return "current";
+    }
 }

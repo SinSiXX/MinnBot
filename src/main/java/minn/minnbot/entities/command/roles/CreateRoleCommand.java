@@ -62,4 +62,8 @@ public class CreateRoleCommand extends CommandAdapter {
         return "createrole <name>";
     }
 
+    @Override
+    public String example() {
+        return "createrole Mods";
+    }
 }
