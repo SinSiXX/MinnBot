@@ -26,7 +26,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     private MinnBotUserInterface console;
     private long startTime;
     private boolean logMessages = false;
-    private boolean logErrors = false;
+    private boolean logEvents = false;
 
     public LoggerImpl(MinnBotUserInterface console) {
         this.console = console;
@@ -140,7 +140,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public boolean logThrowable(Throwable e) {
-        if (!logErrors && !(e instanceof Info))
+        if (!logEvents)
             return false;
         String s;
         if (e instanceof Info)
@@ -158,7 +158,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public void toggleErrorLog() {
-        logErrors = !logErrors;
+        logEvents = !logEvents;
     }
 
     @Override

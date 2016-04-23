@@ -208,12 +208,12 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Tagname `" + tagName + "` is not allowed. " + EmoteUtil.getRngThumbsdown());
                     return;
                 }
-                String[] parts = event.event.getMessage().getRawContent().split(" ", 2);
-                if(parts.length != 2) {
+                String[] parts = event.event.getMessage().getRawContent().split(" ", 4);
+                if(parts.length != 4) {
                     event.sendMessage("Empty names or responses are not allowed.");
                     return;
                 }
-                String tagResponse = parts[1];
+                String tagResponse = parts[3];
                 if (tagName.isEmpty()) {
                     event.sendMessage("Empty names or responses are not allowed.");
                     return;
