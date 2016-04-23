@@ -4,17 +4,16 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
-
-import java.util.List;
+import minn.minnbot.manager.CommandManager;
 
 public class ExampleCommand extends CommandAdapter {
 
-    private List<Command> commands;
+    private CommandManager manager;
 
-    public ExampleCommand(String prefix, Logger logger, List<Command> commands) {
+    public ExampleCommand(String prefix, Logger logger, CommandManager manager) {
         this.logger = logger;
         this.prefix = prefix;
-        this.commands = commands;
+        this.manager = manager;
     }
 
     @Override
@@ -23,7 +22,7 @@ public class ExampleCommand extends CommandAdapter {
             event.sendMessage("Usage: `" + prefix + "example <command>`");
             return;
         }
-        Command com = commands.parallelStream().filter((cmd) -> cmd.isCommand(((event.allArguments.startsWith(prefix)) ? event.allArguments : prefix + event.allArguments))).findFirst().orElse(null);
+        Command com = manager.getAllCommands().parallelStream().filter((cmd) -> cmd.isCommand(((event.allArguments.startsWith(prefix)) ? event.allArguments : prefix + event.allArguments))).findFirst().orElse(null);
         if(com == null) {
             event.sendMessage("Not a known command!");
             return;
