@@ -1,51 +1,55 @@
 package minn.minnbot.entities.command.audio;
 
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.audio.MinnPlayer;
+import minn.minnbot.entities.audio.MinnAudioManager;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import net.dv8tion.jda.player.MusicPlayer;
+import net.dv8tion.jda.player.source.AudioSource;
 
-import java.io.File;
 import java.util.List;
 
 public class CurrentCommand extends CommandAdapter{
 
-    private MinnPlayer player;
-
-    public CurrentCommand(String prefix, Logger logger, MinnPlayer player) {
-        this.player = player;
+    public CurrentCommand(String prefix, Logger logger) {
         this.logger = logger;
         this.prefix = prefix;
     }
 
     @Override
     public void onCommand(CommandEvent event) {
-        if(player == null) {
-            event.sendMessage("No player available.");
-            return;
-        }
-        List<File> playlist = player.getPlaylist();
-        File previous = player.getPrevious();
-        File current = player.getCurrent();
+        MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
+        List<AudioSource> playlist = player.getAudioQueue();
+        AudioSource previous = player.getPreviousAudioSource();
+        AudioSource current = player.getCurrentAudioSource();
         String s = "";
         if(previous != null) {
-            s += "**__Previously:__** `" + (previous.getName().substring(0, previous.getName().length() - ".mp3".length())).replace("```", "").replace("_"," ") + "`\n";
+            s += "**__Previously:__** `" + (previous.getInfo().getTitle()).replace("`", "\u0001`") + "`\n";
         }
         if(!player.isStopped() && current != null) {
-            s += "**__Currently:__** `" + (current.getName().substring(0, current.getName().length() - ".mp3".length())).replace("`", "").replace("_"," ") + "`\n";
+            try {
+                s += "**__Currently:__** `[" + player.getCurrentTimestamp().getTimestamp() + " / " + current.getInfo().getDuration().getTimestamp() + "] " + (current.getInfo().getTitle()).replace("`", "\u0001`") + "`\n";
+            } catch (Exception ignored) {
+                s += "**__Currently:__** `[NaN] " + (current.getInfo().getTitle()).replace("`", "\u0001`") + "`\n";
+            }
         }
         if(playlist.isEmpty()) {
             s += "**__No queued songs.__**";
         } else {
             int index = 1;
-            s += "**__Queue:__**\n";
-            for(File f : playlist) {
+            s += "**__Queue:__** ```md\n";
+            for(AudioSource f : playlist) {
                 if(index > 5) {
-                    s += "**...**";
+                    s += "...";
                     break;
                 }
-                s += "\t**" + index++ + ")** `" + (f.getName().substring(0, f.getName().length() - ".mp3".length())).replace("`", "").replace("_"," ") + "`\n";
+                try {
+                    s += "[" + f.getInfo().getDuration().getTimestamp() + "][" + (f.getInfo().getTitle()).replace("`", "\u0001`") + "]\n";
+                } catch (Exception ignored) {
+                    s += "[NaN][" + (f.getInfo().getTitle()).replace("`", "\u0001`") + "]\n";
+                }
             }
+            s += "```";
         }
         event.sendMessage(s);
     }

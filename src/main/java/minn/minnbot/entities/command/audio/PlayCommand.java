@@ -1,30 +1,19 @@
 package minn.minnbot.entities.command.audio;
 
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.audio.MinnPlayer;
+import minn.minnbot.entities.audio.MinnAudioManager;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
-import net.dv8tion.jda.entities.Message;
+import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
-
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import net.dv8tion.jda.player.MusicPlayer;
+import net.dv8tion.jda.player.source.RemoteSource;
 
 public class PlayCommand extends CommandAdapter {
-
-    private MinnPlayer player;
-    private File folder = new File("Playlist");
 
     public PlayCommand(String prefix, Logger logger) {
         this.prefix = prefix;
         this.logger = logger;
-        if (folder.exists())
-            folder.delete();
-        folder.mkdirs();
-        folder.deleteOnExit();
-        player = new MinnPlayer();
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -33,50 +22,25 @@ public class PlayCommand extends CommandAdapter {
         super.onMessageReceived(event);
     }
 
-    public MinnPlayer getPlayer() {
-        return player;
-    }
-
     @Override
     public void onCommand(CommandEvent event) {
-        Thread t = new Thread(() -> {
-            List<Message.Attachment> atts = event.event.getMessage().getAttachments();
-            if (atts.size() < 1) {
-                event.sendMessage(usage());
-                return;
-            }
-            File f = new File(folder.getPath() + "\\" + atts.get(0).getFileName());
-            if (f.exists()) {
-                f = new File(folder.getPath() + "\\" + atts.get(0).getFileName() + " -- " + Long.toHexString(System.currentTimeMillis()));
-            }
-            boolean downloaded = false;
-            for (int i = 0; i < 10; i++) {
-                if (atts.get(0).download(f)) {
-                    downloaded = true;
-                    break;
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ignored) {
-
-                }
-            }
-            if (downloaded) {
-                try {
-                    player.add(f);
-                    f.deleteOnExit();
-                    event.sendMessage("Added file to queue.");
-                } catch (UnsupportedAudioFileException e) {
-                    event.sendMessage("File extension is not allowed. `" + e.getMessage() + "`");
-                } catch (IOException e) {
-                    event.sendMessage("File is not a file. `" + e.getMessage() + "`");
-                }
-            } else {
-                event.sendMessage("I was unable to download attached file.");
-            }
-        });
-        t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
-        t.start();
+        if (event.allArguments.isEmpty()) {
+            event.sendMessage("Emptry URL is not accepted. " + EmoteUtil.getRngThumbsdown());
+            return;
+        }
+        MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
+        try {
+            player.getAudioQueue().add(new RemoteSource(event.allArguments));
+        } catch (Exception e) {
+            event.sendMessage("**__Error:__** `" + e.getMessage() + "` " + EmoteUtil.getRngThumbsdown());
+            return;
+        }
+        if (!player.isPlaying()) {
+            player.play();
+            event.sendMessage("Added provided URL to queue and the player started playing! " + EmoteUtil.getRngOkHand());
+            return;
+        }
+        event.sendMessage("Added provided URL to queue! " + EmoteUtil.getRngThumbsup());
     }
 
     @Override
@@ -88,17 +52,17 @@ public class PlayCommand extends CommandAdapter {
     }
 
     public String usage() {
-        return "Upload an audio file and type " + prefix + "play in the comment box.";
+        return "Supporting Youtube, Soundcloud and direct URLs! `" + prefix + "play 9M4BVITnto0`";
     }
 
     @Override
     public String getAlias() {
-        return "play";
+        return "play <URL>";
     }
 
     @Override
     public String example() {
-        return "play";
+        return "play 9M4BVITnto0";
     }
 
 }

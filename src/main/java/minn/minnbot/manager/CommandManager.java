@@ -1,6 +1,5 @@
 package minn.minnbot.manager;
 
-import minn.minnbot.MinnBot;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.TagCommand;
@@ -15,21 +14,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.activation.UnsupportedDataTypeException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 public class CommandManager extends ListenerAdapter {
 
-    public List<Command> commands = new LinkedList<>();
+    private List<Command> commands = new LinkedList<>();
+    private List<CmdManager> managers = new LinkedList<>();
     @SuppressWarnings("unused")
     private JDA api;
-
     private User owner;
-
     private Logger logger;
 
     public CommandManager(JDA api, Logger logger, User owner) {
@@ -38,9 +38,25 @@ public class CommandManager extends ListenerAdapter {
         this.owner = owner;
     }
 
+    public List<Command> getCommands() {
+        return Collections.unmodifiableList(commands);
+    }
+
+    public List<CmdManager> getManagers() {
+        return Collections.unmodifiableList(managers);
+    }
+
+    public List<Command> getAllCommands() {
+        Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+        List<Command> cmds = new LinkedList<>();
+        cmds.addAll(commands);
+        managers.parallelStream().filter(manager -> manager != null && manager.getCommands() != null).forEach(manager -> cmds.addAll(manager.getCommands()));
+        return Collections.unmodifiableList(cmds);
+    }
+
     public void onShutdown(ShutdownEvent event) {
-        for(Command c : commands) {
-            if(c instanceof TagCommand) {
+        for (Command c : commands) {
+            if (c instanceof TagCommand) {
                 ((TagCommand) c).onShutdown(event);
                 return;
             }
@@ -50,42 +66,35 @@ public class CommandManager extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot() || IgnoreUtil.isIgnored(event.getAuthor(), event.getGuild(), event.getTextChannel()))
             return;
-        if (MinnBot.powersaving) {
-            try {
-                for (Command c : commands) {
-                    if(c.requiresOwner()) {
-                        if(event.getAuthor() == owner)
-                            c.onMessageReceived(event);
-                        continue;
-                    }
-                    c.onMessageReceived(event);
-                }
-            } catch (Exception e) {
-                logger.logThrowable(e);
-            }
-            return;
-        }
-        Thread t = new Thread() {
-            @SuppressWarnings({"deprecation"})
-            public void run() {
-                this.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
-                try {
-                    for (Command c : commands) {
-                        if(c.requiresOwner()) {
-                            if(event.getAuthor() == owner)
-                                c.onMessageReceived(event);
-                            continue;
-                        }
+        Thread t = new Thread(() -> {
+        try {
+
+            for (Command c : commands) {
+                if (c.requiresOwner()) {
+                    if (event.getAuthor() == owner)
                         c.onMessageReceived(event);
-                    }
-                } catch (Exception e) {
-                    logger.logThrowable(e);
+                    continue;
                 }
+                c.onMessageReceived(event);
             }
-        };
+            managers.parallelStream().forEach(manager -> manager.call(event));
+
+
+        } catch (Exception e) {
+            logger.logThrowable(e);
+        }});
+        t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
         t.start();
     }
 
+    public void registerManager(CmdManager manager) throws UnsupportedDataTypeException {
+        if (manager == null) {
+            throw new UnsupportedDataTypeException("Manager is null!");
+        }
+        managers.add(manager);
+    }
+
+    @Deprecated
     public String registerCommand(Command com) {
         try {
             commands.add(com);

@@ -33,20 +33,20 @@ public class CheckCommand extends CommandAdapter {
         else
             u = mentions.get(0);
         String s = "```md\n";
-        s += "[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]";
+        s += ("[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]").replace("`", "\u0001`");
         s += "\n[ Id ][" + u.getId() + "]";
         s += "\n[Status][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
-        s += "\n\n[Game][" + ((u.getCurrentGame() == null) ? "Ready to play!" : u.getCurrentGame()) + "]";
+        s += ("\n\n[Game][" + ((u.getCurrentGame() == null) ? "Ready to play!" : u.getCurrentGame()) + "]").replace("`", "\u0001`");
         s += "\n[Join][" + getJoinDate(u, event.event.getGuild()) + "]";
         s += "\n[Creation][" + TimeUtil.getCreationTime(Long.valueOf(u.getId())) + "]";
         s += "\n[Known guilds][" + serversInCommon(u, event.event.getJDA()) + "]";
         s += "\n\n[Avatar][ " + u.getAvatarUrl() + " ]";
-        s += "\n\n" + getRolesForUser(u, event.event.getGuild());
+        s += "\n\n" + getRolesForUser(u, event.event.getGuild()).replace("`", "\u0001`");
         try {
             event.sendMessage(s + "```");
         } catch (Exception e) {
             s = "```md\n";
-            s += "[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]";
+            s += ("[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]").replace("`", "\u0001`");
             s += "\n[ Id ][" + u.getId() + "]";
             s += "\n[Status][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
             s += "\n\n[Game][" + ((u.getCurrentGame() == null) ? "Ready to play!" : u.getCurrentGame()) + "]";

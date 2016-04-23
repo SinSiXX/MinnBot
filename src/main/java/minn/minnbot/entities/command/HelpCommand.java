@@ -5,26 +5,29 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.custom.HelpSplitter;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
 import net.dv8tion.jda.entities.User;
 
 import java.util.List;
+import java.util.Random;
 
 public class HelpCommand extends CommandAdapter {
 
-    private List<Command> commands;
     private User owner;
+    private CommandManager manager;
 
-    public HelpCommand(String prefix, Logger logger, List<Command> commands, User owner) {
+    public HelpCommand(String prefix, Logger logger, CommandManager commands, User owner) {
         this.prefix = prefix;
         this.logger = logger;
-        this.commands = commands;
+        this.manager = commands;
         this.owner = owner;
     }
 
     @Override
     public void onCommand(CommandEvent event) {
+        List<Command> commands = manager.getAllCommands();
         if (event.allArguments.isEmpty()) {
-            String rngAlias = commands.get(((int) Math.floor((Math.random() * commands.size())))).getAlias();
+            String rngAlias = commands.get((new Random().nextInt(commands.size()))).getAlias();
             String s = "**__Example: " + prefix + "public__**\n";
             for (Command c : commands) {
                 if(c.requiresOwner() && event.event.getAuthor() != owner)
@@ -57,7 +60,7 @@ public class HelpCommand extends CommandAdapter {
                 return;
             }
         }
-        event.sendMessage("Unrecognised command `" + event.allArguments + "`\nUsage: " + usage());
+        event.sendMessage("Unrecognised command/category `" + event.allArguments + "`\nUsage: " + usage());
     }
 
     @Override

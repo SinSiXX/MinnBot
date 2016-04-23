@@ -1,7 +1,7 @@
 package minn.minnbot.entities.command.audio;
 
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.audio.MinnPlayer;
+import minn.minnbot.entities.audio.MinnAudioManager;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.EmoteUtil;
@@ -10,15 +10,14 @@ import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.entities.VoiceChannel;
 import net.dv8tion.jda.entities.VoiceStatus;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.player.MusicPlayer;
 
 public class JoinCommand extends CommandAdapter {
 
-    private MinnPlayer player;
 
-    public JoinCommand(String prefix, Logger logger, MinnPlayer player) {
+    public JoinCommand(String prefix, Logger logger) {
         this.prefix = prefix;
         this.logger = logger;
-        this.player = player;
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -29,6 +28,7 @@ public class JoinCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
+
         User user = event.event.getAuthor();
         Guild guild = event.event.getGuild();
         VoiceStatus status = guild.getVoiceStatusOfUser(user);
@@ -48,12 +48,12 @@ public class JoinCommand extends CommandAdapter {
             } else {
                 guild.getAudioManager().moveAudioConnection(channel);
             }
-        } catch (Exception ignored) {
-            ignored.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
           //  event.sendMessage("I am unable to join that voice channel.");
             return;
         }
-        guild.getAudioManager().setSendingHandler(player);
+        MinnAudioManager.registerPlayer(new MusicPlayer(), event.event.getGuild());
         event.sendMessage("Joined `" + channel.getName() + "`! " + EmoteUtil.getRngOkHand());
     }
 

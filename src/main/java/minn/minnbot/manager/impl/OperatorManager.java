@@ -1,0 +1,89 @@
+package minn.minnbot.manager.impl;
+
+import minn.minnbot.MinnBot;
+import minn.minnbot.entities.Command;
+import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.HelpCommand;
+import minn.minnbot.entities.command.custom.HelpSplitter;
+import minn.minnbot.entities.command.owner.*;
+import minn.minnbot.manager.CmdManager;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+public class OperatorManager extends CmdManager {
+
+    public OperatorManager(String prefix, Logger logger, MinnBot bot) {
+        this.logger = logger;
+        List<String> errors = new LinkedList<>();
+        HelpSplitter splitter = new HelpSplitter("Operator commands", "op", prefix, true);
+        err = new AtomicReference<>(registerCommand(splitter));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+
+        Command com = new HelpCommand(prefix, logger, bot.handler, bot.owner);
+        err = new AtomicReference<>(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+
+        com = new EvalCommand(prefix, logger, bot);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new NameCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new GameCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new ShutdownCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new DebugCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new LeaveCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new FlushCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new IgnoreCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        this.errors = errors;
+    }
+
+}

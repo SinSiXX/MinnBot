@@ -15,6 +15,7 @@ public class MinnPlayer extends FilePlayer {
     private List<File> playlist = new LinkedList<>();
     private File previous;
     private File current;
+    private boolean debug = false;
 
     public MinnPlayer() {
         super();
@@ -61,8 +62,9 @@ public class MinnPlayer extends FilePlayer {
         return previous;
     }
 
-    protected void playNext() { // FIXME
-        System.out.println(TimeUtil.timeStamp() + " [INFO] Playing next...");
+    private void playNext() { // FIXME
+        if (debug)
+            System.out.println(TimeUtil.timeStamp() + " [INFO] Playing next...");
         // reset();
         while (!playlist.isEmpty()) {
             try {
@@ -71,7 +73,8 @@ public class MinnPlayer extends FilePlayer {
                 super.play();
                 // Catch exception
             } catch (IOException | UnsupportedAudioFileException e) {
-                System.err.println(TimeUtil.timeStamp() + " [ERROR] " + e.getMessage());
+                if (debug)
+                    System.err.println(TimeUtil.timeStamp() + " [ERROR] " + e.getMessage());
                 playlist.remove(0);
 
                 // Continue because the file was unusable
@@ -85,17 +88,26 @@ public class MinnPlayer extends FilePlayer {
             super.stop();
             return;
         }
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            previous.delete();
+        } catch (Exception ignored) {
+        }
         previous = current;
         current = playlist.get(0);
         playlist.remove(0);
-        System.out.println(TimeUtil.timeStamp() + " [INFO] Selected: " + current.getName());
-        System.out.println(TimeUtil.timeStamp() + " [INFO] Now playing selected file.");
+        if (debug) {
+            System.out.println(TimeUtil.timeStamp() + " [INFO] Selected: " + current.getName());
+            System.out.println(TimeUtil.timeStamp() + " [INFO] Now playing selected file.");
+        }
     }
 
     @Override
     public void stop() {
-        new Exception().printStackTrace();
-        System.out.println(TimeUtil.timeStamp() + " [INFO] Playback stopped.");
+        if (debug) {
+            new Exception().printStackTrace();
+            System.out.println(TimeUtil.timeStamp() + " [INFO] Playback stopped.");
+        }
         playNext();
     }
 
