@@ -1,7 +1,0 @@
-1. Raffles
-2. Twitch integration
-3. Custom Commands
-4. Fun commands
-5. Role/Moderation extended
-6. Stuff, stuff and even more stuff.
-7. Nightbot api https://api-docs.nightbot.tv/#basic-steps

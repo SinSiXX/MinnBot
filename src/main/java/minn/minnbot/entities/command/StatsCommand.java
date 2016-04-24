@@ -5,10 +5,14 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.Message;
+import net.dv8tion.jda.entities.VoiceStatus;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class StatsCommand extends CommandAdapter {
 
@@ -96,12 +100,24 @@ public class StatsCommand extends CommandAdapter {
                 + "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB]";
 		/* Rsps */
         String responses = "[Responses][" + event.event.getJDA().getResponseTotal() + "]";
+        /* Conn */
+        int size = getConnectedChannelSize(event.jda);
+        String connections = "# Connected to " + size + " voice channel" + ((size == 1) ? "" : "s") + ".";
 
         String msg = "```md\nStatistics: " + about + "\n\n[Connection]:\n" + uptime + "\n" + mem
                 + "\n" + ping + "\n\n[Messages]:\n" + messages + "\n" + privateMessages + "\n" + guildMessages
                 + "\n\n[Usages]:\n" + commands + "\n" + responses + "\n" + events + "\n\n[Entities]:\n" + guilds + "\n" + users + "\n"
-                + channels + "```";
+                + channels + "\n" + connections + "```";
         return msg;
+    }
+
+    private int getConnectedChannelSize(JDA api) {
+        List<Guild> connected =  new LinkedList<>();
+        api.getGuilds().parallelStream().filter(guild -> {
+            VoiceStatus status = guild.getVoiceStatusOfUser(api.getSelfInfo());
+            return status != null && status.getChannel() != null;
+        }).forEach(connected::add);
+        return connected.size();
     }
 
     @Override

@@ -13,6 +13,7 @@ import minn.minnbot.manager.impl.*;
 import minn.minnbot.util.EvalUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
+import net.dv8tion.jda.JDAInfo;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
 import org.json.JSONObject;
@@ -225,7 +226,7 @@ public class MinnBot {
                 console.writeEvent("[COMMAND] " + e);
             }
         } else {
-            log("[COMMANDS] Setup completed without exceptions.");
+            log("[COMMANDS] Setup completed without exceptions.\n[JDA] [VERSION] " + JDAInfo.VERSION);
         }
         return this;
     }

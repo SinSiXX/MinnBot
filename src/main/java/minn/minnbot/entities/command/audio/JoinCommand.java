@@ -1,9 +1,9 @@
 package minn.minnbot.entities.command.audio;
 
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.audio.MinnAudioManager;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;

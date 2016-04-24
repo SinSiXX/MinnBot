@@ -1,9 +1,9 @@
 package minn.minnbot.entities.command.audio;
 
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.audio.MinnAudioManager;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
@@ -30,7 +30,10 @@ public class PlayCommand extends CommandAdapter {
         }
         MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
         try {
-            player.getAudioQueue().add(new RemoteSource(event.allArguments));
+            player.getAudioQueue().add(new RemoteSource(
+                    ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
+                            ? event.allArguments.substring(1, event.allArguments.length() - 1)
+                            : event.allArguments)));
         } catch (Exception e) {
             event.sendMessage("**__Error:__** `" + e.getMessage() + "` " + EmoteUtil.getRngThumbsdown());
             return;

@@ -9,7 +9,6 @@ import minn.minnbot.manager.CommandManager;
 import net.dv8tion.jda.entities.User;
 
 import java.util.List;
-import java.util.Random;
 
 public class HelpCommand extends CommandAdapter {
 
@@ -27,25 +26,22 @@ public class HelpCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         List<Command> commands = manager.getAllCommands();
         if (event.allArguments.isEmpty()) {
-            String rngAlias = commands.get((new Random().nextInt(commands.size()))).getAlias();
-            String s = "**__Example: " + prefix + "public__**\n";
-            for (Command c : commands) {
-                if(c.requiresOwner() && event.event.getAuthor() != owner)
-                    continue;
+            final String[] s = {"**__Example: " + prefix + "public__**\n"};
+            commands.parallelStream().filter(c -> { if(c.requiresOwner()) return event.event.getAuthor() == owner; else return true;}).forEach((c) -> {
                 if (c instanceof HelpSplitter) {
-                    if ((s + c.getAlias()).length() > 1000) {
-                        event.sendMessage(s);
-                        s = "\n";
+                    if ((s[0] + c.getAlias()).length() > 1000) {
+                        event.sendMessage(s[0]);
+                        s[0] = "\n";
                     }
                     if (c.getAlias().length() > 800) {
                         event.sendMessage("`" + c.getAlias() + "`");
                     } else {
-                        s += "`" + c.getAlias() + "`\n";
+                        s[0] += "`" + c.getAlias() + "`\n";
                     }
                 }
-            }
-            if (s.length() > 1)
-                event.sendMessage(s);
+            });
+            if (s[0].length() > 1)
+                event.sendMessage(s[0]);
             return;
         }
         String cmd = event.allArguments.split(" ", 2)[0];
