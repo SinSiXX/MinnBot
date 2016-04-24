@@ -9,6 +9,7 @@ import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.manager.CmdManager;
 import minn.minnbot.manager.CommandManager;
 import minn.minnbot.manager.ModLogManager;
+import minn.minnbot.manager.PlayingFieldManager;
 import minn.minnbot.manager.impl.*;
 import minn.minnbot.util.EvalUtil;
 import net.dv8tion.jda.JDA;
@@ -181,6 +182,7 @@ public class MinnBot {
         } catch (ScriptException e) {
             logger.logThrowable(e);
         }
+        PlayingFieldManager.init(api, logger);
 
         // Add logger to the listeners
         api.addEventListener(logger);

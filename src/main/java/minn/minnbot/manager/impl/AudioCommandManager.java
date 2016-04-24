@@ -62,6 +62,13 @@ public class AudioCommandManager extends CmdManager {
         else
             splitter.add(com);
 
+        com = new QueueCommand(prefix,logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
         this.errors = errors;
     }
 }

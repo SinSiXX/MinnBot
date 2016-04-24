@@ -33,34 +33,29 @@ public class ClearCommand extends CommandAdapter {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public void onCommand(CommandEvent event) {
 		try {
-			Thread t = new Thread() {
-				@SuppressWarnings("deprecation")
-				public void run() {
+			Thread t = new Thread(() -> {
 					int amount = 100;
-					int count = 0;
+				final int[] count = {0};
 					try {
 						amount = Integer.parseInt(event.allArguments);
-					} catch (NumberFormatException e) {
+					} catch (NumberFormatException ignored) {
 					}
 					java.util.List<Message> hist = new MessageHistory(event.event.getTextChannel()).retrieve(amount);
-					for (Message m : hist) {
-						Thread t = new Thread() {
-							public void run() {
+					hist.parallelStream().forEach(m -> {
+						Thread t2 = new Thread(() -> {
 								m.deleteMessage();
-								this.stop();
-							}
-						};
-						t.start();
-						count++;
-					}
-					event.sendMessage(event.event.getAuthor().getAsMention() + ", deleted " + count + " messages in this channel.");
-					this.stop();
-				}
-			};
+								Thread.currentThread().stop();
+							});
+						t2.start();
+						count[0]++;
+					});
+					event.sendMessage(event.event.getAuthor().getAsMention() + ", deleted " + count[0] + " messages in this channel.");
+					Thread.currentThread().stop();
+				});
 			t.start();
-
 		} catch (Exception e) {
 			logger.logThrowable(e);
 		}

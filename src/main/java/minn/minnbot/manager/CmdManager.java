@@ -15,9 +15,10 @@ public abstract class CmdManager {
     protected Logger logger;
     private List<Command> commands = new LinkedList<>();
     private Map<Command, Boolean> disable = new HashMap<>();
+    protected boolean ownerOnly = false;
 
     public List<Command> getCommands() {
-        return Collections.unmodifiableList(commands);
+        return Collections.unmodifiableList(((commands == null) ? new LinkedList<Command>() : commands));
     }
 
     public List<String> getErrors() {
@@ -59,6 +60,10 @@ public abstract class CmdManager {
         if (consumer != null) {
             consumer.accept(true);
         }
+    }
+
+    public boolean requiresOwner() {
+        return ownerOnly;
     }
 
     public void disable(Command cmd, boolean input) {

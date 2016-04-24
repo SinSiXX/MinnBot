@@ -50,7 +50,7 @@ public class CommandManager extends ListenerAdapter {
         Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
         List<Command> cmds = new LinkedList<>();
         cmds.addAll(commands);
-        managers.parallelStream().filter(manager -> manager != null && manager.getCommands() != null).forEach(manager -> cmds.addAll(manager.getCommands()));
+        managers.parallelStream().filter(manager -> manager != null && manager.getCommands() != null).forEachOrdered(manager -> cmds.addAll(manager.getCommands()));
         return Collections.unmodifiableList(cmds);
     }
 
@@ -67,23 +67,28 @@ public class CommandManager extends ListenerAdapter {
         if (event.getAuthor().isBot() || IgnoreUtil.isIgnored(event.getAuthor(), event.getGuild(), event.getTextChannel()))
             return;
         Thread t = new Thread(() -> {
-        try {
+            try {
 
-            for (Command c : commands) {
-                if (c.requiresOwner()) {
-                    if (event.getAuthor() == owner)
-                        c.onMessageReceived(event);
-                    continue;
+                for (Command c : commands) {
+                    if (c.requiresOwner()) {
+                        if (event.getAuthor() == owner)
+                            c.onMessageReceived(event);
+                        continue;
+                    }
+                    c.onMessageReceived(event);
                 }
-                c.onMessageReceived(event);
+                managers.parallelStream().forEachOrdered(manager -> {
+                    if(manager.requiresOwner() && event.getAuthor() != owner)
+                        return;
+                    manager.call(event);
+                });
+
+            } catch (Exception e) {
+                logger.logThrowable(e);
             }
-            managers.parallelStream().forEach(manager -> manager.call(event));
-
-
-        } catch (Exception e) {
-            logger.logThrowable(e);
-        }});
+        });
         t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+        t.setName("MessageHandling");
         t.start();
     }
 

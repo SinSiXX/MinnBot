@@ -1,5 +1,6 @@
 package minn.minnbot.manager;
 
+import minn.minnbot.entities.audio.PlayerListener;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.player.MusicPlayer;
 
@@ -32,6 +33,7 @@ public class MinnAudioManager {
             players.put(guild, player);
         }
         player.setVolume(.5f);
+        player.addEventListener(new PlayerListener());
         return player;
     }
 

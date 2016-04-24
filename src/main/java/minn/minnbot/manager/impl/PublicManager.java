@@ -32,6 +32,12 @@ public class PublicManager extends CmdManager {
        else
            splitter.add(com);
 
+
+       com = new HelpCommand(prefix, logger, bot.handler, bot.owner);
+       err = new AtomicReference<>(registerCommand(com));
+       if (!err.get().isEmpty())
+           errors.add(err.get());
+
        com = new StatsCommand(logger, prefix, ABOUT);
        err.set(registerCommand(com));
        if (!err.get().isEmpty())
