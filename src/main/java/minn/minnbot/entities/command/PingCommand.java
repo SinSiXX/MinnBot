@@ -47,4 +47,9 @@ public class PingCommand extends CommandAdapter {
         return "ping";
     }
 
+    @Override
+    public String example() {
+        return "ping";
+    }
+
 }

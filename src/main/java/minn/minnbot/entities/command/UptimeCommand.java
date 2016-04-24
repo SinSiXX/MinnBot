@@ -58,4 +58,8 @@ public class UptimeCommand extends CommandAdapter {
         return "uptime";
     }
 
+    @Override
+    public String example() {
+        return getAlias();
+    }
 }

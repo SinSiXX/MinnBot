@@ -13,9 +13,11 @@ Simple to setup Discord Chat Bot.
 {
     "owner": "86699011792191488",
     "prefix": "!",
-    "token": "AOIHIPUHD34534.JKHOS6876OH6IKHJ.OHOIHJF",
+    "token": "BOT-TOKEN-HERE",
     "inviteurl":"https://discordapp.com/oauth2/authorize?&client_id=13468425138731684&scope=bot&permissions=67108863",
-    "powersaving": false
+    "powersaving": false,
+    "audio": false,
+    "giphy": "YOUR-GIPHY-KEY"
 }
 </pre>
 </div>
@@ -30,6 +32,10 @@ Official development discord: [MinnBot Development](https://discord.gg/0mcttggeF
 # Requirements
 
 <ul>
-<li>JDA: https://github.com/DV8FromTheWorld/JDA/</li>
-<li>Java 8: https://www.java.com/en/download/</li>
+<li>JDA: https://github.com/DV8FromTheWorld/JDA/ (For branching only.)</li>
+<li>Java 8: https://www.java.com/en/download/ (For both branching and hosting.)</li>
+<li>For music:<ul>
+<li>Python: 3.x.x </li>
+<li>Youtube-dl </li>
+<li>ffmpeg & ffprobe</li></ul></li>
 </ul>

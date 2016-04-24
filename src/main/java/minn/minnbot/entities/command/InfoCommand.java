@@ -4,7 +4,6 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class InfoCommand extends CommandAdapter {
 
@@ -23,14 +22,7 @@ public class InfoCommand extends CommandAdapter {
 			this.inviteUrl = inviteUrl;
 		else
 			this.inviteUrl = "";
-		this.bot = bot;
-	}
-
-	public void onMessageReceived(MessageReceivedEvent event) {
-		if (isCommand(event.getMessage().getContent())) {
-			logger.logCommandUse(event.getMessage());
-			onCommand(new CommandEvent(event));
-		}
+		this.bot = bot; // Possible client support
 	}
 
 	@Override
@@ -41,7 +33,7 @@ public class InfoCommand extends CommandAdapter {
 				+ ") by my creator Minn, I was selected to work on behalf of **" + ownername + "**.\n";
 		s += "You can view my commands by typing **" + prefix + "help** in the chat.\n";
 		s += "If you want to see my **source code**,"
-				+ " here is a link to my github page: **<https://github.com/MinnDevelopment/MinnBot.git>**\n";
+				+ " here is a link to my github page: **<http://minndevelopment.github.io/MinnBot>**\n";
 		s += "Visit the official development server for further information: **<https://discord.gg/0mcttggeFpcMByUz>**\n";
 		if (!inviteUrl.isEmpty() && bot)
 			s += "Make me join your server with this url:\n**<" + inviteUrl + ">**";
@@ -64,12 +56,12 @@ public class InfoCommand extends CommandAdapter {
 	}
 
 	@Override
-	public String usage() {
-		return "";
+	public String getAlias() {
+		return "info";
 	}
 
 	@Override
-	public String getAlias() {
+	public String example() {
 		return "info";
 	}
 

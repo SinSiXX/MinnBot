@@ -7,30 +7,15 @@ import minn.minnbot.util.EmoteUtil;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class IgnoreCommand extends CommandAdapter {
 
-    private User owner;
-
-    public IgnoreCommand(String prefix, Logger logger, User owner) {
+    public IgnoreCommand(String prefix, Logger logger) {
         this.prefix = prefix;
         this.logger = logger;
-        if(owner == null) {
-            throw new IllegalArgumentException("Owner can not be null");
-        }
-        this.owner = owner;
-    }
-
-    @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.getAuthor() == owner && isCommand(event.getMessage().getContent())) {
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
-        }
     }
 
     @Override
@@ -129,4 +114,10 @@ public class IgnoreCommand extends CommandAdapter {
     public boolean requiresOwner() {
         return true;
     }
+
+    @Override
+    public String example() {
+        return "ignore channel #general";
+    }
+
 }

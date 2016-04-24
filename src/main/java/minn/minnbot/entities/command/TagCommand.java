@@ -17,8 +17,7 @@ import net.dv8tion.jda.utils.PermissionUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.MalformedParametersException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -65,12 +64,27 @@ public class TagCommand extends CommandAdapter {
         JSONArray arr = getAsJsonArray();
         if (new File("tags.json").exists())
             new File("tags.json").delete();
+        new File("tags.json");
+        Writer out = null;
         try {
+            out = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream("tags.json"), "UTF-8"));
+            try {
+                out.write(arr.toString(4));
+            } finally {
+                out.close();
+            }
             Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
             logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
         } catch (IOException e) {
             logger.logThrowable(e);
         }
+        // try {
+//            Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
+  //          logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
+    //    } catch (IOException e) {
+      //      logger.logThrowable(e);
+        //}
     }
 
     private JSONObject jsonfy(Tag tag) {
@@ -194,12 +208,13 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Tagname `" + tagName + "` is not allowed. " + EmoteUtil.getRngThumbsdown());
                     return;
                 }
-                String tagResponse = "";
-                for (int i = 2; i < event.arguments.length; i++) {
-                    tagResponse += " " + event.arguments[i];
+                String[] parts = event.event.getMessage().getRawContent().split(" ", 4);
+                if(parts.length != 4) {
+                    event.sendMessage("Empty names or responses are not allowed.");
+                    return;
                 }
-                tagResponse = ((tagResponse.startsWith(" ") && tagResponse.length() > 1) ? tagResponse.substring(1) : tagResponse);
-                if (tagName.isEmpty() || tagResponse.isEmpty()) {
+                String tagResponse = parts[3];
+                if (tagName.isEmpty()) {
                     event.sendMessage("Empty names or responses are not allowed.");
                     return;
                 }
@@ -289,6 +304,11 @@ public class TagCommand extends CommandAdapter {
     @Override
     public String getAlias() {
         return "tag <method> <tag> <response>";
+    }
+
+    @Override
+    public String example() {
+        return "tag add tagname some stupid response!";
     }
 
 }

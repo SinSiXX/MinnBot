@@ -15,13 +15,15 @@ public class HelpSplitter implements Command {
     public List<Command> commands = new LinkedList<>();
     private String name;
     private String prefix;
+    private boolean operator;
 
-    public HelpSplitter (String content, String name, String prefix) {
+    public HelpSplitter (String content, String name, String prefix, boolean operator) {
         if(content == null || content.isEmpty() || name == null || content.isEmpty())
             throw new UnsupportedOperationException("Splitter contents may never be empty or null.");
         this.content = "\n[" + content.replace("`", "\\`").toUpperCase() + "] (" + name + ")\n";
         this.name = name;
         this.prefix = prefix;
+        this.operator = operator;
     }
 
     public boolean add(Command com) {
@@ -81,6 +83,11 @@ public class HelpSplitter implements Command {
 
     @Override
     public boolean requiresOwner() {
-        return false;
+        return operator;
+    }
+
+    @Override
+    public String example() {
+        return "help " + name;
     }
 }

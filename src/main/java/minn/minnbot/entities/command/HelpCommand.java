@@ -5,39 +5,43 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.custom.HelpSplitter;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
+import net.dv8tion.jda.entities.User;
 
 import java.util.List;
 
 public class HelpCommand extends CommandAdapter {
 
-    private List<Command> commands;
+    private User owner;
+    private CommandManager manager;
 
-    public HelpCommand(String prefix, Logger logger, List<Command> commands) {
+    public HelpCommand(String prefix, Logger logger, CommandManager commands, User owner) {
         this.prefix = prefix;
         this.logger = logger;
-        this.commands = commands;
+        this.manager = commands;
+        this.owner = owner;
     }
 
     @Override
     public void onCommand(CommandEvent event) {
+        List<Command> commands = manager.getAllCommands();
         if (event.allArguments.isEmpty()) {
-            String rngAlias = commands.get(((int) Math.floor((Math.random() * commands.size())))).getAlias();
-            String s = "**__Example: " + prefix + rngAlias + "__**\n";
-            for (Command c : commands) {
+            final String[] s = {"**__Example: " + prefix + "help public__**\n"};
+            commands.parallelStream().filter(c -> !c.requiresOwner() || event.event.getAuthor() == owner).forEach((c) -> {
                 if (c instanceof HelpSplitter) {
-                    if ((s + c.usage()).length() > 1000) {
-                        event.sendMessage(s);
-                        s = "\n";
+                    if ((s[0] + c.getAlias()).length() > 1000) {
+                        event.sendMessage(s[0]);
+                        s[0] = "\n";
                     }
-                    if (c.usage().length() > 800) {
-                        event.sendMessage("`" + c.getAlias() + "` " + c.usage());
+                    if (c.getAlias().length() > 800) {
+                        event.sendMessage("`" + c.getAlias() + "`");
                     } else {
-                        s += "`" + c.getAlias() + "` " + c.usage() + "\n";
+                        s[0] += "`" + c.getAlias() + "`\n";
                     }
                 }
-            }
-            if (s.length() > 1)
-                event.sendMessage(s);
+            });
+            if (s[0].length() > 1)
+                event.sendMessage(s[0]);
             return;
         }
         String cmd = event.allArguments.split(" ", 2)[0];
@@ -52,7 +56,7 @@ public class HelpCommand extends CommandAdapter {
                 return;
             }
         }
-        event.sendMessage("Unrecognised command `" + event.allArguments + "`\nUsage: " + usage());
+        event.sendMessage("Unrecognised command/category `" + event.allArguments + "`\nUsage: " + usage());
     }
 
     @Override
@@ -72,12 +76,17 @@ public class HelpCommand extends CommandAdapter {
 
     @Override
     public String usage() {
-        return "```xml\n" + prefix + "help <command>```";
+        return "```xml\nhelp\nhelp <command>\nhelp <category>```\n**__Examples:__** `help public`, `help help`";
     }
 
     @Override
     public String getAlias() {
         return "help <command>";
+    }
+
+    @Override
+    public String example() {
+        return "help gif";
     }
 
 }

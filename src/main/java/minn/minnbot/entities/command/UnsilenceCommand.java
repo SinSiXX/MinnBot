@@ -74,4 +74,9 @@ public class UnsilenceCommand extends CommandAdapter {
 		return "unsilence <mention>";
 	}
 
+	@Override
+	public String example() {
+		return "unsilence <@158174948488118272>";
+	}
+
 }

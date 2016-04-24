@@ -80,6 +80,12 @@ public class CopyRoleCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "copyrole <copy-name>";
+        return "copyrole <rolename> | <copyrolename>";
     }
+
+    @Override
+    public String example() {
+        return "copyrole Moderators | Admins";
+    }
+
 }

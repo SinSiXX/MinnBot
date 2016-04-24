@@ -3,25 +3,12 @@ package minn.minnbot.entities.command.owner;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
-import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class NameCommand extends CommandAdapter {
 
-	private User owner;
-
-	public NameCommand(User owner, String prefix, Logger logger) {
-		this.owner = owner;
+	public NameCommand(String prefix, Logger logger) {
 		this.logger = logger;
 		this.prefix = prefix;
-	}
-
-	@Override
-	public void onMessageReceived(MessageReceivedEvent event) {
-		if (event.getAuthor() == owner && isCommand(event.getMessage().getContent())) {
-			logger.logCommandUse(event.getMessage());
-			onCommand(new CommandEvent(event));
-		}
 	}
 
 	@Override
@@ -55,5 +42,10 @@ public class NameCommand extends CommandAdapter {
 	}
 	public boolean requiresOwner() {
 		return true;
+	}
+
+	@Override
+	public String example() {
+		return "name MinnBot";
 	}
 }

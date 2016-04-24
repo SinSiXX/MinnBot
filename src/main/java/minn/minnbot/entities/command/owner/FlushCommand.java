@@ -9,18 +9,15 @@ import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class FlushCommand extends CommandAdapter {
 
-	private User owner;
-	
-	public FlushCommand(String prefix, Logger logger, User owner) {
+	public FlushCommand(String prefix, Logger logger) {
 		this.prefix = prefix;
 		this.logger = logger;
-		this.owner = owner;
 	}
 
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if(event.isPrivate())
 			return;
-		if (event.getAuthor() == owner && isCommand(event.getMessage().getContent())) {
+		if (isCommand(event.getMessage().getContent())) {
 			logger.logCommandUse(event.getMessage());
 			onCommand(new CommandEvent(event));
 		}
@@ -71,4 +68,10 @@ public class FlushCommand extends CommandAdapter {
 	public boolean requiresOwner() {
 		return true;
 	}
+
+	@Override
+	public String example() {
+		return "flush";
+	}
+
 }

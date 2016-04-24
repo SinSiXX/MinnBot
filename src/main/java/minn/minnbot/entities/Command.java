@@ -18,6 +18,8 @@ public interface Command {
 	String usage();
 	
 	String getAlias();
+
+	String example();
 	
 	boolean requiresOwner();
 }

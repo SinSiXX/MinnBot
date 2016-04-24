@@ -75,4 +75,9 @@ public class SilenceCommand extends CommandAdapter {
 		return "silence <mention>";
 	}
 
+	@Override
+	public String example() {
+		return "silence <@158174948488118272>";
+	}
+
 }
