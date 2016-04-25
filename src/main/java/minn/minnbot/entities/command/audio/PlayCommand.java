@@ -25,7 +25,7 @@ public class PlayCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         if (event.allArguments.isEmpty()) {
-            event.sendMessage("Emptry URL is not accepted. " + EmoteUtil.getRngThumbsdown());
+            event.sendMessage("Empty URL is not accepted. " + EmoteUtil.getRngThumbsdown());
             return;
         }
         MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
@@ -58,7 +58,7 @@ public class PlayCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "play <URL>";
+        return "play <URL>\tDEPRECATED -> use queue instead";
     }
 
     @Override

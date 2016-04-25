@@ -1,6 +1,5 @@
 package minn.minnbot.manager;
 
-import minn.minnbot.entities.audio.PlayerListener;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
@@ -41,7 +40,7 @@ public class MinnAudioManager extends ListenerAdapter {
             players.put(guild, player);
         }
         player.setVolume(.5f);
-        player.addEventListener(new PlayerListener());
+        // player.addEventListener(new PlayerListener());
         return player;
     }
 
