@@ -1,46 +1,21 @@
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-apply plugin: 'eu.appsatori.fatjar'
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-
-idea.module {
-	downloadJavadoc = true
-
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id 'application'
 }
-
-eclipse.classpath {
-    downloadJavadoc = true
-    downloadSources = true
-}
-
-
 
 repositories {
     jcenter()
 }
+
+
 dependencies {
-    compile "net.dv8tion:JDA:1.4.0_237"
+    compile 'net.dv8tion:JDA:2.0.0_248'
 }
 
-buildscript {
-    repositories {
-        jcenter()
-    }
+//noinspection GroovyUnusedAssignment
+mainClassName = 'minn.minnbot.MinnBot'
+compileJava.options.encoding = 'UTF-8'
 
-    dependencies {
-        classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
-    }
-}
-
-task myfatJar(type: Jar) {
-    baseName = project.name + '-with-all-dependencies'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-    manifest {
-        attributes 'Main-Class': 'minn.minnbot.MinnBot'
-    }
+task listJars << {
+    configurations.compile.each { File file -> println file.name }
 }
