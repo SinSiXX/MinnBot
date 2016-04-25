@@ -9,7 +9,6 @@ import net.dv8tion.jda.player.Playlist;
 import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class QueueCommand extends CommandAdapter {
@@ -26,8 +25,9 @@ public class QueueCommand extends CommandAdapter {
             return;
         }
         String[] urls = event.allArguments.replace(" ", "").split("\\Q,\\E");
-        List<AudioSource> sources = new LinkedList<>();
         MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
+        final int[] count = {0};
+        final int[] skipped = {0};
         for (String url : urls) {
             Playlist list;
             try {
@@ -36,29 +36,36 @@ public class QueueCommand extends CommandAdapter {
                 continue;
             }
             List<AudioSource> listSources = list.getSources();
-            if (listSources.size() > 1)
-                event.sendMessage("Detected Playlist! Starting to queue songs...");
-            else if (listSources.size() > 50)
+            if (listSources.size() > 50) {
                 event.sendMessage("Playlist contained more than 50 songs, skipping completely! RAM doesn't like you fam.");
-            else if(listSources.size() == 1) {
+                continue;
+            } else if (listSources.size() > 1) {
+                event.sendMessage("Detected Playlist! Starting to queue songs...");
+            } else if(listSources.size() == 1) {
                 event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
             }
+
             listSources.parallelStream().filter(source -> {
                 AudioInfo info = source.getInfo();
-                return info == null;
-            }).forEach(listSources::remove);
-            if (listSources.isEmpty()) {
-                continue;
-            }
-            sources.addAll(listSources);
+                if(info == null || info.getTitle() == null || info.getTitle().isEmpty()) {
+                    event.sendMessage("A song is being skipped due to missing permissions by youtube!");
+                    skipped[0]++;
+                    return false;
+                }
+                return true;
+            }).forEach(source -> {
+                count[0]++;
+                player.getAudioQueue().add(source);
+            });
         }
-        player.getAudioQueue().addAll(sources);
-        if (!player.isPlaying()) {
+        if (!player.isPlaying() && !player.getAudioQueue().isEmpty()) {
             player.play();
-            event.sendMessage("Added provided URLs to the queue and the player started playing!");
+            event.sendMessage("Added provided URLs to the queue and the player started playing! " +
+                    "**__Amount:__ " + count[0] + " __Skipped:__ "+ skipped[0]+"**");
             return;
         }
-        event.sendMessage("Added provided URLs to the queue!");
+        event.sendMessage("Added provided URLs to the queue! " +
+                "**__Amount:__ " + count[0] + " __Skipped:__ "+ skipped[0]+"**");
     }
 
     @Override

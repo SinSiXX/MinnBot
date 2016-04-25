@@ -155,11 +155,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void saveTags() {
-        for (Command c : commands) {
-            if (c instanceof TagCommand) {
-                ((TagCommand) c).onShutdown(null);
-            }
-        }
+        TagManager.saveTags();
     }
 
 }

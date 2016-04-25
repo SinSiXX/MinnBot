@@ -78,7 +78,7 @@ public class MinnBot {
         log("Powersaving: " + powersaving);
     }
 
-    public static void launch(MinnBotUserInterface console) throws Exception {
+    public synchronized static void launch(MinnBotUserInterface console) throws Exception {
         MinnBot.console = console;
         AccountSettings as = new AccountSettings(console);
         console.setAccountSettings(as);
@@ -175,7 +175,7 @@ public class MinnBot {
         logger.logThrowable(new Info(toLog));
     }
 
-    public MinnBot initCommands(JDA api) throws UnknownHostException, UnsupportedDataTypeException {
+    public synchronized MinnBot initCommands(JDA api) throws UnknownHostException, UnsupportedDataTypeException {
         List<String> errors = new LinkedList<>();
         try {
             EvalUtil.init();

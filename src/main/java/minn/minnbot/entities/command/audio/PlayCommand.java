@@ -8,7 +8,7 @@ import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
 import net.dv8tion.jda.player.source.RemoteSource;
-
+@Deprecated
 public class PlayCommand extends CommandAdapter {
 
     public PlayCommand(String prefix, Logger logger) {
@@ -49,9 +49,7 @@ public class PlayCommand extends CommandAdapter {
     @Override
     public boolean isCommand(String message) {
         String[] parts = message.split(" ", 2);
-        if (parts.length < 1)
-            return false;
-        return parts[0].equalsIgnoreCase(prefix + "play");
+        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "play");
     }
 
     public String usage() {

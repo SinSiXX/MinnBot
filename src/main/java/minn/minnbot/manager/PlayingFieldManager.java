@@ -32,6 +32,9 @@ public class PlayingFieldManager {
     }
 
     public static void removeGame(String game) {
+        if(manager == null) {
+            return;
+        }
         if (Objects.equals(game, MinnBot.VERSION)) {
             return;
         }
@@ -41,6 +44,9 @@ public class PlayingFieldManager {
     }
 
     public static void addGame(String game) {
+        if(manager == null) {
+            return;
+        }
         if (manager.games.contains(game)) {
             return;
         }

@@ -6,18 +6,18 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.entities.impl.BlockTag;
 import minn.minnbot.entities.impl.TagImpl;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.TagManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.utils.PermissionUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
 import java.lang.reflect.MalformedParametersException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -33,6 +33,7 @@ public class TagCommand extends CommandAdapter {
         this.prefix = prefix;
         this.logger = logger;
         this.tags = new LinkedList<>();
+        new TagManager(tags, logger);
         this.owner = pOwner;
         tags.add(new BlockTag("del"));
         tags.add(new BlockTag("edt"));
@@ -58,59 +59,6 @@ public class TagCommand extends CommandAdapter {
                 logger.logThrowable(e);
             }
         }
-    }
-
-    public void onShutdown(ShutdownEvent event) {
-        JSONArray arr = getAsJsonArray();
-        if (new File("tags.json").exists())
-            new File("tags.json").delete();
-        new File("tags.json");
-        Writer out = null;
-        try {
-            out = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream("tags.json"), "UTF-8"));
-            try {
-                out.write(arr.toString(4));
-            } finally {
-                out.close();
-            }
-            Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
-            logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
-        } catch (IOException e) {
-            logger.logThrowable(e);
-        }
-        // try {
-//            Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
-  //          logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
-    //    } catch (IOException e) {
-      //      logger.logThrowable(e);
-        //}
-    }
-
-    private JSONObject jsonfy(Tag tag) {
-        try {
-            JSONObject obj = new JSONObject();
-            obj.put("name", tag.name());
-            obj.put("guild", tag.getGuild().getId());
-            obj.put("response", tag.response());
-            obj.put("owner", tag.getOwner().getId());
-            return obj;
-        } catch (Exception e) {
-            logger.logThrowable(e);
-            return null;
-        }
-    }
-
-    private JSONArray getAsJsonArray() {
-        JSONArray arr = new JSONArray();
-        for (Tag t : tags) {
-            if (t instanceof BlockTag)
-                continue;
-            JSONObject obj = jsonfy(t);
-            if (obj != null)
-                arr.put(obj);
-        }
-        return arr;
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -248,7 +196,7 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Not a valid tagname. " + EmoteUtil.getRngThumbsdown());
                     return;
                 }
-                JSONObject obj = jsonfy(target);
+                JSONObject obj = TagManager.jsonfy(target);
                 if (obj != null) {
                     if (obj.toString(4).length() >= 2000) {
                         event.sendMessage("Unable to print jsonfied tag. Reached charecter limit of 2000." + EmoteUtil.getRngThumbsdown());
