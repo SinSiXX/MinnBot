@@ -5,6 +5,7 @@ import minn.minnbot.entities.Logger;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDAInfo;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +18,10 @@ public class PlayingFieldManager {
     private List<String> games = new LinkedList<>();
     private int index;
     private Logger logger;
+
+    public static List<String> getGames() {
+        return Collections.unmodifiableList(manager.games);
+    }
 
     private PlayingFieldManager(JDA api, Logger logger) {
         this.api = api;
