@@ -19,7 +19,7 @@ public class QueueCommand extends CommandAdapter {
 
     public QueueCommand(String prefix, Logger logger) {
         super.init(prefix, logger);
-        pool = new ThreadPoolImpl("Player");
+       // pool = new ThreadPoolImpl(0, 2, 1000, "enqueue");
     }
 
     @Override
@@ -38,38 +38,30 @@ public class QueueCommand extends CommandAdapter {
                 continue;
             }
             List<AudioSource> listSources = list.getSources();
-            if (listSources.size() > 50) {
-                event.sendMessage("Playlist contained more than 50 songs, skipping completely! RAM doesn't like you fam.");
-                continue;
-            } else if (listSources.size() > 1) {
+            if (listSources.size() > 1) {
                 event.sendMessage("Detected Playlist! Starting to queue songs...");
             } else if (listSources.size() == 1) {
                 event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
             }
             listSources.parallelStream().forEachOrdered(source -> {
-                pool.getAnyWorkQueue().addWork(new WorkImpl(source, player.getAudioQueue(),event, player));
-                /*AudioInfo info = source.getInfo();
+                /*Work work = new WorkImpl(source, player.getAudioQueue(), event, player);
+                work.setEnqueueTime(System.currentTimeMillis());
+                pool.getAnyWorkQueue().addWork(work);*/
+                AudioInfo info = source.getInfo();
                 if (info == null) {
                     event.sendMessage("Source was not available. Skipping.");
-                    skipped[0]++;
                     return;
                 } else if (info.getError() != null) {
-                    event.sendMessage("Error for source occurred: `" + info.getError() + "`.");
-                    skipped[0]++;
+                    event.sendMessage("**__Error for source occurred:__** `" + info.getError() + "`.");
                     return;
                 }
                 player.getAudioQueue().add(source);
-                count[0]++; */
+                if (!player.isPlaying()) {
+                    event.sendMessage("Enqueuing songs and starting playback...");
+                    player.play();
+                }
             });
         }
-        /*if (!player.isPlaying() && !player.getAudioQueue().isEmpty()) {
-            player.play();
-            event.sendMessage("Added provided URLs to the queue and the player started playing! " +
-                    "**__Amount:__ " + count[0] + " __Skipped:__ " + skipped[0] + "**");
-            return;
-        }
-        event.sendMessage("Added provided URLs to the queue! " +
-                "**__Amount:__ " + count[0] + " __Skipped:__ " + skipped[0] + "**");*/
     }
 
 
@@ -79,6 +71,7 @@ public class QueueCommand extends CommandAdapter {
         private List<AudioSource> sourceList;
         private CommandEvent event;
         private MusicPlayer player;
+        private long time = 5000;
 
         WorkImpl(AudioSource source, List<AudioSource> sourceList, CommandEvent event, MusicPlayer player) {
             this.source = source;
@@ -98,7 +91,7 @@ public class QueueCommand extends CommandAdapter {
                 return;
             }
             sourceList.add(source);
-            if(!player.isPlaying()) {
+            if (!player.isPlaying()) {
                 event.sendMessage("Enqueuing songs and starting playback...");
                 player.play();
             }
@@ -106,12 +99,12 @@ public class QueueCommand extends CommandAdapter {
 
         @Override
         public void setEnqueueTime(long timeInMillis) {
-            // TODO
+            time = timeInMillis;
         }
 
         @Override
         public long getEnqueueTime() {
-            return 0;
+            return time;
         }
 
         @Override

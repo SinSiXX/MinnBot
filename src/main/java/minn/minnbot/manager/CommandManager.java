@@ -1,5 +1,7 @@
 package minn.minnbot.manager;
 
+import com.sun.corba.se.impl.orbutil.threadpool.ThreadPoolImpl;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.TagCommand;
@@ -31,11 +33,13 @@ public class CommandManager extends ListenerAdapter {
     private JDA api;
     private User owner;
     private Logger logger;
+    private ThreadPoolImpl pool;
 
     public CommandManager(JDA api, Logger logger, User owner) {
         this.api = api;
         this.logger = logger;
         this.owner = owner;
+        this.pool = new ThreadPoolImpl(0, 10, 200, "CommandManager");
     }
 
     public List<Command> getCommands() {
@@ -66,7 +70,10 @@ public class CommandManager extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot() || IgnoreUtil.isIgnored(event.getAuthor(), event.getGuild(), event.getTextChannel()))
             return;
-        Thread t = new Thread(() -> {
+        Work work = new WorkImpl(event);
+        work.setEnqueueTime(System.currentTimeMillis());
+        pool.getAnyWorkQueue().addWork(work);
+        /*Thread t = new Thread(() -> {
             try {
 
                 for (Command c : commands) {
@@ -89,7 +96,7 @@ public class CommandManager extends ListenerAdapter {
         });
         t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
         t.setName("MessageHandling");
-        t.start();
+        t.start();*/
     }
 
     public void registerManager(CmdManager manager) throws UnsupportedDataTypeException {
@@ -156,6 +163,49 @@ public class CommandManager extends ListenerAdapter {
 
     public void saveTags() {
         TagManager.saveTags();
+    }
+
+    private class WorkImpl implements Work {
+
+        private MessageReceivedEvent event;
+        private long time = 200;
+
+        WorkImpl(MessageReceivedEvent event) {
+            this.event = event;
+        }
+
+        @Override
+        public void doWork() {
+            Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+            for (Command c : commands) {
+                if (c.requiresOwner()) {
+                    if (event.getAuthor() == owner)
+                        c.onMessageReceived(event);
+                    continue;
+                }
+                c.onMessageReceived(event);
+            }
+            managers.parallelStream().forEachOrdered(manager -> {
+                if (manager.requiresOwner() && event.getAuthor() != owner)
+                    return;
+                manager.call(event);
+            });
+        }
+
+        @Override
+        public void setEnqueueTime(long timeInMillis) {
+            time = timeInMillis;
+        }
+
+        @Override
+        public long getEnqueueTime() {
+            return time;
+        }
+
+        @Override
+        public String getName() {
+            return "message-event";
+        }
     }
 
 }
