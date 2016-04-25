@@ -17,7 +17,6 @@ public class SayCommand extends CommandAdapter {
 			logger.logCommandUse(event.getMessage());
 			onCommand(new CommandEvent(event));
 		}
-			
 	}
 
 	@Override

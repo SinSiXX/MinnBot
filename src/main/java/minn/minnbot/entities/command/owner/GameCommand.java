@@ -3,50 +3,47 @@ package minn.minnbot.entities.command.owner;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.PlayingFieldManager;
 
 public class GameCommand extends CommandAdapter {
 
-	public GameCommand(String prefix, Logger logger) {
-		this.prefix = prefix;
-		this.logger = logger;
-	}
-	
-	@Override
-	public void onCommand(CommandEvent event) {
-		try {
-			event.event.getJDA().getAccountManager().setGame(event.allArguments);
-			event.sendMessage("Requested game change.");
-		} catch (Exception e) {
-			event.sendMessage("Encountered Exception: " + e.getMessage());
-		}
-	}
+    public GameCommand(String prefix, Logger logger) {
+        super.init(prefix, logger);
+    }
 
-	@Override
-	public boolean isCommand(String message) {
-		message = message.toLowerCase();
-		if (!message.startsWith(prefix)) {
-			return false;
-		}
-		String command = message.substring(prefix.length());
-		return ((command.startsWith("game ") && command.length() > "game ".length()) || command.equals("game"));
-	}
+    @Override
+    public void onCommand(CommandEvent event) {
+        if(event.allArguments.isEmpty() || event.allArguments.length() > 20) {
+            event.sendMessage("Game name must be between 0-20 chars.");
+            return;
+        }
+        PlayingFieldManager.addGame(event.allArguments);
+        event.sendMessage("Added game to list!");
+    }
 
-	@Override
-	public String usage() {
-		return "`game <game>`";
-	}
+    @Override
+    public boolean isCommand(String message) {
+        String[] p = message.split(" ", 2);
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "game");
+    }
 
-	@Override
-	public String getAlias() {
-		return "game <game>";
-	}
-	public boolean requiresOwner() {
-		return true;
-	}
+    @Override
+    public String usage() {
+        return "`game <game>`";
+    }
 
-	@Override
-	public String example() {
-		return "game boobs";
-	}
+    @Override
+    public String getAlias() {
+        return "game <game>";
+    }
+
+    public boolean requiresOwner() {
+        return true;
+    }
+
+    @Override
+    public String example() {
+        return "game boobs";
+    }
 
 }

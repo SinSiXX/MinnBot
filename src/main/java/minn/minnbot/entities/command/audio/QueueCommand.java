@@ -1,7 +1,5 @@
 package minn.minnbot.entities.command.audio;
 
-import com.sun.corba.se.impl.orbutil.threadpool.ThreadPoolImpl;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
@@ -12,14 +10,21 @@ import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 
 import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class QueueCommand extends CommandAdapter {
 
-    private ThreadPoolImpl pool;
+    private ThreadPoolExecutor executor;
 
     public QueueCommand(String prefix, Logger logger) {
         super.init(prefix, logger);
-       // pool = new ThreadPoolImpl(0, 2, 1000, "enqueue");
+        executor = new ThreadPoolExecutor(1, 5, 10L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+            final Thread thread = new Thread(r, "QueueExecution-Thread");
+            thread.setPriority(Thread.MIN_PRIORITY + 1);
+            return thread;
+        });
     }
 
     @Override
@@ -28,89 +33,39 @@ public class QueueCommand extends CommandAdapter {
             event.sendMessage("You have to provide at least one URL.");
             return;
         }
-        String[] urls = event.allArguments.replace(" ", "").split("\\Q,\\E");
-        MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
-        for (String url : urls) {
-            Playlist list;
-            try {
-                list = Playlist.getPlaylist(((url.startsWith("<") && url.endsWith(">")) ? url.substring(1, url.length() - 1) : url));
-            } catch (NullPointerException ignored) {
-                continue;
-            }
-            List<AudioSource> listSources = list.getSources();
-            if (listSources.size() > 1) {
-                event.sendMessage("Detected Playlist! Starting to queue songs...");
-            } else if (listSources.size() == 1) {
-                event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
-            }
-            listSources.parallelStream().forEachOrdered(source -> {
-                /*Work work = new WorkImpl(source, player.getAudioQueue(), event, player);
-                work.setEnqueueTime(System.currentTimeMillis());
-                pool.getAnyWorkQueue().addWork(work);*/
-                AudioInfo info = source.getInfo();
-                if (info == null) {
-                    event.sendMessage("Source was not available. Skipping.");
-                    return;
-                } else if (info.getError() != null) {
-                    event.sendMessage("**__Error for source occurred:__** `" + info.getError() + "`");
-                    return;
+        executor.execute(() -> {
+            String[] urls = event.allArguments.replace(" ", "").split("\\Q,\\E");
+            MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
+            for (String url : urls) {
+                Playlist list;
+                try {
+                    list = Playlist.getPlaylist(((url.startsWith("<") && url.endsWith(">")) ? url.substring(1, url.length() - 1) : url));
+                } catch (NullPointerException ignored) {
+                    continue;
                 }
-                player.getAudioQueue().add(source);
-                if (!player.isPlaying()) {
-                    event.sendMessage("Enqueuing songs and starting playback...");
-                    player.play();
+                List<AudioSource> listSources = list.getSources();
+                if (listSources.size() > 1) {
+                    event.sendMessage("Detected Playlist! Starting to queue songs...");
+                } else if (listSources.size() == 1) {
+                    event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
                 }
-            });
-        }
-    }
-
-
-    private class WorkImpl implements Work {
-
-        private AudioSource source;
-        private List<AudioSource> sourceList;
-        private CommandEvent event;
-        private MusicPlayer player;
-        private long time = 5000;
-
-        WorkImpl(AudioSource source, List<AudioSource> sourceList, CommandEvent event, MusicPlayer player) {
-            this.source = source;
-            this.sourceList = sourceList;
-            this.event = event;
-            this.player = player;
-        }
-
-        @Override
-        public void doWork() {
-            AudioInfo info = source.getInfo();
-            if (info == null) {
-                event.sendMessage("Source was not available. Skipping.");
-                return;
-            } else if (info.getError() != null) {
-                event.sendMessage("**__Error for source occurred:__** `" + info.getError() + "`.");
-                return;
+                listSources.parallelStream().forEachOrdered(source -> {
+                    AudioInfo info = source.getInfo();
+                    if (info == null) {
+                        event.sendMessage("Source was not available. Skipping.");
+                        return;
+                    } else if (info.getError() != null) {
+                        event.sendMessage("**__Error for source occurred:__** `" + info.getError() + "`");
+                        return;
+                    }
+                    player.getAudioQueue().add(source);
+                    if (!player.isPlaying()) {
+                        event.sendMessage("Enqueuing songs and starting playback...");
+                        player.play();
+                    }
+                });
             }
-            sourceList.add(source);
-            if (!player.isPlaying()) {
-                event.sendMessage("Enqueuing songs and starting playback...");
-                player.play();
-            }
-        }
-
-        @Override
-        public void setEnqueueTime(long timeInMillis) {
-            time = timeInMillis;
-        }
-
-        @Override
-        public long getEnqueueTime() {
-            return time;
-        }
-
-        @Override
-        public String getName() {
-            return "source-work";
-        }
+        });
     }
 
     @Override

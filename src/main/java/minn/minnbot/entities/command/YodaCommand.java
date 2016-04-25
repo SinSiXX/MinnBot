@@ -42,4 +42,5 @@ public class YodaCommand extends CommandAdapter{
     public String example() {
         return "yoda This is an example sentence.";
     }
+
 }
