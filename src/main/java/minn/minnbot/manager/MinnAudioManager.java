@@ -2,19 +2,27 @@ package minn.minnbot.manager;
 
 import minn.minnbot.entities.audio.PlayerListener;
 import net.dv8tion.jda.entities.Guild;
+import net.dv8tion.jda.events.ShutdownEvent;
+import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.player.MusicPlayer;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MinnAudioManager {
+public class MinnAudioManager extends ListenerAdapter {
+
+    public void onShutdown(ShutdownEvent event) {
+        reset();
+    }
 
     private static Map<Guild, MusicPlayer> players = new HashMap<>();
+
 
     public static void reset() {
         players.forEach(((guild, player) -> {
             if (!player.isStopped())
                 player.stop();
+            player.getAudioQueue().clear();
             players.remove(guild);
         }));
     }

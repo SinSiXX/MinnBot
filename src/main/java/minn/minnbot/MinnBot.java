@@ -6,10 +6,7 @@ import minn.minnbot.entities.audio.MinnPlayer;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.AccountSettings;
 import minn.minnbot.gui.MinnBotUserInterface;
-import minn.minnbot.manager.CmdManager;
-import minn.minnbot.manager.CommandManager;
-import minn.minnbot.manager.ModLogManager;
-import minn.minnbot.manager.PlayingFieldManager;
+import minn.minnbot.manager.*;
 import minn.minnbot.manager.impl.*;
 import minn.minnbot.util.EvalUtil;
 import net.dv8tion.jda.JDA;
@@ -103,6 +100,9 @@ public class MinnBot {
             as.setApi(api);
             MinnBotUserInterface.bot = bot;
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) bot.getLogger());
+            if(audio) {
+                api.addEventListener(new MinnAudioManager());
+            }
             bot.log("Setup completed.");
         } catch (IllegalArgumentException e) {
             if (e.getMessage().isEmpty())

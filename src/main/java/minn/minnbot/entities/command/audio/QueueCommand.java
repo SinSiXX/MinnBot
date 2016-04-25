@@ -52,7 +52,7 @@ public class QueueCommand extends CommandAdapter {
                     event.sendMessage("Source was not available. Skipping.");
                     return;
                 } else if (info.getError() != null) {
-                    event.sendMessage("**__Error for source occurred:__** `" + info.getError() + "`.");
+                    event.sendMessage("**__Error for source occurred:__** `" + info.getError() + "`");
                     return;
                 }
                 player.getAudioQueue().add(source);

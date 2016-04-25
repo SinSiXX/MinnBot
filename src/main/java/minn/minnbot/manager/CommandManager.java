@@ -4,7 +4,6 @@ import com.sun.corba.se.impl.orbutil.threadpool.ThreadPoolImpl;
 import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.command.TagCommand;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
@@ -59,12 +58,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void onShutdown(ShutdownEvent event) {
-        for (Command c : commands) {
-            if (c instanceof TagCommand) {
-                ((TagCommand) c).onShutdown(event);
-                return;
-            }
-        }
+
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
