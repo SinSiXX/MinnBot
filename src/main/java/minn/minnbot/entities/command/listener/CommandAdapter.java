@@ -11,6 +11,11 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
     protected Logger logger;
     protected String prefix;
 
+    protected void init(String prefix, Logger logger) {
+        this.prefix = prefix;
+        this.logger = logger;
+    }
+
     public void onMessageReceived(MessageReceivedEvent event) {
         String message = event.getMessage().getContent();
         if (isCommand(message)) {
@@ -39,7 +44,9 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
 
     public abstract String getAlias();
 
-    public abstract String example();
+    public String example() {
+        return getAlias();
+    }
 
     public boolean requiresOwner() {
         return false;

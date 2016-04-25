@@ -1,5 +1,7 @@
 package minn.minnbot.entities.command.audio;
 
+import com.sun.corba.se.impl.orbutil.threadpool.ThreadPoolImpl;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
@@ -13,9 +15,11 @@ import java.util.List;
 
 public class QueueCommand extends CommandAdapter {
 
+    private ThreadPoolImpl pool;
+
     public QueueCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
+        super.init(prefix, logger);
+        pool = new ThreadPoolImpl("Player");
     }
 
     @Override
@@ -26,8 +30,6 @@ public class QueueCommand extends CommandAdapter {
         }
         String[] urls = event.allArguments.replace(" ", "").split("\\Q,\\E");
         MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
-        final int[] count = {0};
-        final int[] skipped = {0};
         for (String url : urls) {
             Playlist list;
             try {
@@ -41,31 +43,81 @@ public class QueueCommand extends CommandAdapter {
                 continue;
             } else if (listSources.size() > 1) {
                 event.sendMessage("Detected Playlist! Starting to queue songs...");
-            } else if(listSources.size() == 1) {
+            } else if (listSources.size() == 1) {
                 event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
             }
-
-            listSources.parallelStream().filter(source -> {
-                AudioInfo info = source.getInfo();
-                if(info == null || info.getTitle() == null || info.getTitle().isEmpty()) {
-                    event.sendMessage("A song is being skipped due to missing permissions by youtube!");
+            listSources.parallelStream().forEachOrdered(source -> {
+                pool.getAnyWorkQueue().addWork(new WorkImpl(source, player.getAudioQueue(),event, player));
+                /*AudioInfo info = source.getInfo();
+                if (info == null) {
+                    event.sendMessage("Source was not available. Skipping.");
                     skipped[0]++;
-                    return false;
+                    return;
+                } else if (info.getError() != null) {
+                    event.sendMessage("Error for source occurred: `" + info.getError() + "`.");
+                    skipped[0]++;
+                    return;
                 }
-                return true;
-            }).forEach(source -> {
-                count[0]++;
                 player.getAudioQueue().add(source);
+                count[0]++; */
             });
         }
-        if (!player.isPlaying() && !player.getAudioQueue().isEmpty()) {
+        /*if (!player.isPlaying() && !player.getAudioQueue().isEmpty()) {
             player.play();
             event.sendMessage("Added provided URLs to the queue and the player started playing! " +
-                    "**__Amount:__ " + count[0] + " __Skipped:__ "+ skipped[0]+"**");
+                    "**__Amount:__ " + count[0] + " __Skipped:__ " + skipped[0] + "**");
             return;
         }
         event.sendMessage("Added provided URLs to the queue! " +
-                "**__Amount:__ " + count[0] + " __Skipped:__ "+ skipped[0]+"**");
+                "**__Amount:__ " + count[0] + " __Skipped:__ " + skipped[0] + "**");*/
+    }
+
+
+    private class WorkImpl implements Work {
+
+        private AudioSource source;
+        private List<AudioSource> sourceList;
+        private CommandEvent event;
+        private MusicPlayer player;
+
+        WorkImpl(AudioSource source, List<AudioSource> sourceList, CommandEvent event, MusicPlayer player) {
+            this.source = source;
+            this.sourceList = sourceList;
+            this.event = event;
+            this.player = player;
+        }
+
+        @Override
+        public void doWork() {
+            AudioInfo info = source.getInfo();
+            if (info == null) {
+                event.sendMessage("Source was not available. Skipping.");
+                return;
+            } else if (info.getError() != null) {
+                event.sendMessage("**__Error for source occurred:__** `" + info.getError() + "`.");
+                return;
+            }
+            sourceList.add(source);
+            if(!player.isPlaying()) {
+                event.sendMessage("Enqueuing songs and starting playback...");
+                player.play();
+            }
+        }
+
+        @Override
+        public void setEnqueueTime(long timeInMillis) {
+            // TODO
+        }
+
+        @Override
+        public long getEnqueueTime() {
+            return 0;
+        }
+
+        @Override
+        public String getName() {
+            return "source-work";
+        }
     }
 
     @Override

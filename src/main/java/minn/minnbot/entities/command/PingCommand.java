@@ -14,12 +14,8 @@ public class PingCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        try {
-            long ping = System.currentTimeMillis();
-            event.event.getChannel().sendMessageAsync("**__Ping:__** ", (Message m) -> m.updateMessageAsync("**__Ping:__** **" + (System.currentTimeMillis() - ping) + "ms**", null));
-        } catch (Exception e) {
-            logger.logThrowable(e);
-        }
+        long ping = System.currentTimeMillis();
+        event.event.getChannel().sendMessageAsync("**__Ping:__** ", (Message m) -> m.updateMessageAsync("**__Ping:__** **" + (System.currentTimeMillis() - ping) + "ms**", null));
     }
 
     @Override
