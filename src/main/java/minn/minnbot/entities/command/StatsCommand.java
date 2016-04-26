@@ -106,7 +106,7 @@ public class StatsCommand extends CommandAdapter {
         int queuedSongs = MinnAudioManager.queuedSongs();
         String connections = "Connected to **"
                 + sizeChannels + "** voice channel" + ((sizeChannels == 1) ? "" : "s")
-                + " with **" + sizePlayers + "** different player" + ((sizePlayers != 1) ? "s" : "") + " running and **" + queuedSongs + "** queued Song" + ((queuedSongs != 1) ? "s" : "") + "!";
+                + " with **" + sizePlayers + "** distinct player" + ((sizePlayers != 1) ? "s" : "") + " running and **" + queuedSongs + "** queued Song" + ((queuedSongs != 1) ? "s" : "") + "!";
 
         return "```md\n" +
                 "Statistics: " + about + "\n\n[Connection]:\n" + uptime + "\n" + mem

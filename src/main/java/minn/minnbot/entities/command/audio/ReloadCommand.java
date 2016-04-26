@@ -1,0 +1,41 @@
+package minn.minnbot.entities.command.audio;
+
+import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.command.listener.CommandAdapter;
+import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.MinnAudioManager;
+import net.dv8tion.jda.player.MusicPlayer;
+
+public class ReloadCommand extends CommandAdapter {
+
+   public ReloadCommand(String prefix, Logger logger) {
+       init(prefix,logger);
+   }
+
+    @Override
+    public void onCommand(CommandEvent event) {
+        MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
+        if(player.isPlaying()) {
+            player.pause();
+            event.sendMessage("Reloading player...");
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            player.play();
+            return;
+        }
+        event.sendMessage("Player is not currently playing!");
+    }
+
+    @Override
+    public boolean isCommand(String message) {
+        String[] p = message.split(" ",2);
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "reload");
+    }
+
+    @Override
+    public String getAlias() {
+        return "reload";
+    }
+}
