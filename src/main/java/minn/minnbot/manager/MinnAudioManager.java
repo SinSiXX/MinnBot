@@ -66,13 +66,15 @@ public class MinnAudioManager extends ListenerAdapter {
     }
 
     public static void clear() {
+        Map<Guild, MusicPlayer> toRemove = new HashMap<>();
         players.forEach((g, p) -> {
             if (p.getAudioQueue().isEmpty() && !p.isPlaying()) {
                 /*if (g.getAudioManager().getConnectedChannel() != null)
                     g.getAudioManager().closeAudioConnection(); TODO: Decide about use*/
-                players.remove(g);
+                toRemove.put(g, p);
             }
         });
+        toRemove.forEach((g, p) -> players.remove(g, p));
     }
 
     public static MusicPlayer getPlayer(Guild guild) {
