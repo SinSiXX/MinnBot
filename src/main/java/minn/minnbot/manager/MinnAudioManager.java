@@ -8,6 +8,7 @@ import net.dv8tion.jda.player.MusicPlayer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class MinnAudioManager extends ListenerAdapter {
 
@@ -37,10 +38,10 @@ public class MinnAudioManager extends ListenerAdapter {
     }
 
     public void onShutdown(ShutdownEvent event) {
-        // reset();
+        reset();
         if (keepAlive != null && keepAlive.isAlive()) keepAlive.stop();
         keepAlive = null;
-        players.clear();
+        // players.clear();
         init();
     }
 
@@ -58,25 +59,43 @@ public class MinnAudioManager extends ListenerAdapter {
 
     public static void reset() {
         Map<Guild, MusicPlayer> toRemove = new HashMap<>();
-        players.forEach(((g, p) -> {
+        removeWith((g, p) -> {
+            if (!p.isStopped())
+                p.stop();
+            p.getAudioQueue().clear();
+            toRemove.put(g, p);
+        }, toRemove);
+        /*players.forEach(((g, p) -> {
             if (!p.isStopped())
                 p.stop();
             p.getAudioQueue().clear();
             toRemove.put(g, p);
         }));
+        toRemove.forEach((g, p) -> players.remove(g, p));*/
+    }
+
+    private synchronized static void removeWith(BiConsumer<Guild, MusicPlayer> runnable, Map<Guild, MusicPlayer> toRemove) {
+        players.forEach(runnable);
         toRemove.forEach((g, p) -> players.remove(g, p));
     }
 
     public static void clear() {
         Map<Guild, MusicPlayer> toRemove = new HashMap<>();
-        players.forEach((g, p) -> {
+        removeWith((g, p) -> {
             if (p.getAudioQueue().isEmpty() && !p.isPlaying()) {
                 /*if (g.getAudioManager().getConnectedChannel() != null)
                     g.getAudioManager().closeAudioConnection(); TODO: Decide about use*/
                 toRemove.put(g, p);
             }
+        }, toRemove);
+        /*players.forEach((g, p) -> {
+            if (p.getAudioQueue().isEmpty() && !p.isPlaying()) {
+                *//*if (g.getAudioManager().getConnectedChannel() != null)
+                    g.getAudioManager().closeAudioConnection(); TODO: Decide about use*//*
+                toRemove.put(g, p);
+            }
         });
-        toRemove.forEach((g, p) -> players.remove(g, p));
+        toRemove.forEach((g, p) -> players.remove(g, p));*/
     }
 
     public static MusicPlayer getPlayer(Guild guild) {
@@ -89,9 +108,7 @@ public class MinnAudioManager extends ListenerAdapter {
             throw new UnsupportedOperationException("Player can not be null!");
         }
         guild.getAudioManager().setSendingHandler(player);
-        if (!players.containsKey(guild)) {
-            players.put(guild, player);
-        }
+        players.put(guild, player);
         player.setVolume(.5f);
         // player.addEventListener(new PlayerListener());
         return player;
