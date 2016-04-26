@@ -14,26 +14,19 @@ public class PingCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        try {
-            long ping = System.currentTimeMillis();
-            event.event.getChannel().sendMessageAsync("**__Ping:__** ", (Message m) -> m.updateMessageAsync("**__Ping:__** **" + (System.currentTimeMillis() - ping) + "ms**", null));
-        } catch (Exception e) {
-            logger.logThrowable(e);
-        }
+        long ping = System.currentTimeMillis();
+        event.channel.sendMessageAsync("**__Ping:__** ", (Message m) -> m.updateMessageAsync("**__Ping:__** **" + (System.currentTimeMillis() - ping) + "ms**", null));
     }
 
     @Override
     public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("ping"))
-                return true;
-        } catch (Exception ignore) {
-        }
+        message = message.toLowerCase();
+        if (!message.startsWith(prefix))
+            return false;
+        message = message.substring(prefix.length());
+        String command = message.split(" ", 2)[0];
+        if (command.equalsIgnoreCase("ping"))
+            return true;
         return false;
     }
 

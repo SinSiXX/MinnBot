@@ -50,11 +50,9 @@ public class EvalUtil {
         } catch (Exception e) {
             out = e.getMessage();
         }
-        try {
-            out = out.toString().replace("@everyone", "(mass mention)");
-        } catch (NullPointerException e) {
+        if (out != null) {
+            out = out.toString().replace("@everyone", "(mass mention)").replace("`", "\u0001`\u0001");
         }
-        out.toString().replace("`", "\u0001`\u0001");
         switch (method) {
             default: {
                 out = ("**__Input:__** ```js\n>" + input + "```\n" + out

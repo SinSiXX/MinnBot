@@ -23,33 +23,27 @@ public class IgnoreUtil {
     }
 
     public static String listUsers() {
-        if(users.isEmpty())
+        if (users.isEmpty())
             return "";
-        String s = "";
-        for(User u : users) {
-            s += "`" + u.getUsername().replace("`", "") + "#" + u.getDiscriminator() + "`, ";
-        }
-        return s;
+        final String[] s = {""};
+        users.parallelStream().forEach((u) -> s[0] += "`" + u.getUsername().replace("`", "") + "#" + u.getDiscriminator() + "`, ");
+        return s[0];
     }
 
     public static String listChannels() {
-        if(channels.isEmpty())
+        if (channels.isEmpty())
             return "";
-        String s = "";
-        for(TextChannel c : channels) {
-            s += "`" + c.getName() + "<" + c.getId() + ">`, ";
-        }
-        return s;
+        final String[] s = {""};
+        channels.parallelStream().forEach((c) -> s[0] += "`" + c.getName() + "<" + c.getId() + ">`, ");
+        return s[0];
     }
 
     public static String listGuilds() {
-        if(guilds.isEmpty())
+        if (guilds.isEmpty())
             return "";
-        String s= "";
-        for(Guild g : guilds) {
-            s += "`" + g.getName().replace("`", "") + "<" + g.getId() + ">`, ";
-        }
-        return s;
+        final String[] s = {""};
+        guilds.parallelStream().forEach((g) -> s[0] += "`" + g.getName().replace("`", "") + "<" + g.getId() + ">`, ");
+        return s[0];
     }
 
     public static boolean isIgnored(User user, Guild guild, TextChannel channel) {
@@ -69,9 +63,9 @@ public class IgnoreUtil {
     }
 
     public static boolean toggleIgnore(User u) {
-        if(u == null)
+        if (u == null)
             throw new UnsupportedOperationException("User can not be null!");
-        if(users.contains(u)) {
+        if (users.contains(u)) {
             users.remove(u);
             return false;
         }
@@ -80,9 +74,9 @@ public class IgnoreUtil {
     }
 
     public static boolean toggleIgnore(Guild g) {
-        if(g == null)
+        if (g == null)
             throw new UnsupportedOperationException("Guild can not be null!");
-        if(users.contains(g)) {
+        if (users.contains(g)) {
             users.remove(g);
             return false;
         }
@@ -91,9 +85,9 @@ public class IgnoreUtil {
     }
 
     public static boolean toggleIgnore(TextChannel c) {
-        if(c == null)
+        if (c == null)
             throw new UnsupportedOperationException("TextChannel can not be null!");
-        if(users.contains(c)) {
+        if (users.contains(c)) {
             users.remove(c);
             return false;
         }

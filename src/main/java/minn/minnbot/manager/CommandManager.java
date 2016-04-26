@@ -2,7 +2,6 @@ package minn.minnbot.manager;
 
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.command.TagCommand;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
@@ -22,6 +21,9 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -31,11 +33,17 @@ public class CommandManager extends ListenerAdapter {
     private JDA api;
     private User owner;
     private Logger logger;
+    private ThreadPoolExecutor executor;
 
     public CommandManager(JDA api, Logger logger, User owner) {
         this.api = api;
         this.logger = logger;
         this.owner = owner;
+        this.executor = new ThreadPoolExecutor(1, 10, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
+            final Thread thread = new Thread(r, "CommandExecution-Thread");
+            thread.setPriority(Thread.NORM_PRIORITY + 1);
+            return thread;
+        });
     }
 
     public List<Command> getCommands() {
@@ -55,41 +63,28 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void onShutdown(ShutdownEvent event) {
-        for (Command c : commands) {
-            if (c instanceof TagCommand) {
-                ((TagCommand) c).onShutdown(event);
-                return;
-            }
-        }
+
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot() || IgnoreUtil.isIgnored(event.getAuthor(), event.getGuild(), event.getTextChannel()))
             return;
-        Thread t = new Thread(() -> {
-            try {
-
-                for (Command c : commands) {
-                    if (c.requiresOwner()) {
-                        if (event.getAuthor() == owner)
-                            c.onMessageReceived(event);
-                        continue;
-                    }
-                    c.onMessageReceived(event);
+        executor.execute(() -> {
+            Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+            for (Command c : commands) {
+                if (c.requiresOwner()) {
+                    if (event.getAuthor() == owner)
+                        c.onMessageReceived(event);
+                    continue;
                 }
-                managers.parallelStream().forEachOrdered(manager -> {
-                    if(manager.requiresOwner() && event.getAuthor() != owner)
-                        return;
-                    manager.call(event);
-                });
-
-            } catch (Exception e) {
-                logger.logThrowable(e);
+                c.onMessageReceived(event);
             }
+            managers.parallelStream().forEachOrdered(manager -> {
+                if (manager.requiresOwner() && event.getAuthor() != owner)
+                    return;
+                manager.call(event);
+            });
         });
-        t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
-        t.setName("MessageHandling");
-        t.start();
     }
 
     public void registerManager(CmdManager manager) throws UnsupportedDataTypeException {
@@ -155,11 +150,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void saveTags() {
-        for (Command c : commands) {
-            if (c instanceof TagCommand) {
-                ((TagCommand) c).onShutdown(null);
-            }
-        }
+        TagManager.saveTags();
     }
 
 }

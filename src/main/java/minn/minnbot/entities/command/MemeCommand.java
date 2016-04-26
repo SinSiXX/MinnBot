@@ -25,7 +25,7 @@ public class MemeCommand extends CommandAdapter {
             event.sendMessage("Missing arguments. Usage: " + usage());
             return;
         }
-        parts = parts[1].split("\\Q | \\E",2);
+        parts = parts[1].split("\\Q|\\E",2);
         if(parts.length == 1) {
             try {
                 if(parts[0].isEmpty()) {

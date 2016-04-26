@@ -9,14 +9,24 @@ import net.dv8tion.jda.player.Playlist;
 import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class QueueCommand extends CommandAdapter {
 
+    private ThreadPoolExecutor executor;
+
     public QueueCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
+        super.init(prefix, logger);
+        executor = new ThreadPoolExecutor(1, 5, 3L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+            final Thread thread = new Thread(r, "QueueExecution-Thread");
+            thread.setPriority(Thread.MAX_PRIORITY);
+            thread.setDaemon(true);
+            thread.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+            return thread;
+        });
     }
 
     @Override
@@ -25,40 +35,58 @@ public class QueueCommand extends CommandAdapter {
             event.sendMessage("You have to provide at least one URL.");
             return;
         }
-        String[] urls = event.allArguments.replace(" ", "").split("\\Q,\\E");
-        List<AudioSource> sources = new LinkedList<>();
-        MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
-        for (String url : urls) {
-            Playlist list;
-            try {
-                list = Playlist.getPlaylist(((url.startsWith("<") && url.endsWith(">")) ? url.substring(1, url.length() - 1) : url));
-            } catch (NullPointerException ignored) {
-                continue;
+        event.sendMessage("Validating request, this may take a few minutes...");
+        executor.execute(() -> {
+            String[] urls = event.allArguments.replace(" ", "").split("\\Q,\\E");
+            MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
+
+            final boolean[] error = {false};
+            for (String url : urls) {
+                Playlist list;
+                // get playlist
+                try {
+                    list = Playlist.getPlaylist(((url.startsWith("<") && url.endsWith(">")) ? url.substring(1, url.length() - 1) : url));
+                } catch (NullPointerException ignored) {
+                    continue;
+                }
+                List<AudioSource> listSources = list.getSources();
+                if (listSources.size() > 1) {
+                    event.sendMessage("Detected Playlist! Starting to queue songs...");
+                } else if (listSources.size() == 1) {
+                    event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
+                }
+                // init executor
+                ThreadPoolExecutor listExecutor = new ThreadPoolExecutor(1, 50, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+                    final Thread thread = new Thread(r, "ListValidation-Thread");
+                    thread.setPriority(Thread.MAX_PRIORITY);
+                    thread.setDaemon(true);
+                    thread.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+                    return thread;
+                });
+                // execute
+                listSources.parallelStream().forEachOrdered(source -> listExecutor.execute(() -> {
+                    AudioInfo info = source.getInfo();
+                    if (info == null) {
+                        if (!error[0]) {
+                            event.sendMessage("Source was not available. Skipping.");
+                            error[0] = true;
+                        }
+                        return;
+                    } else if (info.getError() != null) {
+                        if (!error[0]) {
+                            event.sendMessage("**One or more sources were not available. Sorry fam.**");
+                            error[0] = true;
+                        }
+                        return;
+                    }
+                    player.getAudioQueue().add(source);
+                    if (!player.isPlaying()) {
+                        event.sendMessage("Enqueuing songs and starting playback...");
+                        player.play();
+                    }
+                }));
             }
-            List<AudioSource> listSources = list.getSources();
-            if (listSources.size() > 1)
-                event.sendMessage("Detected Playlist! Starting to queue songs...");
-            else if (listSources.size() > 50)
-                event.sendMessage("Playlist contained more than 50 songs, skipping completely! RAM doesn't like you fam.");
-            else if(listSources.size() == 1) {
-                event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
-            }
-            listSources.parallelStream().filter(source -> {
-                AudioInfo info = source.getInfo();
-                return info == null;
-            }).forEach(listSources::remove);
-            if (listSources.isEmpty()) {
-                continue;
-            }
-            sources.addAll(listSources);
-        }
-        player.getAudioQueue().addAll(sources);
-        if (!player.isPlaying()) {
-            player.play();
-            event.sendMessage("Added provided URLs to the queue and the player started playing!");
-            return;
-        }
-        event.sendMessage("Added provided URLs to the queue!");
+        });
     }
 
     @Override

@@ -3,6 +3,7 @@ package minn.minnbot.entities.command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.entities.Guild;
@@ -37,33 +38,32 @@ public class StatsCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         if (!running) {
-            Thread t = new Thread() {
-                public void run() {
-                    String msg;
-                    try {
-                        msg = stats(event, -1);
-                        long start = System.currentTimeMillis();
-                        Message m = event.sendMessageBlocking(msg);
-                        if (m != null) {
-                            long finalStart = System.currentTimeMillis();
-                            m.updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + ""), (Message ms2) -> ping = System.currentTimeMillis() - finalStart);
-                            for (int i = 0; i < 10; i++) {
-                                try {
-                                    Thread.sleep(3000);
-                                } catch (InterruptedException ignored) {
-                                }
-                                msg = stats(event, ping);
-                                long finalStart2 = System.currentTimeMillis();
-                                m.updateMessageAsync(msg, (Message ms2) -> ping = System.currentTimeMillis() - finalStart2);
+            Thread t = new Thread(() -> {
+                String msg;
+                try {
+                    msg = stats(event, -1);
+                    long start = System.currentTimeMillis();
+                    Message m = event.sendMessageBlocking(msg);
+                    if (m != null) {
+                        long finalStart = System.currentTimeMillis();
+                        m.updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + ""), (Message ms2) -> ping = System.currentTimeMillis() - finalStart);
+                        for (int i = 0; i < 10; i++) {
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException ignored) {
                             }
+                            msg = stats(event, ping);
+                            long finalStart2 = System.currentTimeMillis();
+                            m.updateMessageAsync(msg, (Message ms2) -> ping = System.currentTimeMillis() - finalStart2);
                         }
-                    } catch (Exception e1) {
-                        logger.logThrowable(e1);
                     }
-                    running = false;
+                } catch (Exception e1) {
+                    logger.logThrowable(e1);
                 }
-            };
+                running = false;
+            });
             t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+            t.setDaemon(true);
             t.start();
             running = true;
         } else {
@@ -73,10 +73,10 @@ public class StatsCommand extends CommandAdapter {
 
     private String stats(CommandEvent event, long ms) throws IOException {
         int[] stats = logger.getNumbers();
-        JDA api = event.event.getJDA();
+        JDA api = event.jda;
         /* Ping */
         String ping = (ms < 1) ? "[Ping][{ping}]" : "[Ping][" + ms + "]";
-		/* Mess */
+        /* Mess */
         String messages = "[Messages][" + stats[0] + "]";
 		/* Comm */
         String commands = "[Commands][" + stats[1] + "]";
@@ -99,26 +99,31 @@ public class StatsCommand extends CommandAdapter {
         String mem = "[Memory][" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576L
                 + "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB]";
 		/* Rsps */
-        String responses = "[Responses][" + event.event.getJDA().getResponseTotal() + "]";
+        String responses = "[Responses][" + api.getResponseTotal() + "]";
         /* Conn */
-        int size = getConnectedChannelSize(event.jda);
-        String connections = "# Connected to " + size + " voice channel" + ((size == 1) ? "" : "s") + ".";
+        int sizeChannels = getConnectedChannelSize(api);
+        int sizePlayers = MinnAudioManager.getPlayers().size();
+        int queuedSongs = MinnAudioManager.queuedSongs();
+        String connections = "Connected to **"
+                + sizeChannels + "** voice channel" + ((sizeChannels == 1) ? "" : "s")
+                + " with **" + sizePlayers + "** different player" + ((sizePlayers != 1) ? "s" : "") + " running and **" + queuedSongs + "** queued Song" + ((queuedSongs != 1) ? "s" : "") + "!";
 
-        String msg = "```md\nStatistics: " + about + "\n\n[Connection]:\n" + uptime + "\n" + mem
+        return "```md\n" +
+                "Statistics: " + about + "\n\n[Connection]:\n" + uptime + "\n" + mem
                 + "\n" + ping + "\n\n[Messages]:\n" + messages + "\n" + privateMessages + "\n" + guildMessages
                 + "\n\n[Usages]:\n" + commands + "\n" + responses + "\n" + events + "\n\n[Entities]:\n" + guilds + "\n" + users + "\n"
-                + channels + "\n" + connections + "```";
-        return msg;
+                + channels + "``` " + connections + "";
     }
 
     private int getConnectedChannelSize(JDA api) {
-        List<Guild> connected =  new LinkedList<>();
+        List<Guild> connected = new LinkedList<>();
         api.getGuilds().parallelStream().filter(guild -> {
             VoiceStatus status = guild.getVoiceStatusOfUser(api.getSelfInfo());
             return status != null && status.getChannel() != null;
         }).forEach(connected::add);
         return connected.size();
     }
+
 
     @Override
     public boolean isCommand(String message) {

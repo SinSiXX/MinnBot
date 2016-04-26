@@ -7,8 +7,10 @@ import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
+import net.dv8tion.jda.player.source.AudioSource;
 import net.dv8tion.jda.player.source.RemoteSource;
 
+@Deprecated
 public class PlayCommand extends CommandAdapter {
 
     public PlayCommand(String prefix, Logger logger) {
@@ -25,17 +27,19 @@ public class PlayCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         if (event.allArguments.isEmpty()) {
-            event.sendMessage("Emptry URL is not accepted. " + EmoteUtil.getRngThumbsdown());
+            event.sendMessage("Empty URL is not accepted. " + EmoteUtil.getRngThumbsdown());
             return;
         }
         MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
-        try {
-            player.getAudioQueue().add(new RemoteSource(
-                    ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
-                            ? event.allArguments.substring(1, event.allArguments.length() - 1)
-                            : event.allArguments)));
-        } catch (Exception e) {
-            event.sendMessage("**__Error:__** `" + e.getMessage() + "` " + EmoteUtil.getRngThumbsdown());
+        AudioSource s = new RemoteSource(
+                ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
+                        ? event.allArguments.substring(1, event.allArguments.length() - 1)
+                        : event.allArguments));
+        String error = s.getInfo().getError();
+        if (error.isEmpty()) {
+            player.getAudioQueue().add(s);
+        } else {
+            event.sendMessage("**__Error:__** `" + error + "`");
             return;
         }
         if (!player.isPlaying()) {
@@ -49,9 +53,7 @@ public class PlayCommand extends CommandAdapter {
     @Override
     public boolean isCommand(String message) {
         String[] parts = message.split(" ", 2);
-        if (parts.length < 1)
-            return false;
-        return parts[0].equalsIgnoreCase(prefix + "play");
+        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "play");
     }
 
     public String usage() {
@@ -60,7 +62,7 @@ public class PlayCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "play <URL>";
+        return "play <URL>\t<-!- Only for single videos, no playlist detection. -->";
     }
 
     @Override

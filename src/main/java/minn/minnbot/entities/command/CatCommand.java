@@ -9,8 +9,7 @@ import minn.minnbot.events.CommandEvent;
 public class CatCommand extends CommandAdapter {
 
     public CatCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
+        super.init(prefix, logger);
     }
 
     @Override
@@ -27,11 +26,8 @@ public class CatCommand extends CommandAdapter {
 
     @Override
     public boolean isCommand(String message) {
-        try {
-            String cmd = message.split(" ", 2)[0];
-            return cmd.equalsIgnoreCase(prefix + "cat");
-        } catch (IndexOutOfBoundsException ignore) {}
-        return false;
+        String[] p = message.split(" ",2);
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "cat");
     }
 
     @Override

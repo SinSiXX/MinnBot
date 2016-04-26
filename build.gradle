@@ -1,0 +1,21 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+    id 'application'
+}
+
+repositories {
+    jcenter()
+}
+
+
+dependencies {
+    compile 'net.dv8tion:JDA:2.0.0_248'
+}
+
+//noinspection GroovyUnusedAssignment
+mainClassName = 'minn.minnbot.MinnBot'
+compileJava.options.encoding = 'UTF-8'
+
+task listJars << {
+    configurations.compile.each { File file -> println file.name }
+}
