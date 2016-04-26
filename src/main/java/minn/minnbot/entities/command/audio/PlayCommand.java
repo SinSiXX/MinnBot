@@ -7,6 +7,7 @@ import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
+import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 import net.dv8tion.jda.player.source.RemoteSource;
 
@@ -44,11 +45,16 @@ public class PlayCommand extends CommandAdapter {
                 ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
                         ? event.allArguments.substring(1, event.allArguments.length() - 1)
                         : event.allArguments));
-        String error = s.getInfo().getError();
-        if (error.isEmpty()) {
+        AudioInfo info = s.getInfo();
+        if(info == null) {
+            event.sendMessage("Video was not accessible! " + EmoteUtil.getRngThumbsdown());
+            return;
+        }
+        String error = info.getError();
+        if (error == null) {
             player.getAudioQueue().add(s);
         } else {
-            event.sendMessage("**__Error:__** `" + error + "`");
+            event.sendMessage("**__Error:__** `" + error + "` " + EmoteUtil.getRngThumbsdown());
             return;
         }
         if (!player.isPlaying()) {
