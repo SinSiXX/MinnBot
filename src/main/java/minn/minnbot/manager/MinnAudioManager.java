@@ -5,6 +5,7 @@ import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.player.MusicPlayer;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,16 @@ public class MinnAudioManager extends ListenerAdapter {
 
     private static Map<Guild, MusicPlayer> players = new HashMap<>();
 
+
+    public static Map<Guild, MusicPlayer> getPlayers() {
+        return Collections.unmodifiableMap(players);
+    }
+
+    public static int queuedSongs() {
+        final int[] amount = {0};
+        players.forEach((g, p) -> amount[0] += p.getAudioQueue().size());
+        return amount[0];
+    }
 
     public static void reset() {
         players.forEach(((guild, player) -> {

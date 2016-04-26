@@ -78,6 +78,13 @@ public class OperatorManager extends CmdManager {
         else
             splitter.add(com);
 
+        com = new ResetCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
         this.errors = errors;
     }
 

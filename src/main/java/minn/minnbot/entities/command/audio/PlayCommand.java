@@ -7,7 +7,9 @@ import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
+import net.dv8tion.jda.player.source.AudioSource;
 import net.dv8tion.jda.player.source.RemoteSource;
+
 @Deprecated
 public class PlayCommand extends CommandAdapter {
 
@@ -29,13 +31,15 @@ public class PlayCommand extends CommandAdapter {
             return;
         }
         MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
-        try {
-            player.getAudioQueue().add(new RemoteSource(
-                    ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
-                            ? event.allArguments.substring(1, event.allArguments.length() - 1)
-                            : event.allArguments)));
-        } catch (Exception e) {
-            event.sendMessage("**__Error:__** `" + e.getMessage() + "` " + EmoteUtil.getRngThumbsdown());
+        AudioSource s = new RemoteSource(
+                ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
+                        ? event.allArguments.substring(1, event.allArguments.length() - 1)
+                        : event.allArguments));
+        String error = s.getInfo().getError();
+        if (error.isEmpty()) {
+            player.getAudioQueue().add(s);
+        } else {
+            event.sendMessage("**__Error:__** `" + error + "`");
             return;
         }
         if (!player.isPlaying()) {
@@ -58,7 +62,7 @@ public class PlayCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "play <URL>\tDEPRECATED -> use queue instead";
+        return "play <URL>\t<-!- Only for single videos, no playlist detection. -->";
     }
 
     @Override
