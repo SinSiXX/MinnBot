@@ -14,6 +14,7 @@ import net.dv8tion.jda.JDABuilder;
 import net.dv8tion.jda.JDAInfo;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
+import net.dv8tion.jda.utils.ApplicationUtil;
 import org.json.JSONObject;
 
 import javax.activation.UnsupportedDataTypeException;
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot {
 
-    public final static String VERSION = "Version 2.5";
+    public final static String VERSION = "Version 2.5.5b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     public static boolean powersaving = false;
     private static String giphy;
@@ -55,9 +56,7 @@ public class MinnBot {
             throw new UnexpectedException("Guilds were unreachable");
         // mb-mod-log
         new ModLogManager(api);
-
         this.logger = logger;
-
         this.prefix = prefix;
         log("Prefix: " + prefix);
         this.owner = this.api.getUserById(ownerID);
@@ -68,7 +67,11 @@ public class MinnBot {
                     "Owner could not be retrieved from the given id. Do you share a guild with this bot? - Caused by id: \""
                             + ownerID + "\""));
         }
-        this.inviteurl = inviteurl;
+        String invite = getInviteUrl();
+        if (!invite.isEmpty())
+            this.inviteurl = invite;
+        else
+            this.inviteurl = inviteurl;
         this.bot = true;
         this.handler = new CommandManager(api, this.logger, owner);
         api.addEventListener(handler);
@@ -90,17 +93,17 @@ public class MinnBot {
             } catch (Exception ignored) {
             }
             String pre = obj.getString("prefix");
-            String inviteUrl = obj.getString("inviteurl");
+            // String inviteUrl = obj.getString("inviteurl"); REMOVED
             String ownerId = obj.getString("owner");
             String giphy = obj.getString("giphy");
             if (giphy != null && !giphy.isEmpty() && !giphy.equalsIgnoreCase("http://api.giphy.com/submit"))
                 MinnBot.giphy = giphy;
-            MinnBot bot = new MinnBot(pre, ownerId, inviteUrl, console.logger, api);
+            MinnBot bot = new MinnBot(pre, ownerId, "", console.logger, api);
             bot.initCommands(api);
             as.setApi(api);
             MinnBotUserInterface.bot = bot;
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) bot.getLogger());
-            if(audio) {
+            if (audio) {
                 api.addEventListener(new MinnAudioManager());
             }
             bot.log("Setup completed.");
@@ -135,7 +138,14 @@ public class MinnBot {
             }
             throw e;
         }
+    }
 
+    private String getInviteUrl() {
+        String id = ApplicationUtil.getApplicationId(api);
+        String invite =ApplicationUtil.getAuthInvite(id);
+        if(invite.isEmpty())
+            return "";
+        return invite.substring(0, invite.length()-1) + "-1";
     }
 
     public static void main(String[] a) {

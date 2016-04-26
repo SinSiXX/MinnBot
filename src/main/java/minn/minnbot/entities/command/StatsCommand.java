@@ -42,28 +42,44 @@ public class StatsCommand extends CommandAdapter {
                 String msg;
                 try {
                     msg = stats(event, -1);
-                    long start = System.currentTimeMillis();
-                    Message m = event.sendMessageBlocking(msg);
-                    if (m != null) {
-                        long finalStart = System.currentTimeMillis();
-                        m.updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + ""), (Message ms2) -> ping = System.currentTimeMillis() - finalStart);
-                        for (int i = 0; i < 10; i++) {
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException ignored) {
-                            }
-                            msg = stats(event, ping);
-                            long finalStart2 = System.currentTimeMillis();
-                            m.updateMessageAsync(msg, (Message ms2) -> ping = System.currentTimeMillis() - finalStart2);
+                } catch (IOException e) {
+                    running = false;
+                    logger.logThrowable(e);
+                    return;
+                }
+                long start = System.currentTimeMillis();
+                final Message[] m = {event.sendMessageBlocking(msg)};
+                if (m[0] != null) {
+                    long finalStart = System.currentTimeMillis();
+                    m[0].updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + ""), (ms2) -> {
+                        ping = System.currentTimeMillis() - finalStart;
+                        m[0] = ms2;
+                    });
+                    for (int i = 0; i < 10; i++) {
+                        if (m[0] == null)
+                            break;
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException ignored) {
                         }
+                        try {
+                            msg = stats(event, ping);
+                        } catch (IOException e) {
+                            logger.logThrowable(e);
+                            break;
+                        }
+                        long finalStart2 = System.currentTimeMillis();
+                        m[0].updateMessageAsync(msg, (ms2) -> {
+                            ping = System.currentTimeMillis() - finalStart2;
+                            m[0] = ms2;
+                        });
                     }
-                } catch (Exception e1) {
-                    logger.logThrowable(e1);
                 }
                 running = false;
             });
             t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
             t.setDaemon(true);
+            t.setName("StatsExecution-Thread");
             t.start();
             running = true;
         } else {
@@ -78,11 +94,11 @@ public class StatsCommand extends CommandAdapter {
         String ping = (ms < 1) ? "[Ping][{ping}]" : "[Ping][" + ms + "]";
         /* Mess */
         String messages = "[Messages][" + stats[0] + "]";
-		/* Comm */
+        /* Comm */
         String commands = "[Commands][" + stats[1] + "]";
-		/* Evnt */
+        /* Evnt */
         String events = "[Events][" + stats[2] + "]";
-		/* Priv */
+        /* Priv */
         String privateMessages = "[Private-Messages][" + stats[3] + "]";
 		/* Gild */
         String guildMessages = "[Guild-Messages][" + stats[4] + "]";

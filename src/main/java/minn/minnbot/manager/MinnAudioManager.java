@@ -11,12 +11,36 @@ import java.util.Map;
 
 public class MinnAudioManager extends ListenerAdapter {
 
+    private static Thread keepAlive;
+
+    public MinnAudioManager() {
+        init();
+    }
+
+    public static void init() {
+        if (keepAlive == null) {
+            keepAlive = new Thread(() -> {
+                while (!keepAlive.isInterrupted()) {
+                    if (!players.isEmpty()) {
+                        clear();
+                    }
+                    try {
+                        Thread.sleep(60000 * 5);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            });
+            keepAlive.setDaemon(true);
+            keepAlive.setName("MinnAudioManager-KeepAlive");
+            keepAlive.start();
+        }
+    }
+
     public void onShutdown(ShutdownEvent event) {
         reset();
     }
 
     private static Map<Guild, MusicPlayer> players = new HashMap<>();
-
 
     public static Map<Guild, MusicPlayer> getPlayers() {
         return Collections.unmodifiableMap(players);
@@ -35,6 +59,16 @@ public class MinnAudioManager extends ListenerAdapter {
             player.getAudioQueue().clear();
             players.remove(guild);
         }));
+    }
+
+    public static void clear() {
+        players.forEach((g, p) -> {
+            if (p.getAudioQueue().isEmpty() && !p.isPlaying()) {
+                /*if (g.getAudioManager().getConnectedChannel() != null)
+                    g.getAudioManager().closeAudioConnection(); TODO: Decide about use*/
+                players.remove(g);
+            }
+        });
     }
 
     public static MusicPlayer getPlayer(Guild guild) {

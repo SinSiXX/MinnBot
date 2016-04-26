@@ -27,7 +27,7 @@ public class PlayingFieldManager {
         this.api = api;
         this.logger = logger;
         games.add(MinnBot.VERSION);
-        games.add("JDA VERSION " + JDAInfo.VERSION);
+        games.add("JDA " + JDAInfo.VERSION);
         try {
             Thread.sleep(50);
         } catch (InterruptedException ignored) {
