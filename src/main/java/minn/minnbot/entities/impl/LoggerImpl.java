@@ -134,7 +134,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     }
 
     public boolean saveToJson(String name, List<String> list) {
-        // TODO
+        // TODO: Possible log storing
         return false;
     }
 

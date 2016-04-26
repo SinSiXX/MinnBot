@@ -9,84 +9,76 @@ import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.entities.VoiceStatus;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class StatsCommand extends CommandAdapter {
 
     private boolean running = false;
     private String about;
     private long ping;
+    private ThreadPoolExecutor executor;
 
     public StatsCommand(Logger logger, String prefix, String about) {
         this.logger = logger;
         this.prefix = prefix;
         this.about = about;
-    }
-
-    @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if (isCommand(event.getMessage().getContent())) {
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
-        }
+        executor = new ThreadPoolExecutor(1, 10, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+            final Thread thread = new Thread(r, "StatsExecution-Thread");
+            thread.setDaemon(true);
+            thread.setPriority(Thread.MIN_PRIORITY);
+            return thread;
+        });
     }
 
     @Override
     public void onCommand(CommandEvent event) {
-        if (!running) {
-            Thread t = new Thread(() -> {
-                String msg;
-                try {
-                    msg = stats(event, -1);
-                } catch (IOException e) {
-                    running = false;
-                    logger.logThrowable(e);
-                    return;
-                }
-                long start = System.currentTimeMillis();
-                final Message[] m = {event.sendMessageBlocking(msg)};
-                try {
-                    if (m[0] != null) {
-                        long finalStart = System.currentTimeMillis();
-                        m[0].updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + ""), (ms2) -> {
-                            ping = System.currentTimeMillis() - finalStart;
+        executor.execute(() -> {
+            String msg;
+            try {
+                msg = stats(event, -1);
+            } catch (IOException e) {
+                running = false;
+                logger.logThrowable(e);
+                return;
+            }
+            long start = System.currentTimeMillis();
+            final Message[] m = {event.sendMessageBlocking(msg)};
+            try {
+                if (m[0] != null) {
+                    long finalStart = System.currentTimeMillis();
+                    m[0].updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + ""), (ms2) -> {
+                        ping = System.currentTimeMillis() - finalStart;
+                        m[0] = ms2;
+                    });
+                    for (int i = 0; i < 10; i++) {
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException ignored) {
+                        }
+                        try {
+                            msg = stats(event, ping);
+                        } catch (IOException e) {
+                            logger.logThrowable(e);
+                            break;
+                        }
+                        if (m[0] == null)
+                            break;
+                        long finalStart2 = System.currentTimeMillis();
+                        m[0].updateMessageAsync(msg, (ms2) -> {
+                            ping = System.currentTimeMillis() - finalStart2;
                             m[0] = ms2;
                         });
-                        for (int i = 0; i < 10; i++) {
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException ignored) {
-                            }
-                            try {
-                                msg = stats(event, ping);
-                            } catch (IOException e) {
-                                logger.logThrowable(e);
-                                break;
-                            }
-                            if (m[0] == null)
-                                break;
-                            long finalStart2 = System.currentTimeMillis();
-                            m[0].updateMessageAsync(msg, (ms2) -> {
-                                ping = System.currentTimeMillis() - finalStart2;
-                                m[0] = ms2;
-                            });
-                        }
                     }
-                } catch (NullPointerException ignored) {}
-                running = false;
-            });
-            t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
-            t.setDaemon(true);
-            t.setName("StatsExecution-Thread");
-            t.start();
-            running = true;
-        } else {
-            event.sendMessage("This command is on cooldown, try again in a few moments.");
-        }
+                }
+            } catch (NullPointerException ignored) {
+            }
+        });
     }
 
     private String stats(CommandEvent event, long ms) throws IOException {
@@ -102,9 +94,9 @@ public class StatsCommand extends CommandAdapter {
         String events = "[Events][" + stats[2] + "]";
         /* Priv */
         String privateMessages = "[Private-Messages][" + stats[3] + "]";
-		/* Gild */
+        /* Gild */
         String guildMessages = "[Guild-Messages][" + stats[4] + "]";
-		/* Glds */
+        /* Glds */
         String guilds = "[Servers][" + api.getGuilds().size() + "]";
 		/* Usrs */
         String users = "[Users][" + api.getUsers().size() + "]";
