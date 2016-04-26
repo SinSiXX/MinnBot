@@ -57,12 +57,14 @@ public class MinnAudioManager extends ListenerAdapter {
     }
 
     public static void reset() {
-        players.forEach(((guild, player) -> {
-            if (!player.isStopped())
-                player.stop();
-            player.getAudioQueue().clear();
-            players.remove(guild);
+        Map<Guild, MusicPlayer> toRemove = new HashMap<>();
+        players.forEach(((g, p) -> {
+            if (!p.isStopped())
+                p.stop();
+            p.getAudioQueue().clear();
+            toRemove.put(g, p);
         }));
+        toRemove.forEach((g, p) -> players.remove(g, p));
     }
 
     public static void clear() {

@@ -49,32 +49,34 @@ public class StatsCommand extends CommandAdapter {
                 }
                 long start = System.currentTimeMillis();
                 final Message[] m = {event.sendMessageBlocking(msg)};
-                if (m[0] != null) {
-                    long finalStart = System.currentTimeMillis();
-                    m[0].updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + ""), (ms2) -> {
-                        ping = System.currentTimeMillis() - finalStart;
-                        m[0] = ms2;
-                    });
-                    for (int i = 0; i < 10; i++) {
-                        if (m[0] == null)
-                            break;
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException ignored) {
-                        }
-                        try {
-                            msg = stats(event, ping);
-                        } catch (IOException e) {
-                            logger.logThrowable(e);
-                            break;
-                        }
-                        long finalStart2 = System.currentTimeMillis();
-                        m[0].updateMessageAsync(msg, (ms2) -> {
-                            ping = System.currentTimeMillis() - finalStart2;
+                try {
+                    if (m[0] != null) {
+                        long finalStart = System.currentTimeMillis();
+                        m[0].updateMessageAsync(msg.replace("{ping}", (System.currentTimeMillis() - start) + ""), (ms2) -> {
+                            ping = System.currentTimeMillis() - finalStart;
                             m[0] = ms2;
                         });
+                        for (int i = 0; i < 10; i++) {
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException ignored) {
+                            }
+                            try {
+                                msg = stats(event, ping);
+                            } catch (IOException e) {
+                                logger.logThrowable(e);
+                                break;
+                            }
+                            if (m[0] == null)
+                                break;
+                            long finalStart2 = System.currentTimeMillis();
+                            m[0].updateMessageAsync(msg, (ms2) -> {
+                                ping = System.currentTimeMillis() - finalStart2;
+                                m[0] = ms2;
+                            });
+                        }
                     }
-                }
+                } catch (NullPointerException ignored) {}
                 running = false;
             });
             t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
