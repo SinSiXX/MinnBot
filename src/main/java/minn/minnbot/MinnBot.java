@@ -3,6 +3,7 @@ package minn.minnbot;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.audio.MinnPlayer;
+import minn.minnbot.entities.command.custom.InviteCommand;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.AccountSettings;
 import minn.minnbot.gui.MinnBotUserInterface;
@@ -15,6 +16,7 @@ import net.dv8tion.jda.JDAInfo;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.utils.ApplicationUtil;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.activation.UnsupportedDataTypeException;
@@ -46,6 +48,7 @@ public class MinnBot {
     private final Logger logger;
     private final boolean bot;
     private MinnPlayer player;
+    private static Guild home;
 
     public MinnBot(String prefix, String ownerID, String inviteurl, Logger logger, JDA api)
             throws Exception {
@@ -96,6 +99,10 @@ public class MinnBot {
             // String inviteUrl = obj.getString("inviteurl"); REMOVED
             String ownerId = obj.getString("owner");
             String giphy = obj.getString("giphy");
+            try {
+                home = api.getGuildById(obj.getString("home"));
+            } catch (JSONException ignore) {
+            }
             if (giphy != null && !giphy.isEmpty() && !giphy.equalsIgnoreCase("http://api.giphy.com/submit"))
                 MinnBot.giphy = giphy;
             MinnBot bot = new MinnBot(pre, ownerId, "", console.logger, api);
@@ -127,7 +134,7 @@ public class MinnBot {
             obj.put("inviteurl", "");
             obj.put("powersaving", false);
             obj.put("audio", false);
-            obj.put("giphy", "http://api.giphy.com/submit");
+            obj.put("giphy", "dc6zaTOxFJmzC");
             try {
                 Files.write(Paths.get("BotConfig.json"), obj.toString(4).getBytes());
                 console.writeEvent(
@@ -142,10 +149,10 @@ public class MinnBot {
 
     private String getInviteUrl() {
         String id = ApplicationUtil.getApplicationId(api);
-        String invite =ApplicationUtil.getAuthInvite(id);
-        if(invite.isEmpty())
+        String invite = ApplicationUtil.getAuthInvite(id);
+        if (invite.isEmpty())
             return "";
-        return invite.substring(0, invite.length()-1) + "-1";
+        return invite.substring(0, invite.length() - 1) + "-1";
     }
 
     public static void main(String[] a) {
@@ -230,6 +237,9 @@ public class MinnBot {
         handler.registerManager(manager.get());
         errors.addAll(manager.get().getErrors());
 
+        if (home != null) {
+            registerCommand(new InviteCommand(prefix, logger, home));
+        }
 
         // Log the outcome
         if (!errors.isEmpty()) {

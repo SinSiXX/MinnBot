@@ -37,7 +37,11 @@ public class MinnAudioManager extends ListenerAdapter {
     }
 
     public void onShutdown(ShutdownEvent event) {
-        reset();
+        // reset();
+        if (keepAlive != null && keepAlive.isAlive()) keepAlive.stop();
+        keepAlive = null;
+        players.clear();
+        init();
     }
 
     private static Map<Guild, MusicPlayer> players = new HashMap<>();
