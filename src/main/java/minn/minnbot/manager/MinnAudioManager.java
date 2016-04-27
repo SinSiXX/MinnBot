@@ -8,6 +8,7 @@ import net.dv8tion.jda.player.MusicPlayer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 public class MinnAudioManager extends ListenerAdapter {
@@ -83,8 +84,8 @@ public class MinnAudioManager extends ListenerAdapter {
         Map<Guild, MusicPlayer> toRemove = new HashMap<>();
         removeWith((g, p) -> {
             if (p.getAudioQueue().isEmpty() && !p.isPlaying()) {
-                /*if (g.getAudioManager().getConnectedChannel() != null)
-                    g.getAudioManager().closeAudioConnection(); TODO: Decide about use*/
+                if (g.getAudioManager().getConnectedChannel() != null)
+                    g.getAudioManager().closeAudioConnection();
                 toRemove.put(g, p);
             }
         }, toRemove);
@@ -105,15 +106,19 @@ public class MinnAudioManager extends ListenerAdapter {
         Thread keepAlive = new Thread(() -> {
             while (!keepAliveMap.get(player).isInterrupted()) {
                 try {
-                    Thread.sleep(50000);
+                    Thread.sleep(TimeUnit.MINUTES.toMillis(10L));
                 } catch (InterruptedException ignored) {
+                    if (guild.getAudioManager().getConnectedChannel() != null)
+                        guild.getAudioManager().closeAudioConnection();
                     break;
                 }
                 if (player.getAudioQueue().isEmpty() && !player.isPlaying()) {
+                    if (guild.getAudioManager().getConnectedChannel() != null)
+                        guild.getAudioManager().closeAudioConnection();
                     break;
                 }
             }
-            players.remove(player);
+            players.remove(guild, player);
         });
         keepAlive.setName("Player-KeepAlive(" + guild.getName() + ")");
         keepAliveMap.put(player, keepAlive);
