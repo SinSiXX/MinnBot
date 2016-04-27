@@ -1,3 +1,4 @@
+
 plugins {
     id 'com.github.johnrengelman.shadow' version '1.2.3'
     id 'application'
@@ -19,3 +20,4 @@ compileJava.options.encoding = 'UTF-8'
 task listJars << {
     configurations.compile.each { File file -> println file.name }
 }
+
