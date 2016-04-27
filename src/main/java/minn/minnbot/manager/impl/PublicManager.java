@@ -6,7 +6,7 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.*;
 import minn.minnbot.entities.command.custom.HelpSplitter;
-import minn.minnbot.entities.command.goofy.PyifyCommand;
+import minn.minnbot.entities.command.goofy.*;
 import minn.minnbot.manager.CmdManager;
 
 import java.net.UnknownHostException;
