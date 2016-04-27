@@ -17,7 +17,7 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        String message = event.getMessage().getContent();
+        String message = event.getMessage().getRawContent();
         if (isCommand(message)) {
             logger.logCommandUse(event.getMessage());
             onCommand(new CommandEvent(event));

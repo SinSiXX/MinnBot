@@ -133,6 +133,13 @@ public class PublicManager extends CmdManager {
        else
            splitter.add(com);
 
+       com = new UrbanCommand(prefix,logger);
+       err.set(registerCommand(com));
+       if (!err.get().isEmpty())
+           errors.add(err.get());
+       else
+           splitter.add(com);
+
        com = new FeedbackCommand(prefix,logger);
        err.set(registerCommand(com));
        if (!err.get().isEmpty())

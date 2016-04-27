@@ -15,7 +15,7 @@ public class SkipCommand extends CommandAdapter {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.isPrivate())
+        if (event.isPrivate())
             return;
         super.onMessageReceived(event);
     }
@@ -23,7 +23,7 @@ public class SkipCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
-        if(!player.isPlaying()) {
+        if (!player.isPlaying()) {
             event.sendMessage("Player is not playing!");
             return;
         }
@@ -33,7 +33,7 @@ public class SkipCommand extends CommandAdapter {
 
     @Override
     public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
+        String[] p = message.split(" ", 2);
         return p.length > 0 && p[0].equalsIgnoreCase(prefix + "skip");
     }
 

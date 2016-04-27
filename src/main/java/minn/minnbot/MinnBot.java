@@ -4,6 +4,7 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.audio.MinnPlayer;
 import minn.minnbot.entities.command.custom.InviteCommand;
+import minn.minnbot.entities.command.custom.MentionedListener;
 import minn.minnbot.entities.impl.LoggerImpl;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.AccountSettings;
@@ -241,6 +242,7 @@ public class MinnBot {
 
         if (home != null) {
             registerCommand(new InviteCommand(prefix, logger, home));
+            registerCommand(new MentionedListener(logger));
         }
 
         // Log the outcome

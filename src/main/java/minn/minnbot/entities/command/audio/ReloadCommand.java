@@ -9,12 +9,12 @@ import net.dv8tion.jda.player.MusicPlayer;
 
 public class ReloadCommand extends CommandAdapter {
 
-   public ReloadCommand(String prefix, Logger logger) {
-       init(prefix,logger);
-   }
+    public ReloadCommand(String prefix, Logger logger) {
+        init(prefix, logger);
+    }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.isPrivate())
+        if (event.isPrivate())
             return;
         super.onMessageReceived(event);
     }
@@ -22,14 +22,15 @@ public class ReloadCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
-        if(player.isPlaying()) {
+        if (player.isPlaying()) {
             player.stop();
             event.sendMessage("Reloading player...");
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ignored) {
             }
-            player.play();
+            if (!player.getAudioQueue().isEmpty())
+                player.play();
             event.guild.getAudioManager().setSendingHandler(player);
             return;
         }
@@ -38,7 +39,7 @@ public class ReloadCommand extends CommandAdapter {
 
     @Override
     public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
+        String[] p = message.split(" ", 2);
         return p.length > 0 && p[0].equalsIgnoreCase(prefix + "reload");
     }
 

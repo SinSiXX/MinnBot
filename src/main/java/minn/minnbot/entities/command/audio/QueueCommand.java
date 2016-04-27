@@ -60,7 +60,12 @@ public class QueueCommand extends CommandAdapter {
                 if (listSources.size() > 1) {
                     event.sendMessage("Detected Playlist! Starting to queue songs...");
                 } else if (listSources.size() == 1) {
-                    event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
+                    AudioInfo audioInfo = listSources.get(0).getInfo();
+                    if(audioInfo.getError() != null) {
+                        event.sendMessage("**__Error with source:__ " + audioInfo.getError().trim() + "**");
+                        continue;
+                    }
+                    event.sendMessage("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
                 }
                 // init executor
                 ThreadPoolExecutor listExecutor = new ThreadPoolExecutor(1, 50, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
