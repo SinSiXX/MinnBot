@@ -6,6 +6,7 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.*;
 import minn.minnbot.entities.command.custom.HelpSplitter;
+import minn.minnbot.entities.command.goofy.PyifyCommand;
 import minn.minnbot.manager.CmdManager;
 
 import java.net.UnknownHostException;
@@ -134,6 +135,13 @@ public class PublicManager extends CmdManager {
            splitter.add(com);
 
        com = new UrbanCommand(prefix,logger);
+       err.set(registerCommand(com));
+       if (!err.get().isEmpty())
+           errors.add(err.get());
+       else
+           splitter.add(com);
+
+       com = new PyifyCommand(prefix, logger);
        err.set(registerCommand(com));
        if (!err.get().isEmpty())
            errors.add(err.get());

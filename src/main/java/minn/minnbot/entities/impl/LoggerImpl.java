@@ -158,6 +158,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             } finally {
                 out.close();
                 list.clear();
+                return true;
             }
         } catch (IOException ignored) {
         }

@@ -17,7 +17,7 @@ public class CustomCommand extends ListenerAdapter implements Command {
 	private String usage;
 	
 	
-	public CustomCommand(User owner, Guild guild, String response, String command, String usage) {
+	public CustomCommand(User owner, Guild guild, String response, String command, String usage) { // TODO: Implement
 		this.owner = owner;
 		this.guild = guild;
 		this.response = response;
