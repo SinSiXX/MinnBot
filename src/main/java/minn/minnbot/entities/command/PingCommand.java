@@ -25,9 +25,7 @@ public class PingCommand extends CommandAdapter {
             return false;
         message = message.substring(prefix.length());
         String command = message.split(" ", 2)[0];
-        if (command.equalsIgnoreCase("ping"))
-            return true;
-        return false;
+        return command.equalsIgnoreCase("ping");
     }
 
     @Override

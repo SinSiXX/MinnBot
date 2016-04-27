@@ -40,7 +40,7 @@ public class ResponseCommand extends CommandAdapter {
             String command = message.split(" ", 2)[0];
             if (command.equalsIgnoreCase("test"))
                 return true;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }

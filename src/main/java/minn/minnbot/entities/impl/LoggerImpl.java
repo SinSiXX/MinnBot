@@ -1,6 +1,5 @@
 package minn.minnbot.entities.impl;
 
-import com.sun.istack.internal.NotNull;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.MinnBotUserInterface;
@@ -141,7 +140,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
         return saveToJson("ErrorLog-Session_" + (11 << System.currentTimeMillis()) + ".log", errorLogs);
     }
 
-    public boolean saveToJson(@NotNull String name, List<String> list) {
+    public boolean saveToJson(String name, List<String> list) {
         if(list.isEmpty() || name.isEmpty())
             return false;
         File f = new File("Logs/" + name);

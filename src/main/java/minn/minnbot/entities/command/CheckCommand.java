@@ -68,7 +68,7 @@ public class CheckCommand extends CommandAdapter {
                 continue;
             try {
                 s += "\n>" + r.getName() + " <" + r.getId() + "> " + "[#" + Integer.toHexString(r.getColor()) + "]";
-            } catch (Exception e) {
+            } catch (Exception ignored) {
 
             }
         }
@@ -119,7 +119,7 @@ public class CheckCommand extends CommandAdapter {
             String command = message.split(" ", 2)[0];
             if (command.equalsIgnoreCase("check"))
                 return true;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }
