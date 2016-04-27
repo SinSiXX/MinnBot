@@ -23,15 +23,10 @@ public class ReloadCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
         if (player.isPlaying()) {
-            player.stop();
             event.sendMessage("Reloading player...");
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ignored) {
-            }
-            if (!player.getAudioQueue().isEmpty())
-                player.play();
             event.guild.getAudioManager().setSendingHandler(player);
+            if (!player.getAudioQueue().isEmpty() && !player.isPlaying())
+                player.play();
             return;
         }
         event.sendMessage("Player is not currently playing!");

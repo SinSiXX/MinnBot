@@ -70,6 +70,10 @@ public class MinnAudioManager extends ListenerAdapter {
         keepAliveMap.clear();
     }
 
+    public static void reset(Guild guild) {
+        players.remove(guild);
+    }
+
     private synchronized static void removeWith(BiConsumer<Guild, MusicPlayer> runnable, Map<Guild, MusicPlayer> toRemove) {
         players.forEach(runnable);
         toRemove.forEach((g, p) -> players.remove(g, p));
