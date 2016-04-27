@@ -28,4 +28,7 @@ public interface Logger {
      * <b>5)</b> startTimeInMillis
      */
     int[] getNumbers();
+
+    boolean saveToJson();
+
 }

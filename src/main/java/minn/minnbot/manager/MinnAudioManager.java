@@ -12,14 +12,18 @@ import java.util.function.BiConsumer;
 
 public class MinnAudioManager extends ListenerAdapter {
 
-    private static Thread keepAlive;
+    /*private static Thread keepAlive;*/
+
+    private static Map<Guild, MusicPlayer> players = new HashMap<>();
+
+    private static Map<MusicPlayer, Thread> keepAliveMap = new HashMap<>();
 
     public MinnAudioManager() {
         init();
     }
 
     public static void init() {
-        if (keepAlive == null) {
+        /*if (keepAlive == null) {
             keepAlive = new Thread(() -> {
                 while (!keepAlive.isInterrupted()) {
                     if (!players.isEmpty()) {
@@ -34,21 +38,19 @@ public class MinnAudioManager extends ListenerAdapter {
             keepAlive.setDaemon(true);
             keepAlive.setName("MinnAudioManager-KeepAlive");
             keepAlive.start();
-        }
+        }*/
     }
 
     public void onShutdown(ShutdownEvent event) {
         reset();
-        if (keepAlive != null && keepAlive.isAlive()) keepAlive.stop();
-        keepAlive = null;
-        // players.clear();
-        init();
     }
-
-    private static Map<Guild, MusicPlayer> players = new HashMap<>();
 
     public static Map<Guild, MusicPlayer> getPlayers() {
         return Collections.unmodifiableMap(players);
+    }
+
+    public static Map<MusicPlayer, Thread> getKeepAliveMap() {
+        return Collections.unmodifiableMap(keepAliveMap);
     }
 
     public static int queuedSongs() {
@@ -58,20 +60,14 @@ public class MinnAudioManager extends ListenerAdapter {
     }
 
     public static void reset() {
-        Map<Guild, MusicPlayer> toRemove = new HashMap<>();
-        removeWith((g, p) -> {
+        players.forEach((g, p) -> {
             if (!p.isStopped())
                 p.stop();
             p.getAudioQueue().clear();
-            toRemove.put(g, p);
-        }, toRemove);
-        /*players.forEach(((g, p) -> {
-            if (!p.isStopped())
-                p.stop();
-            p.getAudioQueue().clear();
-            toRemove.put(g, p);
-        }));
-        toRemove.forEach((g, p) -> players.remove(g, p));*/
+        });
+        players.clear();
+        keepAliveMap.forEach((p, t) -> t.interrupt());
+        keepAliveMap.clear();
     }
 
     private synchronized static void removeWith(BiConsumer<Guild, MusicPlayer> runnable, Map<Guild, MusicPlayer> toRemove) {
@@ -88,14 +84,7 @@ public class MinnAudioManager extends ListenerAdapter {
                 toRemove.put(g, p);
             }
         }, toRemove);
-        /*players.forEach((g, p) -> {
-            if (p.getAudioQueue().isEmpty() && !p.isPlaying()) {
-                *//*if (g.getAudioManager().getConnectedChannel() != null)
-                    g.getAudioManager().closeAudioConnection(); TODO: Decide about use*//*
-                toRemove.put(g, p);
-            }
-        });
-        toRemove.forEach((g, p) -> players.remove(g, p));*/
+
     }
 
     public static MusicPlayer getPlayer(Guild guild) {
@@ -109,6 +98,22 @@ public class MinnAudioManager extends ListenerAdapter {
         }
         guild.getAudioManager().setSendingHandler(player);
         players.put(guild, player);
+        Thread keepAlive = new Thread(() -> {
+            while (!keepAliveMap.get(player).isInterrupted()) {
+                try {
+                    Thread.sleep(50000);
+                } catch (InterruptedException ignored) {
+                    break;
+                }
+                if (player.getAudioQueue().isEmpty() && !player.isPlaying()) {
+                    break;
+                }
+            }
+            players.remove(player);
+        });
+        keepAlive.setName("Player-KeepAlive(" + guild.getName() + ")");
+        keepAliveMap.put(player, keepAlive);
+        keepAlive.start();
         player.setVolume(.5f);
         // player.addEventListener(new PlayerListener());
         return player;

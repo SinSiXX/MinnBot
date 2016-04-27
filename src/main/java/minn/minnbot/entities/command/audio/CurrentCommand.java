@@ -4,6 +4,7 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.MinnAudioManager;
+import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
 import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
@@ -15,6 +16,12 @@ public class CurrentCommand extends CommandAdapter {
     public CurrentCommand(String prefix, Logger logger) {
         this.logger = logger;
         this.prefix = prefix;
+    }
+
+    public void onMessageReceived(MessageReceivedEvent event) {
+        if(event.isPrivate())
+            return;
+        super.onMessageReceived(event);
     }
 
     @Override

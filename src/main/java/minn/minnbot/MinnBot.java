@@ -4,6 +4,7 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.audio.MinnPlayer;
 import minn.minnbot.entities.command.custom.InviteCommand;
+import minn.minnbot.entities.impl.LoggerImpl;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.AccountSettings;
 import minn.minnbot.gui.MinnBotUserInterface;
@@ -100,6 +101,7 @@ public class MinnBot {
             String ownerId = obj.getString("owner");
             String giphy = obj.getString("giphy");
             try {
+                LoggerImpl.log = obj.getBoolean("log");
                 home = api.getGuildById(obj.getString("home"));
             } catch (JSONException ignore) {
             }
@@ -132,7 +134,7 @@ public class MinnBot {
             obj.put("owner", "");
             obj.put("token", "");
             obj.put("inviteurl", "");
-            obj.put("powersaving", false);
+            obj.put("log", true);
             obj.put("audio", false);
             obj.put("giphy", "dc6zaTOxFJmzC");
             try {

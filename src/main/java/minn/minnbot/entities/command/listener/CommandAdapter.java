@@ -51,4 +51,9 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
     public boolean requiresOwner() {
         return false;
     }
+
+    public String toString() {
+        return "C:" + prefix + getAlias() + "(" + logger + ")";
+    }
+
 }

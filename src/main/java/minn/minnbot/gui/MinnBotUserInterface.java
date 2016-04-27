@@ -91,6 +91,7 @@ public class MinnBotUserInterface extends JFrame {
             try {
                 bot.handler.generateJson("commands.json");
                 bot.handler.saveTags();
+                logger.saveToJson();
             } catch (Exception e1) {
                 eventArea.append("\nThe bot must be launched to generate the commands.");
             }

@@ -50,6 +50,7 @@ public class CommandEvent {
 	}
 
 	public void sendMessage(String content) {
+		content = content.replace("@everyone", "@\u0001everyone");
 		if(content.length() >= 2000)
 			throw new IllegalArgumentException("Reached character limit.");
 		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE) &&  guild.checkVerification()) {
@@ -69,6 +70,7 @@ public class CommandEvent {
 	}
 
 	public Message sendMessageBlocking(String content) {
+		content = content.replace("@everyone", "@\u0001everyone");
 		if(content.length() >= 2000)
 			throw new IllegalArgumentException("Reached character limit.");
 		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification())
