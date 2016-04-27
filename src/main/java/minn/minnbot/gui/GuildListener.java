@@ -22,7 +22,7 @@ public class GuildListener extends ListenerAdapter {
 				String output = "\n#" + event.getChannel().getName() + " > " + event.getAuthor().getUsername() + "#"
 						+ event.getAuthor().getDiscriminator() + " > " + event.getMessage().getContent();
 				textArea.append(output);
-			} catch (NullPointerException e) {
+			} catch (NullPointerException ignored) {
 			}
 		}
 	}

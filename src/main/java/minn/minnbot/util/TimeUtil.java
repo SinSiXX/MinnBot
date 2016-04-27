@@ -11,9 +11,8 @@ public class TimeUtil {
 		int hour = time.getHour();
 		int minute = time.getMinute();
 		int second = time.getSecond();
-		String stamp = "[" + ((hour < 10) ? "0" + hour : hour) + ":" + ((minute < 10) ? "0" + minute : minute) + ":"
+		return "[" + ((hour < 10) ? "0" + hour : hour) + ":" + ((minute < 10) ? "0" + minute : minute) + ":"
 				+ ((second < 10) ? "0" + second : second) + "]";
-		return stamp;
 	}
 
 	public static String uptime(int inMillis) {

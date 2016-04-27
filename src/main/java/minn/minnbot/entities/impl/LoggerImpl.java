@@ -6,11 +6,15 @@ import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.Event;
+import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.SimpleLog;
 
+import java.io.*;
 import java.rmi.UnexpectedException;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class LoggerImpl extends ListenerAdapter implements Logger, Thread.UncaughtExceptionHandler, SimpleLog.LogListener {
@@ -22,16 +26,17 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     private int events = 0;
     private boolean debug = false;
     // private List<String> messageLogs;
-    // private List<String> errorLogs;
+    private List<String> errorLogs;
     private MinnBotUserInterface console;
     private long startTime;
     private boolean logMessages = false;
     private boolean logEvents = false;
+    public static boolean log = true;
 
     public LoggerImpl(MinnBotUserInterface console) {
         this.console = console;
         // messageLogs = new LinkedList<String>();
-        // errorLogs = new LinkedList<String>();
+        errorLogs = new LinkedList<>();
         this.startTime = System.currentTimeMillis();
         console.writeEvent(TimeUtil.timeStamp() + "[MINNBOT] Ready!");
         console.writeln(TimeUtil.timeStamp() + "[MINNBOT] Ready!");
@@ -40,16 +45,17 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public void onEvent(Event event) {
-        if (!(event instanceof MessageReceivedEvent)) {
-            logEvent(event);
-        } else {
+        if (event instanceof MessageReceivedEvent) {
             onMessageReceived((MessageReceivedEvent) event);
+        } else if(event instanceof ShutdownEvent) {
+            saveToJson("ErrorLog-Session_" + (11 << System.currentTimeMillis()) + ".log", errorLogs);
         }
+        logEvent(event);
     }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(event == null) {
+        if (event == null) {
             logThrowable(new UnexpectedException("MessageReceivedEvent was null."));
             return;
         }
@@ -61,15 +67,13 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             messages++;
         }
         logMessage(event.getMessage());
-
         // if(messages > 2000)
         // saveToJson("message", messageLogs);
-        logEvent(event);
     }
 
     @Override
     public boolean logMessage(Message m) {
-        if(!logMessages)
+        if (!logMessages)
             return false;
         try {
             String stamp = TimeUtil.timeStamp();
@@ -96,7 +100,6 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
                 String s = TimeUtil.timeStamp() + " " + event.getClass().getSimpleName() + ": "
                         + event.getJDA();
                 console.writeEvent(s);
-                // errorLogs.add(s);
                 events++;
                 return true;
             } else
@@ -133,8 +136,31 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
         return numbers;
     }
 
+    public boolean saveToJson() {
+        return saveToJson("ErrorLog-Session_" + (11 << System.currentTimeMillis()) + ".log", errorLogs);
+    }
+
     public boolean saveToJson(String name, List<String> list) {
-        // TODO
+        if(list.isEmpty() || name.isEmpty())
+            return false;
+        File f = new File("Logs/" + name);
+        if(f.exists())
+            f.delete();
+        String[] s = {"<-!-Error-Logs-->\n"};
+        list.parallelStream().forEachOrdered(element -> s[0] += element + "\n");
+        Writer out = null;
+        new File("Logs").mkdirs();
+        try {
+            out = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream("Logs/" + f.getName()), "UTF-8"));
+            try {
+                out.write(s[0]);
+            } finally {
+                out.close();
+                list.clear();
+            }
+        } catch (IOException ignored) {
+        }
         return false;
     }
 
@@ -142,15 +168,23 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     public boolean logThrowable(Throwable e) {
         if (!logEvents)
             return false;
-        String s;
+        final String[] s = new String[1];
         if (e instanceof Info)
-            s = TimeUtil.timeStamp() + " " + e.getMessage();
+            s[0] = TimeUtil.timeStamp() + " " + e.getMessage();
         else
-            s = TimeUtil.timeStamp() + " " + e.getClass().getSimpleName() + ": " + e.getMessage();
+            s[0] = TimeUtil.timeStamp() + " " + e.getClass().getSimpleName() + ": " + e.getMessage();
         if (e instanceof Info) {
-            console.writeEvent("[Info] " + s);
+            console.writeEvent("[Info] " + s[0]);
         } else {
-            console.writeEvent("[Error] " + s);
+            final int[] elements = {0};
+            Arrays.stream(e.getStackTrace()).forEachOrdered((element) -> {
+                if (elements[0] < 5) {
+                    s[0] += "\n\t" + element.toString();
+                    elements[0]++;
+                }
+            });
+            errorLogs.add(s[0]);
+            console.writeEvent("[Error] " + s[0]);
             e.printStackTrace();
         }
         return true;

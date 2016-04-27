@@ -7,11 +7,10 @@ import minn.minnbot.manager.MinnAudioManager;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
 
-public class SkipCommand extends CommandAdapter {
+public class ReloadCommand extends CommandAdapter {
 
-    public SkipCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
+    public ReloadCommand(String prefix, Logger logger) {
+        init(prefix, logger);
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -22,28 +21,25 @@ public class SkipCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
-        if (!player.isPlaying()) {
-            event.sendMessage("Player is not playing!");
+        MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
+        if (player.isPlaying()) {
+            event.sendMessage("Reloading player...");
+            event.guild.getAudioManager().setSendingHandler(player);
+            if (!player.getAudioQueue().isEmpty() && !player.isPlaying())
+                player.play();
             return;
         }
-        player.skipToNext();
-        event.sendMessage("Skipped song!");
+        event.sendMessage("Player is not currently playing!");
     }
 
     @Override
     public boolean isCommand(String message) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "skip");
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "reload");
     }
 
     @Override
     public String getAlias() {
-        return "skip";
-    }
-
-    @Override
-    public String example() {
-        return "skip";
+        return "reload";
     }
 }

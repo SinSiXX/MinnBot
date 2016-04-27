@@ -55,21 +55,35 @@ public class AudioCommandManager extends CmdManager {
         else
             splitter.add(com);
 
-        com = new VolumeCommand(prefix,logger);
+        com = new VolumeCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new QueueCommand(prefix,logger);
+        com = new QueueCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());
         else
             splitter.add(com);
 
-        com = new ShuffleCommand(prefix,logger);
+        com = new ShuffleCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new ReloadCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new ResetPlayerCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());

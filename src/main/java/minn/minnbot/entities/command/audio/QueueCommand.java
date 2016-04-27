@@ -4,6 +4,7 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.MinnAudioManager;
+import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
 import net.dv8tion.jda.player.Playlist;
 import net.dv8tion.jda.player.source.AudioInfo;
@@ -27,6 +28,12 @@ public class QueueCommand extends CommandAdapter {
             thread.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
             return thread;
         });
+    }
+
+    public void onMessageReceived(MessageReceivedEvent event) {
+        if(event.isPrivate())
+            return;
+        super.onMessageReceived(event);
     }
 
     @Override
@@ -53,7 +60,12 @@ public class QueueCommand extends CommandAdapter {
                 if (listSources.size() > 1) {
                     event.sendMessage("Detected Playlist! Starting to queue songs...");
                 } else if (listSources.size() == 1) {
-                    event.sendMessage("Adding `" + listSources.get(0).getInfo().getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
+                    AudioInfo audioInfo = listSources.get(0).getInfo();
+                    if(audioInfo.getError() != null) {
+                        event.sendMessage("**__Error with source:__ " + audioInfo.getError().trim() + "**");
+                        continue;
+                    }
+                    event.sendMessage("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!");
                 }
                 // init executor
                 ThreadPoolExecutor listExecutor = new ThreadPoolExecutor(1, 50, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {

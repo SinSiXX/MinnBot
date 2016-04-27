@@ -69,7 +69,7 @@ public class HelpCommand extends CommandAdapter {
             String command = message.split(" ", 2)[0];
             if (command.equalsIgnoreCase("help"))
                 return true;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }

@@ -23,7 +23,7 @@ public class EvalUtil {
             engine.put("me", event.getAuthor());
             engine.put("api", event.getJDA());
             engine.put("bot", bot);
-        } catch (NullPointerException e) {
+        } catch (NullPointerException ignored) {
         }
         int method = 0;
         try {

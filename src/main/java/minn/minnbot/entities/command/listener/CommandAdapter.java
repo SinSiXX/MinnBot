@@ -17,7 +17,7 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        String message = event.getMessage().getContent();
+        String message = event.getMessage().getRawContent();
         if (isCommand(message)) {
             logger.logCommandUse(event.getMessage());
             onCommand(new CommandEvent(event));
@@ -51,4 +51,9 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
     public boolean requiresOwner() {
         return false;
     }
+
+    public String toString() {
+        return "C:" + prefix + getAlias() + "(" + logger + ")";
+    }
+
 }

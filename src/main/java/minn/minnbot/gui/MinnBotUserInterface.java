@@ -47,6 +47,45 @@ public class MinnBotUserInterface extends JFrame {
         getContentPane().add(panel_2);
         panel_2.setLayout(null);
 
+        JPanel panel = new JPanel();
+        panel.setBounds(10, 11, 513, 355);
+        getContentPane().add(panel);
+        panel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+        panel.setToolTipText("Logger output");
+        panel.setBackground(Color.DARK_GRAY);
+        panel.setLayout(null);
+
+        defaultArea = new TextArea();
+        defaultArea.setText("Default Logs");
+        defaultArea.setForeground(Color.WHITE);
+        defaultArea.setBackground(Color.BLACK);
+        defaultArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                popupLog.setVisible(true);
+            }
+        });
+        defaultArea.setFont(new Font("Century", Font.BOLD, 10));
+        defaultArea.setBounds(10, 8, 493, 244);
+        panel.add(defaultArea);
+
+        eventArea = new TextArea();
+        eventArea.setBounds(10, 258, 493, 87);
+        panel.add(eventArea);
+        eventArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                popupErrorLog.setVisible(true);
+            }
+        });
+        eventArea.setText("Event Logs");
+        eventArea.setFont(new Font("Century", Font.BOLD, 10));
+        eventArea.setForeground(new Color(255, 126, 47));
+        eventArea.setBackground(Color.BLACK);
+
+        /* SETTING LOGGER */
+        logger = new LoggerImpl(this);
+
         JCheckBox chckbxLogErrors = new JCheckBox("Log Events");
         chckbxLogErrors.setForeground(Color.WHITE);
         chckbxLogErrors.setBackground(Color.DARK_GRAY);
@@ -87,10 +126,12 @@ public class MinnBotUserInterface extends JFrame {
         JButton btnGenerateCommandJson = new JButton("Cache Information as Jsons.");
         btnGenerateCommandJson.setForeground(Color.WHITE);
         btnGenerateCommandJson.setBackground(Color.DARK_GRAY);
+
         btnGenerateCommandJson.addActionListener(e -> {
             try {
                 bot.handler.generateJson("commands.json");
                 bot.handler.saveTags();
+                logger.saveToJson();
             } catch (Exception e1) {
                 eventArea.append("\nThe bot must be launched to generate the commands.");
             }
@@ -99,13 +140,6 @@ public class MinnBotUserInterface extends JFrame {
         btnGenerateCommandJson.setEnabled(false);
         panel_2.add(btnGenerateCommandJson);
 
-        JPanel panel = new JPanel();
-        panel.setBounds(10, 11, 513, 355);
-        getContentPane().add(panel);
-        panel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
-        panel.setToolTipText("Logger output");
-        panel.setBackground(Color.DARK_GRAY);
-        panel.setLayout(null);
 
         btnStop = new JButton("Stop");
         btnStop.setForeground(Color.WHITE);
@@ -136,33 +170,6 @@ public class MinnBotUserInterface extends JFrame {
         panel_2.add(btnStop);
         btnStop.setBackground(Color.DARK_GRAY);
 
-        defaultArea = new TextArea();
-        defaultArea.setText("Default Logs");
-        defaultArea.setForeground(Color.WHITE);
-        defaultArea.setBackground(Color.BLACK);
-        defaultArea.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                popupLog.setVisible(true);
-            }
-        });
-        defaultArea.setFont(new Font("Century", Font.BOLD, 10));
-        defaultArea.setBounds(10, 8, 493, 244);
-        panel.add(defaultArea);
-
-        eventArea = new TextArea();
-        eventArea.setBounds(10, 258, 493, 87);
-        panel.add(eventArea);
-        eventArea.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                popupErrorLog.setVisible(true);
-            }
-        });
-        eventArea.setText("Event Logs");
-        eventArea.setFont(new Font("Century", Font.BOLD, 10));
-        eventArea.setForeground(new Color(255, 126, 47));
-        eventArea.setBackground(Color.BLACK);
 
         JButton btnClearConsole = new JButton("Clear Console");
         btnClearConsole.setForeground(Color.WHITE);
@@ -174,6 +181,7 @@ public class MinnBotUserInterface extends JFrame {
             popupLog.flush();
         });
         btnClearConsole.setBounds(334, 66, 126, 23);
+
         panel_2.add(btnClearConsole);
 
         btnServerLog = new JButton("Server Logs");
@@ -251,9 +259,10 @@ public class MinnBotUserInterface extends JFrame {
         setBackground(new Color(0, 0, 0));
         setForeground(new Color(10, 16, 37));
         setFont(new Font("Consolas", Font.BOLD, 12));
-        logger = new LoggerImpl(this);
         setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{btnLaunch, btnStop, btnGenerateCommandJson,
                 btnAccount, chckbxLogErrors, chckbxLogMessages}));
+
+
     }
 
     public void writeEvent(String input) {

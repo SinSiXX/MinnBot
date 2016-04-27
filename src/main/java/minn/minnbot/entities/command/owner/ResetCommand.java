@@ -6,9 +6,9 @@ import minn.minnbot.events.CommandEvent;
 
 public class ResetCommand extends CommandAdapter {
 
-   public ResetCommand(String prefix, Logger logger) {
-       init(prefix,logger);
-   }
+    public ResetCommand(String prefix, Logger logger) {
+        init(prefix, logger);
+    }
 
     @Override
     public void onCommand(CommandEvent event) {
@@ -17,7 +17,7 @@ public class ResetCommand extends CommandAdapter {
 
     @Override
     public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
+        String[] p = message.split(" ", 2);
         return p.length > 0 && p[0].equalsIgnoreCase(prefix + "reset");
     }
 
@@ -29,5 +29,9 @@ public class ResetCommand extends CommandAdapter {
     @Override
     public String getAlias() {
         return "reset";
+    }
+
+    public boolean requiresOwner() {
+        return true;
     }
 }

@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 
 public class TagManager extends ListenerAdapter {
@@ -24,7 +25,7 @@ public class TagManager extends ListenerAdapter {
     }
 
     public List<Tag> getTags() {
-        return tags;
+        return Collections.unmodifiableList(tags);
     }
 
     public static JSONObject jsonfy(Tag tag) {
@@ -56,8 +57,8 @@ public class TagManager extends ListenerAdapter {
     public static void saveTags() {
         JSONArray arr = manager.getAsJsonArray();
         if (new File("tags.json").exists())
+            //noinspection ResultOfMethodCallIgnored
             new File("tags.json").delete();
-        new File("tags.json");
         Writer out = null;
         try {
             out = new BufferedWriter(new OutputStreamWriter(
@@ -65,6 +66,7 @@ public class TagManager extends ListenerAdapter {
             try {
                 out.write(arr.toString(4));
             } finally {
+                //noinspection ThrowFromFinallyBlock
                 out.close();
             }
             Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());

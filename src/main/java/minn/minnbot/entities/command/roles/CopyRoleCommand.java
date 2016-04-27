@@ -68,7 +68,7 @@ public class CopyRoleCommand extends CommandAdapter {
             String command = message.split(" ", 2)[0];
             if (command.equalsIgnoreCase("copyrole"))
                 return true;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }
