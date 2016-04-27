@@ -3,6 +3,7 @@ package minn.minnbot.entities.command.owner;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.MinnAudioManager;
 
 public class ResetCommand extends CommandAdapter {
 
@@ -12,13 +13,14 @@ public class ResetCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-
+        event.sendMessage("Resetting players...");
+        MinnAudioManager.reset();
     }
 
     @Override
     public boolean isCommand(String message) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "reset");
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "resetplayers");
     }
 
     public String usage() {
@@ -28,7 +30,7 @@ public class ResetCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "reset";
+        return "resetPlayers";
     }
 
     public boolean requiresOwner() {

@@ -10,7 +10,7 @@ import net.dv8tion.jda.player.MusicPlayer;
 
 import java.util.Map;
 
-public class RepairPlayersCommand extends CommandAdapter {// TODO: Implementation
+public class RepairPlayersCommand extends CommandAdapter {// TODO: Test
 
     public RepairPlayersCommand(String prefix, Logger logger) {
         init(prefix, logger);
