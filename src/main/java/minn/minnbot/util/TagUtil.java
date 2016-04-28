@@ -2,7 +2,7 @@ package minn.minnbot.util;
 
 public class TagUtil {
 
-	private final String[] tags = {"get", "user", "channel", "random", ""};
+	//private final String[] tags = {"get", "user", "channel", "random", ""};
 	
 	public boolean isTag(String toTest) {
 		// TODO

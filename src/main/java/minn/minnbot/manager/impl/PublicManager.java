@@ -58,7 +58,7 @@ public class PublicManager extends CmdManager {
        else
            splitter.add(com);
 
-       com = new InfoCommand(prefix, logger, bot.owner, bot.inviteurl, true);
+       com = new InfoCommand(prefix, logger, bot.api.getUserById(bot.owner), bot.inviteurl, true);
        err.set(registerCommand(com));
        if (!err.get().isEmpty())
            errors.add(err.get());

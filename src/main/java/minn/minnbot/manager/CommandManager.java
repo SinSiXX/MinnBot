@@ -5,7 +5,6 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
-import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
@@ -31,11 +30,11 @@ public class CommandManager extends ListenerAdapter {
     private List<CmdManager> managers = new LinkedList<>();
     @SuppressWarnings("unused")
     private JDA api;
-    private User owner;
+    private String owner;
     private Logger logger;
     private ThreadPoolExecutor executor;
 
-    public CommandManager(JDA api, Logger logger, User owner) {
+    public CommandManager(JDA api, Logger logger, String owner) {
         this.api = api;
         this.logger = logger;
         this.owner = owner;
@@ -73,14 +72,14 @@ public class CommandManager extends ListenerAdapter {
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
             for (Command c : commands) {
                 if (c.requiresOwner()) {
-                    if (event.getAuthor() == owner)
+                    if (event.getAuthor().getId().equals(owner))
                         c.onMessageReceived(event);
                     continue;
                 }
                 c.onMessageReceived(event);
             }
             managers.parallelStream().forEachOrdered(manager -> {
-                if (manager.requiresOwner() && event.getAuthor() != owner)
+                if (manager.requiresOwner() && !event.getAuthor().getId().equals(owner))
                     return;
                 manager.call(event);
             });
