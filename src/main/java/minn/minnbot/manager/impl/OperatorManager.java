@@ -8,7 +8,6 @@ import minn.minnbot.entities.command.owner.*;
 import minn.minnbot.manager.CmdManager;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class OperatorManager extends CmdManager {
@@ -16,7 +15,7 @@ public class OperatorManager extends CmdManager {
     public OperatorManager(String prefix, Logger logger, MinnBot bot) {
         this.logger = logger;
         this.ownerOnly = true;
-        List<String> errors = new LinkedList<>();
+        errors = new LinkedList<>();
         HelpSplitter splitter = new HelpSplitter("Operator commands", "op", prefix, true);
         err = new AtomicReference<>(registerCommand(splitter));
         if (!err.get().isEmpty())
@@ -92,7 +91,12 @@ public class OperatorManager extends CmdManager {
         else
             splitter.add(com);
 
-        this.errors = errors;
+        com = new DisableCommand(prefix, logger, bot.handler);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
     }
 
 }

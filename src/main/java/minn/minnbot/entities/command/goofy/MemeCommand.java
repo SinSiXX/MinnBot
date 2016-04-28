@@ -1,4 +1,4 @@
-package minn.minnbot.entities.command;
+package minn.minnbot.entities.command.goofy;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import minn.minnbot.entities.Logger;

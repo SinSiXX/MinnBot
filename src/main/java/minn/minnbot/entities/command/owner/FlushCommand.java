@@ -54,9 +54,7 @@ public class FlushCommand extends CommandAdapter {
 	@Override
 	public boolean isCommand(String message) {
 		String[] parts = message.split(" ", 2);
-		if (parts.length < 1)
-			return false;
-		return parts[0].equalsIgnoreCase(prefix + "flush");
+		return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "flush");
 	}
 
 	@Override

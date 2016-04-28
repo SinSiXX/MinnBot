@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot {
 
-    public final static String VERSION = "Version 2.6b";
+    public final static String VERSION = "Version 2.6.5a";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     public static boolean powersaving = false;
     private static String giphy;
@@ -218,7 +218,7 @@ public class MinnBot {
 
         // User commands
 
-        manager.set(new PublicManager(prefix, logger, this, giphy));
+        manager.set(new PublicManager(prefix, logger, this));
         handler.registerManager(manager.get());
         errors.addAll(manager.get().getErrors());
 
@@ -237,6 +237,12 @@ public class MinnBot {
         // Role manager
 
         manager.set(new RoleCommandManager(prefix, logger));
+        handler.registerManager(manager.get());
+        errors.addAll(manager.get().getErrors());
+
+        // Goofy manager
+
+        manager.set(new GoofyManager(prefix, logger, giphy));
         handler.registerManager(manager.get());
         errors.addAll(manager.get().getErrors());
 

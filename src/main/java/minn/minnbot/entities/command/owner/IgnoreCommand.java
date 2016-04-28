@@ -96,8 +96,8 @@ public class IgnoreCommand extends CommandAdapter {
 
     @Override
     public boolean isCommand(String message) {
-        String cmd = message.split(" ", 2)[0];
-        return cmd.equalsIgnoreCase(prefix + "ignore");
+        String[] p = message.split(" ", 2);
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "ignore");
     }
 
     @Override
