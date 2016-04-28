@@ -114,19 +114,18 @@ public class MinnAudioManager extends ListenerAdapter {
                 try {
                     Thread.sleep(TimeUnit.MINUTES.toMillis(10L));
                 } catch (InterruptedException ignored) {
-                    if (guild.getAudioManager().getConnectedChannel() != null)
-                        guild.getAudioManager().closeAudioConnection();
                     break;
                 }
                 if (player.getAudioQueue().isEmpty() && !player.isPlaying()) {
-                    if (guild.getAudioManager().getConnectedChannel() != null)
-                        guild.getAudioManager().closeAudioConnection();
                     break;
                 }
             }
+            if (guild.getAudioManager().getConnectedChannel() != null)
+                guild.getAudioManager().closeAudioConnection();
             players.remove(guild, player);
         });
         keepAlive.setName("Player-KeepAlive(" + guild.getName() + ")");
+        keepAlive.setDaemon(true);
         keepAliveMap.put(player, keepAlive);
         keepAlive.start();
         player.setVolume(.5f);

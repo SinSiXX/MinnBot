@@ -18,7 +18,7 @@ public abstract class CmdManager {
     protected boolean ownerOnly = false;
 
     public List<Command> getCommands() {
-        return Collections.unmodifiableList(((commands == null) ? new LinkedList<Command>() : commands));
+        return Collections.unmodifiableList(((commands == null) ? new LinkedList<>() : commands));
     }
 
     public List<String> getErrors() {
@@ -42,21 +42,15 @@ public abstract class CmdManager {
     }
 
     public void call(MessageReceivedEvent event) {
-        Thread t = new Thread(() -> commands.parallelStream().forEach(c -> {
+        commands.parallelStream().forEach(c -> {
             if (!disable.get(c)) c.onMessageReceived(event);
-        }));
-        if (logger != null)
-            t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
-        t.start();
+        });
     }
 
     public void callAsync(MessageReceivedEvent event, Consumer<Boolean> consumer) {
-        Thread t = new Thread(() -> commands.parallelStream().forEach(c -> {
+        commands.parallelStream().forEach(c -> {
             if (!disable.get(c)) c.onMessageReceived(event);
-        }));
-        if (logger != null)
-            t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
-        t.start();
+        });
         if (consumer != null) {
             consumer.accept(true);
         }

@@ -31,7 +31,7 @@ public class PyifyCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "pyify text";
+        return "pyify <text>";
     }
 
     public String example() {

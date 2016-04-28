@@ -22,8 +22,8 @@ public class DebugCommand extends CommandAdapter {
 
 	@Override
 	public boolean isCommand(String message) {
-		message = message.toLowerCase();
-		return message.equals(prefix + "toggledebug") || message.equals(prefix + "td");
+		String[] p = message.split(" ",2);
+		return p.length > 0 && p[0].equalsIgnoreCase(prefix + "toggledebug") || p[0].equalsIgnoreCase(prefix + "td");
 	}
 
 	@Override
