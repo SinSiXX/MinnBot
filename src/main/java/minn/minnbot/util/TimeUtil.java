@@ -53,7 +53,7 @@ public class TimeUtil {
         }
 
         if (times.size() != 1)
-            return uptime + " and " + times.get(times.size() - 1);
+            return uptime.substring(0, uptime.length() - 2) + " and " + times.get(times.size() - 1);
         else
             return times.get(0);
         /*AtomicLong nHours = new AtomicLong();
