@@ -97,6 +97,14 @@ public class OperatorManager extends CmdManager {
             errors.add(err.get());
         else
             splitter.add(com);
+
+        com = new EnableCommand(prefix, logger, bot.handler);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
     }
 
 }

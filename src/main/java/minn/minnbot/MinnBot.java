@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot {
 
-    public final static String VERSION = "Version 2.6.5a";
+    public final static String VERSION = "Version 2.6.5b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     public static boolean powersaving = false;
     private static String giphy;
