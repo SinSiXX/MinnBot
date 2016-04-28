@@ -139,7 +139,7 @@ public class AccountSettings extends JFrame {
 		txtrMindTheRate.setBackground(new Color(0, 0, 128));
 		txtrMindTheRate.setFont(new Font("Constantia", Font.BOLD, 10));
 		txtrMindTheRate.setText(
-				"Mind the rate limits:\r\n- Names: 2 changes per hour\r\n- Game: 60 changes per hour\r\n- Avatar: NO RATE LIMIT... ABOOOOOOSE");
+				"Mind the rate limits:\r\n- Names: 2 Changes Per Hour\r\n- Game: 5 Changes Per Minute\r\n- Avatar: NO RATE LIMIT... ABOOOOOOSE");
 		setBackground(new Color(0, 128, 128));
 		setTitle("Account Manager");
 		setResizable(false);
