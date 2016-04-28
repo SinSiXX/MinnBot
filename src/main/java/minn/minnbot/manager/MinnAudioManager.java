@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 
 public class MinnAudioManager extends ListenerAdapter {
 
-    /*private static Thread keepAlive;*/
+    private static Thread keepAliveKeepAlive; // dat name doe
 
     private static Map<Guild, MusicPlayer> players = new HashMap<>();
 
@@ -23,23 +23,29 @@ public class MinnAudioManager extends ListenerAdapter {
         init();
     }
 
-    public static void init() {
-        /*if (keepAlive == null) {
-            keepAlive = new Thread(() -> {
-                while (!keepAlive.isInterrupted()) {
-                    if (!players.isEmpty()) {
-                        clear();
-                    }
+    private static void init() {
+        if (keepAliveKeepAlive == null || !keepAliveKeepAlive.isAlive()) {
+            keepAliveKeepAlive = new Thread(() -> {
+                while (!keepAliveKeepAlive.isInterrupted()) {
                     try {
-                        Thread.sleep(60000 * 5);
-                    } catch (InterruptedException ignored) {
+                        Thread.sleep(TimeUnit.MINUTES.toMillis(60L));
+                    } catch (InterruptedException e) {
+                        break;
                     }
+                    Map<MusicPlayer, Thread> toRemove = new HashMap<>();
+                    keepAliveMap.forEach((player, thread) -> {
+                        if (thread != null && !thread.isAlive()) {
+                            toRemove.put(player, thread);
+                        }
+                    });
+                    toRemove.forEach((player, thread) -> keepAliveMap.remove(player, thread));
                 }
             });
-            keepAlive.setDaemon(true);
-            keepAlive.setName("MinnAudioManager-KeepAlive");
-            keepAlive.start();
-        }*/
+            keepAliveKeepAlive.setDaemon(true);
+            keepAliveKeepAlive.setPriority(Thread.MIN_PRIORITY);
+            keepAliveKeepAlive.setName("PlayerKeepAlive-KeepAlive");
+            keepAliveKeepAlive.start();
+        }
     }
 
     public void onShutdown(ShutdownEvent event) {
@@ -108,19 +114,18 @@ public class MinnAudioManager extends ListenerAdapter {
                 try {
                     Thread.sleep(TimeUnit.MINUTES.toMillis(10L));
                 } catch (InterruptedException ignored) {
-                    if (guild.getAudioManager().getConnectedChannel() != null)
-                        guild.getAudioManager().closeAudioConnection();
                     break;
                 }
                 if (player.getAudioQueue().isEmpty() && !player.isPlaying()) {
-                    if (guild.getAudioManager().getConnectedChannel() != null)
-                        guild.getAudioManager().closeAudioConnection();
                     break;
                 }
             }
+            if (guild.getAudioManager().getConnectedChannel() != null)
+                guild.getAudioManager().closeAudioConnection();
             players.remove(guild, player);
         });
         keepAlive.setName("Player-KeepAlive(" + guild.getName() + ")");
+        keepAlive.setDaemon(true);
         keepAliveMap.put(player, keepAlive);
         keepAlive.start();
         player.setVolume(.5f);

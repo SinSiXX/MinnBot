@@ -6,8 +6,6 @@ import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.Permission;
-import net.dv8tion.jda.entities.Guild;
-import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.entities.VoiceChannel;
 import net.dv8tion.jda.entities.VoiceStatus;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
@@ -22,19 +20,15 @@ public class JoinCommand extends CommandAdapter {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.isPrivate())
-            return;
-        super.onMessageReceived(event);
+        if (!event.isPrivate())
+            super.onMessageReceived(event);
     }
 
     @Override
     public void onCommand(CommandEvent event) {
-
-        User user = event.event.getAuthor();
-        Guild guild = event.event.getGuild();
-        VoiceStatus status = guild.getVoiceStatusOfUser(user);
+        VoiceStatus status = event.guild.getVoiceStatusOfUser(event.author);
         if (status == null) {
-            event.sendMessage("You must be in a voice channel to use this command.");
+            event.sendMessage("You must be in a voice channel to use this command. If you are, please reconnect.");
             return;
         }
         if (status.getChannel() == null) {
@@ -50,11 +44,10 @@ public class JoinCommand extends CommandAdapter {
             event.sendMessage("I wouldn't be able to speak there anyway :(");
             return;
         }
-        VoiceStatus myStatus = guild.getVoiceStatusOfUser(event.event.getJDA().getSelfInfo());
-        if (myStatus == null || myStatus.getChannel() == null) {
-            guild.getAudioManager().openAudioConnection(channel);
+        if (!event.guild.getAudioManager().isConnected()) {
+            event.guild.getAudioManager().openAudioConnection(channel);
         } else {
-            guild.getAudioManager().moveAudioConnection(channel);
+            event.guild.getAudioManager().moveAudioConnection(channel);
         }
         MinnAudioManager.registerPlayer(new MusicPlayer(), event.event.getGuild());
         event.sendMessage("Joined `" + channel.getName() + "`! " + EmoteUtil.getRngOkHand());

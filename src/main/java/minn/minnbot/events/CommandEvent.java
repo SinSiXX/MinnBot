@@ -10,6 +10,8 @@ import net.dv8tion.jda.entities.MessageChannel;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.function.Consumer;
+
 public class CommandEvent {
 
 	public final String allArguments;
@@ -66,6 +68,18 @@ public class CommandEvent {
 				}
 				checked = false;
 			}
+		}
+	}
+
+	public void sendMessage(String content, Consumer<Message> callback) {
+		content = content.replace("@everyone", "@\u0001everyone");
+		if(content.length() >= 2000)
+			throw new IllegalArgumentException("Reached character limit.");
+		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE) &&  guild.checkVerification()) {
+			event.getChannel().sendMessageAsync(content, (Message m) -> {
+				CommandEvent.checked();
+				callback.accept(m);
+			} );
 		}
 	}
 

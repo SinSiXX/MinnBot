@@ -27,7 +27,7 @@ public class HelpCommand extends CommandAdapter {
         List<Command> commands = manager.getAllCommands();
         if (event.allArguments.isEmpty()) {
             final String[] s = {"**__Example: " + prefix + "help public__**\n"};
-            commands.parallelStream().filter(c -> !c.requiresOwner() || event.event.getAuthor() == owner).forEach((c) -> {
+            commands.parallelStream().filter(c -> !c.requiresOwner() || event.event.getAuthor() == owner).forEachOrdered((c) -> {
                 if (c instanceof HelpSplitter) {
                     if ((s[0] + c.getAlias()).length() > 1000) {
                         event.sendMessage(s[0]);
