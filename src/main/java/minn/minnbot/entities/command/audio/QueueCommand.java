@@ -14,13 +14,14 @@ import net.dv8tion.jda.player.source.AudioSource;
 import java.rmi.UnexpectedException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class QueueCommand extends CommandAdapter {
 
-    private ThreadPoolExecutor executor;
+    private ExecutorService executor;
 
     public QueueCommand(String prefix, Logger logger) {
         super.init(prefix, logger);

@@ -17,6 +17,8 @@ import net.dv8tion.jda.JDABuilder;
 import net.dv8tion.jda.JDAInfo;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
+import net.dv8tion.jda.events.ReconnectedEvent;
+import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.ApplicationUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +36,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings("unused")
-public class MinnBot {
+public class MinnBot extends ListenerAdapter {
 
     public final static String VERSION = "Version 2.6.5b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
@@ -42,7 +44,7 @@ public class MinnBot {
     private static String giphy;
     private static MinnBotUserInterface console;
     private static boolean audio;
-    public final User owner;
+    public final String owner; // FIXME
     public final JDA api;
     public final CommandManager handler;
     public final String inviteurl;
@@ -64,9 +66,10 @@ public class MinnBot {
         this.logger = logger;
         this.prefix = prefix;
         log("Prefix: " + prefix);
-        this.owner = this.api.getUserById(ownerID);
+        this.owner = ownerID;
+        User uOwner = api.getUserById(owner);
         try {
-            log("Owner: " + owner.getUsername() + "#" + owner.getDiscriminator());
+            log("Owner: " + uOwner.getUsername() + "#" + uOwner.getDiscriminator());
         } catch (NullPointerException e) {
             logger.logThrowable(new NullPointerException(
                     "Owner could not be retrieved from the given id. Do you share a guild with this bot? - Caused by id: \""
@@ -80,6 +83,7 @@ public class MinnBot {
         this.bot = true;
         this.handler = new CommandManager(api, this.logger, owner);
         api.addEventListener(handler);
+        api.addEventListener(this);
         log("Powersaving: " + powersaving);
     }
 
@@ -148,6 +152,11 @@ public class MinnBot {
             }
             throw e;
         }
+    }
+
+    public void onReconnect(ReconnectedEvent event) {
+
+
     }
 
     private String getInviteUrl() {

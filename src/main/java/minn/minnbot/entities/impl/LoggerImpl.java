@@ -145,10 +145,12 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             return false;
         File f = new File("Logs/" + name);
         if(f.exists())
+            //noinspection ResultOfMethodCallIgnored
             f.delete();
         String[] s = {"<-!-Error-Logs-->\n"};
         list.parallelStream().forEachOrdered(element -> s[0] += element + "\n");
         Writer out = null;
+        //noinspection ResultOfMethodCallIgnored
         new File("Logs").mkdirs();
         try {
             out = new BufferedWriter(new OutputStreamWriter(

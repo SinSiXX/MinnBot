@@ -255,7 +255,7 @@ public class MinnBotUserInterface extends JFrame {
         btnLaunch.setBackground(Color.DARK_GRAY);
 
         setTitle("MinnBot");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setBackground(new Color(0, 0, 0));
         setForeground(new Color(10, 16, 37));
         setFont(new Font("Consolas", Font.BOLD, 12));
