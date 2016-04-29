@@ -23,7 +23,7 @@ public class ServerLog extends JFrame {
 	private boolean enabled;
 
 	public ServerLog(List<Guild> guilds, JDA api) {
-		if (guilds.isEmpty() || guilds == null || api == null)
+		if (guilds == null || guilds.isEmpty() || api == null)
 			throw new IllegalArgumentException("No guilds available.");
 		this.guilds = guilds;
 		this.api = api;

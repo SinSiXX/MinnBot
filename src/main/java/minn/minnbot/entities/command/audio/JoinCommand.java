@@ -27,6 +27,10 @@ public class JoinCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         VoiceStatus status = event.guild.getVoiceStatusOfUser(event.author);
+        if(event.guild.getAudioManager().isAttemptingToConnect()) {
+            event.sendMessage("I am currently trying to connect to another channel.\nIf I'm stuck joining for more than a minute, consider changing the voice region.");
+            return;
+        }
         if (status == null) {
             event.sendMessage("You must be in a voice channel to use this command. If you are, please reconnect.");
             return;
@@ -44,6 +48,7 @@ public class JoinCommand extends CommandAdapter {
             event.sendMessage("I wouldn't be able to speak there anyway :(");
             return;
         }
+        event.guild.getAudioManager().setConnectTimeout(5000);
         if (!event.guild.getAudioManager().isConnected()) {
             event.guild.getAudioManager().openAudioConnection(channel);
         } else {

@@ -76,8 +76,8 @@ public class IgnoreUtil {
     public static boolean toggleIgnore(Guild g) {
         if (g == null)
             throw new UnsupportedOperationException("Guild can not be null!");
-        if (users.contains(g)) {
-            users.remove(g);
+        if (guilds.contains(g)) {
+            guilds.remove(g);
             return false;
         }
         ignore(g);
@@ -87,8 +87,8 @@ public class IgnoreUtil {
     public static boolean toggleIgnore(TextChannel c) {
         if (c == null)
             throw new UnsupportedOperationException("TextChannel can not be null!");
-        if (users.contains(c)) {
-            users.remove(c);
+        if (channels.contains(c)) {
+            channels.remove(c);
             return false;
         }
         ignore(c);
