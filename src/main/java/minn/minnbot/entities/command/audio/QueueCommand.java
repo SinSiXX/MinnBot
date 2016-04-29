@@ -4,15 +4,12 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.MinnAudioManager;
-import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
 import net.dv8tion.jda.player.Playlist;
 import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 
-import java.rmi.UnexpectedException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -35,7 +32,7 @@ public class QueueCommand extends CommandAdapter {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.isPrivate())
+        if (event.isPrivate())
             return;
         super.onMessageReceived(event);
     }
@@ -46,21 +43,7 @@ public class QueueCommand extends CommandAdapter {
             event.sendMessage("You have to provide at least one URL.");
             return;
         }
-        List<Message> tmp = new LinkedList<>();
-        event.sendMessage("Validating request, this may take a few minutes...", tmp::add);
-        int counting = 0;
-        while(tmp.size() < 1) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                return;
-            }
-            if(++counting == 25) {
-                logger.logThrowable(new UnexpectedException("[QueueCommand] Callback was never called."));
-                return;
-            }
-        }
-        executor.execute(() -> {
+        event.sendMessage("Validating request, this may take a few minutes...", msg -> executor.execute(() -> {
             String[] urls = event.allArguments.trim().replace(" ", "").split("\\Q,\\E");
             MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
 
@@ -75,14 +58,14 @@ public class QueueCommand extends CommandAdapter {
                 }
                 List<AudioSource> listSources = list.getSources();
                 if (listSources.size() > 1) {
-                    tmp.get(0).updateMessageAsync("Detected Playlist! Starting to queue songs...", (message -> tmp.set(0, message)));
+                    msg.updateMessageAsync("Detected Playlist! Starting to queue songs...", null);
                 } else if (listSources.size() == 1) {
                     AudioInfo audioInfo = listSources.get(0).getInfo();
-                    if(audioInfo.getError() != null) {
-                        tmp.get(0).updateMessageAsync("**__Error with source:__ " + audioInfo.getError().trim() + "**", (message -> tmp.set(0, message)));
+                    if (audioInfo.getError() != null) {
+                        msg.updateMessageAsync("**__Error with source:__ " + audioInfo.getError().trim() + "**", null);
                         continue;
                     }
-                    tmp.get(0).updateMessageAsync("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!", (message -> tmp.set(0, message)));
+                    msg.updateMessageAsync("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!", null);
                 }
                 // init executor
                 ThreadPoolExecutor listExecutor = new ThreadPoolExecutor(1, 50, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
@@ -97,25 +80,25 @@ public class QueueCommand extends CommandAdapter {
                     AudioInfo info = source.getInfo();
                     if (info == null) {
                         if (!error[0]) {
-                            tmp.get(0).updateMessageAsync("Source was not available. Skipping.", (message -> tmp.set(0, message)));
+                            msg.updateMessageAsync("Source was not available. Skipping.", null);
                             error[0] = true;
                         }
                         return;
                     } else if (info.getError() != null) {
                         if (!error[0]) {
-                            tmp.get(0).updateMessageAsync("**One or more sources were not available. Sorry fam.**", (message -> tmp.set(0, message)));
+                            msg.updateMessageAsync("**One or more sources were not available. Sorry fam.**", null);
                             error[0] = true;
                         }
                         return;
                     }
                     player.getAudioQueue().add(source);
                     if (!player.isPlaying()) {
-                        tmp.get(0).updateMessageAsync("Enqueuing songs and starting playback...", (message -> tmp.set(0, message)));
+                        msg.updateMessageAsync("Enqueuing songs and starting playback...", null);
                         player.play();
                     }
                 }));
             }
-        });
+        }));
     }
 
     @Override
