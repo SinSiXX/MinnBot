@@ -8,8 +8,7 @@ Simple to setup Discord Chat Bot.
 3. Invite the bot account to a guild.
 4. Run the jar and click "launch".
 5. Populate the automatically generated json file 
-<div class="highlight highlight-text-json">
-<pre>
+```json
 {
     "owner": "86699011792191488",
     "prefix": "!",
@@ -19,8 +18,7 @@ Simple to setup Discord Chat Bot.
     "audio": false,
     "giphy": "YOUR-GIPHY-KEY"
 }
-</pre>
-</div>
+```
 6. Click "launch" again.
 7. Make sure the bot has permission to both read and write messages in the channel you want to use the bot in.
 8. Type (i.e.) !help or !info in a channel and read the instructions.
