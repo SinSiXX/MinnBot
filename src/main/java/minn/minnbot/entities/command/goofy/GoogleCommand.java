@@ -16,11 +16,11 @@ public class GoogleCommand extends CommandAdapter {
     @Override
     @SuppressWarnings( "deprecation" )
     public void onCommand(CommandEvent event) {
-        if(event.arguments.length < 1) {
+        if(event.arguments.length == 1) {
             event.sendMessage("Missing arguments. Usage: " + usage());
             return;
         }
-        if(event.arguments.length != 0){
+        if(event.arguments.length > 0){
         	event.sendMessage("http://lmgtfy.com/?q=" + URLEncoder.encode(event.allArguments));
         }
 }
