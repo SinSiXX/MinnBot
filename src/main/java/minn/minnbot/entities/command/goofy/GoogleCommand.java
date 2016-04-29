@@ -20,13 +20,8 @@ public class GoogleCommand extends CommandAdapter {
             event.sendMessage("Missing arguments. Usage: " + usage());
             return;
         }
-        if(event.arguments.length == 1){
-        	
-        	
+        if(event.arguments.length != 0){
         	event.sendMessage("http://lmgtfy.com/?q=" + URLEncoder.encode(event.allArguments));
-        }
-        if(event.arguments.length >= 2){
-        	event.sendMessage("Too many arguments. Usage:"+usage());
         }
 }
 
@@ -36,7 +31,7 @@ public class GoogleCommand extends CommandAdapter {
       }
 
     public String usage() {
-        return prefix+"lmgtfy <query> | Returns a let me google that for you link with the added query";
+        return "lmgtfy <query> | Returns a let me google that for you link with the added query";
     }
 
     @Override
