@@ -17,7 +17,7 @@ public class NickerCommand extends CommandAdapter {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.isPrivate())
+        if (event.isPrivate())
             return;
         super.onMessageReceived(event);
     }
@@ -26,7 +26,7 @@ public class NickerCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         boolean userPerm = PermissionUtil.checkPermission(event.author, Permission.NICKNAME_MANAGE, event.guild);
         boolean botPerm = PermissionUtil.checkPermission(event.jda.getSelfInfo(), Permission.NICKNAME_MANAGE, event.guild);
-        if(!userPerm) {
+        if (!userPerm) {
             event.sendMessage("You are not able to manage nicknames.");
             return;
         } else if (!botPerm) {
@@ -35,9 +35,9 @@ public class NickerCommand extends CommandAdapter {
         }
         List<User> users = event.event.getMessage().getMentionedUsers();
 
-        if(users.isEmpty()) {
+        if (users.isEmpty()) {
             User user = event.author;
-            if(event.allArguments.length() > 20) {
+            if (event.allArguments.length() > 20) {
                 event.sendMessage("Nickname is too long, must be 0-20!");
                 return;
             }
@@ -45,13 +45,14 @@ public class NickerCommand extends CommandAdapter {
             event.sendMessage("Updated **your** nickname: " + event.guild.getNicknameForUser(user));
         } else {
             User user = users.get(0);
-            String[] p = event.allArguments.split("\\Q|\\E",2);
-            if(p.length < 2) {
-                event.sendMessage("Missing argument. Example: `" + example() + "`");
-                return;
+            String[] p = event.allArguments.split(" ", 2);
+            String name;
+            if (p.length >= 2) {
+                name = p[1].trim();
+            } else {
+                name = "";
             }
-            String name = p[1];
-            if(name.length() > 20) {
+            if (name.length() > 20) {
                 event.sendMessage("Nickname is too long, must be 0-20!");
                 return;
             }
@@ -62,20 +63,22 @@ public class NickerCommand extends CommandAdapter {
 
     @Override
     public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
+        String[] p = message.split(" ", 2);
         return p.length > 0 && p[0].equalsIgnoreCase(prefix + "nick");
     }
 
     @Override
     public String getAlias() {
-        return "nick <mention> | <name>";
+        return "nick <mention> <name>";
     }
 
     public String usage() {
-        return "\n**<mention>** - the user who's nickname you want to change\n**<name>** - the name to give, leave blank to reset.";
+        return "\n**<mention>** - the user who's nickname you want to change\n**<name>** - the name to give, leave blank to reset.\n" +
+                "\n**__Syntax:__** `nick <@mention> <name>`, `nick <name>`\n" +
+                "\n**__Examples:__** \n" + prefix + example() + "\n" + prefix + "nick MyNick";
     }
 
     public String example() {
-        return "nick <@158174948488118272> | Bot";
+        return "nick <@158174948488118272> Bot";
     }
 }
