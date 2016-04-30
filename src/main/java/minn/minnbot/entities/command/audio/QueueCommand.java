@@ -22,7 +22,7 @@ public class QueueCommand extends CommandAdapter {
 
     public QueueCommand(String prefix, Logger logger) {
         super.init(prefix, logger);
-        executor = new ThreadPoolExecutor(1, 5, 3L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+        executor = new ThreadPoolExecutor(1, 15, 3L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
             final Thread thread = new Thread(r, "QueueExecution-Thread");
             thread.setPriority(Thread.MAX_PRIORITY);
             thread.setDaemon(true);
@@ -66,17 +66,20 @@ public class QueueCommand extends CommandAdapter {
                         continue;
                     }
                     msg.updateMessageAsync("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!", null);
+                } else {
+                    msg.updateMessageAsync("Source had no attached/readable information. Skipping...", null);
+                    continue;
                 }
                 // init executor
-                ThreadPoolExecutor listExecutor = new ThreadPoolExecutor(1, 50, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+                /*ThreadPoolExecutor listExecutor = new ThreadPoolExecutor(1, 50, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
                     final Thread thread = new Thread(r, "ListValidation-Thread");
                     thread.setPriority(Thread.MAX_PRIORITY);
                     thread.setDaemon(true);
                     thread.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
                     return thread;
-                });
+                });*/
                 // execute
-                listSources.parallelStream().forEachOrdered(source -> listExecutor.execute(() -> {
+                listSources.parallelStream().forEachOrdered(source -> /*listExecutor.execute(() ->*/ {
                     AudioInfo info = source.getInfo();
                     if (info == null) {
                         if (!error[0]) {
@@ -96,7 +99,7 @@ public class QueueCommand extends CommandAdapter {
                         msg.updateMessageAsync("Enqueuing songs and starting playback...", null);
                         player.play();
                     }
-                }));
+                }/*)*/);
             }
         }));
     }

@@ -36,4 +36,6 @@ public class GoogleCommand extends CommandAdapter {
     public String getAlias() {
         return "lmgtfy <query>";
     }
+
+    public String example() { return "lmgtfy how to make a discord bot"; }
 }

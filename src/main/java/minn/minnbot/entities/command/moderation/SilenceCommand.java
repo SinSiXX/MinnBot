@@ -1,4 +1,4 @@
-package minn.minnbot.entities.command;
+package minn.minnbot.entities.command.moderation;
 
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
@@ -9,9 +9,9 @@ import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 import java.util.List;
 
-public class UnsilenceCommand extends CommandAdapter {
+public class SilenceCommand extends CommandAdapter {
 
-	public UnsilenceCommand(String prefix, Logger logger) {
+	public SilenceCommand(String prefix, Logger logger) {
 		this.prefix = prefix;
 		this.logger = logger;
 	}
@@ -40,13 +40,13 @@ public class UnsilenceCommand extends CommandAdapter {
 	@Override
 	public void onCommand(CommandEvent event) {
 		List<User> mentions = event.event.getMessage().getMentionedUsers();
-		if(mentions.isEmpty()) {
+		if (mentions.isEmpty()) {
 			event.sendMessage("Usage: " + usage());
 			return;
 		}
 		User u = mentions.get(0);
-		event.event.getTextChannel().createPermissionOverride(u).grant(Permission.MESSAGE_WRITE).update();
-		event.sendMessage(u.getAsMention() + " has been un-silenced.");
+		event.event.getTextChannel().createPermissionOverride(u).deny(Permission.MESSAGE_WRITE).update();
+		event.sendMessage(u.getAsMention() + " has been silenced.");
 	}
 
 	@Override
@@ -57,26 +57,27 @@ public class UnsilenceCommand extends CommandAdapter {
 				return false;
 			message = message.substring(prefix.length());
 			String command = message.split(" ", 2)[0];
-			if (command.equalsIgnoreCase("unsilence"))
+			if (command.equalsIgnoreCase("silence"))
 				return true;
-		} catch (Exception ignored) {
+		} catch (Exception e) {
+			logger.logThrowable(e);
 		}
 		return false;
 	}
 
 	@Override
 	public String usage() {
-		return "`unsilence @username`\t | Required Permissions: Manage Permissions";
+		return "`silence @username`\t | Required Permissions: Manage Permissions";
 	}
 
 	@Override
 	public String getAlias() {
-		return "unsilence <mention>";
+		return "silence <mention>";
 	}
 
 	@Override
 	public String example() {
-		return "unsilence <@158174948488118272>";
+		return "silence <@158174948488118272>";
 	}
 
 }

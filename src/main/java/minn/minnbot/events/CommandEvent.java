@@ -30,13 +30,13 @@ public class CommandEvent {
 
     public CommandEvent(MessageReceivedEvent event) {
         try {
-            arguments = event.getMessage().getContent().split(" ", 2)[1].split(" ");
+            arguments = event.getMessage().getRawContent().split(" ", 2)[1].split(" ");
         } catch (IndexOutOfBoundsException e) {
             arguments = new String[0];
         }
         String checked;
         try {
-            checked = event.getMessage().getContent().split(" ", 2)[1];
+            checked = event.getMessage().getRawContent().split(" ", 2)[1];
         } catch (ArrayIndexOutOfBoundsException e) {
             checked = "";
         }

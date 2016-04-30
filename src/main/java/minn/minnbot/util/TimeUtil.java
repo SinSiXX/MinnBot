@@ -1,5 +1,8 @@
 package minn.minnbot.util;
 
+import net.dv8tion.jda.entities.Guild;
+import net.dv8tion.jda.entities.User;
+
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +18,26 @@ public class TimeUtil {
         int second = time.getSecond();
         return "[" + ((hour < 10) ? "0" + hour : hour) + ":" + ((minute < 10) ? "0" + minute : minute) + ":"
                 + ((second < 10) ? "0" + second : second) + "]";
+    }
+
+    public static String getJoinDate(User u, Guild g) {
+        if (g == null)
+            return "NaN";
+        java.time.OffsetDateTime time = g.getJoinDateForUser(u);
+        int day = time.getDayOfMonth();
+        int month = time.getMonthValue();
+        int year = time.getYear();
+
+        int hour = time.getHour();
+        int minute = time.getMinute();
+        int second = time.getSecond();
+        long milli = time.toInstant().toEpochMilli();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return sdf.format(time.toInstant().toEpochMilli());
+        /*return "" + ((day < 10) ? "0" + day : day) + "-" + ((month < 10) ? "0" + month : month) + "-" + year + " | "
+                + ((hour < 10) ? "0" + hour : hour) + ":" + ((minute < 10) ? "0" + minute : minute) + ":"
+                + ((second < 10) ? "0" + second : second);*/
     }
 
     public static String uptime(long inMillis) {
@@ -59,15 +82,13 @@ public class TimeUtil {
     }
 
     /**
-     * Thanks dinos
-     *
      * @param id of object to check creation time from
      * @return Creation time in SimpleDateFormat
      */
     public static String getCreationTime(long id) {
         long time = ((id >> 22) + 1420070400000L);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         return sdf.format(time);
