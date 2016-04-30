@@ -29,18 +29,14 @@ public class CommandEvent {
     }
 
     public CommandEvent(MessageReceivedEvent event) {
-        try {
-            arguments = event.getMessage().getRawContent().split(" ", 2)[1].split(" ");
-        } catch (IndexOutOfBoundsException e) {
+        String[] p = event.getMessage().getRawContent().split("\\s+", 2);
+        if (p.length >= 2) {
+            arguments = p[1].split("\\s+");
+            allArguments = p[1];
+        } else {
             arguments = new String[0];
+            allArguments = "";
         }
-        String checked;
-        try {
-            checked = event.getMessage().getRawContent().split(" ", 2)[1];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            checked = "";
-        }
-        allArguments = checked;
         this.event = event;
         isPrivate = event.isPrivate();
         timeStamp = TimeUtil.timeStamp();

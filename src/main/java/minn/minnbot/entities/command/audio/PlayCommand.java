@@ -54,17 +54,15 @@ public class PlayCommand extends CommandAdapter {
             event.sendMessage("Video was not accessible! " + EmoteUtil.getRngThumbsdown());
             return;
         }
-        if(info.getDuration().getFullTimestamp().equals("00:30:00.000")) {
-            event.sendMessage("Origin is detected as a live stream and will not be played.\nJoin the dev server linked in the info command to report a bug.", null);
-            return;
-        }
         String error = info.getError();
-        if (error == null) {
-            player.getAudioQueue().add(s);
-        } else {
+        if (error != null) {
             event.sendMessage("**__Error:__** `" + error + "` " + EmoteUtil.getRngThumbsdown());
             return;
+        } else if(info.isLive()) {
+            event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
+            return;
         }
+        player.getAudioQueue().add(s);
         if (!player.isPlaying()) {
             player.play();
             event.sendMessage("Added provided URL to queue and the player started playing! " + EmoteUtil.getRngOkHand());

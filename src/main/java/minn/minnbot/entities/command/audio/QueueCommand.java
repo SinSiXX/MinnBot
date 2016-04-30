@@ -97,9 +97,8 @@ public class QueueCommand extends CommandAdapter {
                             error[0] = true;
                         }
                         return;
-                    }
-                    if(info.getDuration().getFullTimestamp().equals("00:30:00.000")) {
-                        msg.updateMessageAsync("Origin is detected as a live stream and will not be played.\nJoin the dev server linked in the info command to report a bug.", null);
+                    } else if(info.isLive()) {
+                        event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
                         return;
                     }
                     player.getAudioQueue().add(source);
