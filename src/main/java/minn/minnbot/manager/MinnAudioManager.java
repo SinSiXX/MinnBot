@@ -34,7 +34,7 @@ public class MinnAudioManager extends ListenerAdapter {
                     }
                     Map<MusicPlayer, Thread> toRemove = new HashMap<>();
                     keepAliveMap.forEach((player, thread) -> {
-                        if (thread != null && !thread.isAlive()) {
+                        if (thread.isInterrupted()) {
                             toRemove.put(player, thread);
                         }
                     });
@@ -73,6 +73,7 @@ public class MinnAudioManager extends ListenerAdapter {
             p.getAudioQueue().clear();
         });
         players.clear();
+        keepAliveKeepAlive.interrupt();
         keepAliveMap.forEach((p, t) -> t.interrupt());
         keepAliveMap.clear();
     }
@@ -109,8 +110,30 @@ public class MinnAudioManager extends ListenerAdapter {
         }
         guild.getAudioManager().setSendingHandler(player);
         players.put(guild, player);
-        Thread keepAlive = new Thread(() -> {
-            while (!keepAliveMap.get(player).isInterrupted()) {
+        Thread keepAlive = new PlayerKA(player, guild, players);
+        keepAliveMap.put(player, keepAlive);
+        player.setVolume(.5f);
+        // player.addEventListener(new PlayerListener());
+        return player;
+    }
+
+    private static class PlayerKA extends Thread {
+
+        private Guild guild;
+        private MusicPlayer player;
+        private Map<Guild, MusicPlayer> players;
+
+        PlayerKA(MusicPlayer player, Guild guild, Map<Guild, MusicPlayer> players) {
+            this.guild = guild;
+            this.player = player;
+            this.players = players;
+            setDaemon(true);
+            setName("Player-KeepAlive(" + guild.getName() + ")");
+            start();
+        }
+
+        public void run() {
+            while (!this.isInterrupted()) {
                 try {
                     Thread.sleep(TimeUnit.MINUTES.toMillis(10L));
                 } catch (InterruptedException ignored) {
@@ -122,15 +145,9 @@ public class MinnAudioManager extends ListenerAdapter {
             }
             if (guild.getAudioManager().getConnectedChannel() != null)
                 guild.getAudioManager().closeAudioConnection();
+            guild.getAudioManager().setSendingHandler(null);
             players.remove(guild, player);
-        });
-        keepAlive.setName("Player-KeepAlive(" + guild.getName() + ")");
-        keepAlive.setDaemon(true);
-        keepAliveMap.put(player, keepAlive);
-        keepAlive.start();
-        player.setVolume(.5f);
-        // player.addEventListener(new PlayerListener());
-        return player;
+            this.interrupt();
+        }
     }
-
 }

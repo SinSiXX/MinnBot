@@ -22,9 +22,9 @@ public class QueueCommand extends CommandAdapter {
 
     public QueueCommand(String prefix, Logger logger) {
         super.init(prefix, logger);
-        executor = new ThreadPoolExecutor(1, 15, 3L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+        executor = new ThreadPoolExecutor(5, 15, 3L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
             final Thread thread = new Thread(r, "QueueExecution-Thread");
-            thread.setPriority(Thread.MAX_PRIORITY);
+            thread.setPriority(Thread.NORM_PRIORITY + 2);
             thread.setDaemon(true);
             thread.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
             return thread;

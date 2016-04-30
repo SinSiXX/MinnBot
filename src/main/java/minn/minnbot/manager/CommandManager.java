@@ -38,9 +38,9 @@ public class CommandManager extends ListenerAdapter {
         this.api = api;
         this.logger = logger;
         this.owner = owner;
-        this.executor = new ThreadPoolExecutor(1, 10, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
+        this.executor = new ThreadPoolExecutor(5, 10, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
             final Thread thread = new Thread(r, "CommandExecution-Thread");
-            thread.setPriority(Thread.NORM_PRIORITY + 1);
+            thread.setPriority(Thread.NORM_PRIORITY);
             return thread;
         });
     }
