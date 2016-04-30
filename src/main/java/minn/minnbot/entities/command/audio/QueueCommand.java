@@ -49,6 +49,10 @@ public class QueueCommand extends CommandAdapter {
 
             final boolean[] error = {false};
             for (String url : urls) {
+                if(url.contains("https://gaming.youtube.com/watch?v=")) {
+                    msg.updateMessageAsync("Youtube Gaming URLs are not accepted. Skipping...", null);
+                    continue;
+                }
                 Playlist list;
                 // get playlist
                 try {
@@ -92,6 +96,10 @@ public class QueueCommand extends CommandAdapter {
                             msg.updateMessageAsync("**One or more sources were not available. Sorry fam.**", null);
                             error[0] = true;
                         }
+                        return;
+                    }
+                    if(info.getDuration().getFullTimestamp().equals("00:30:00.000")) {
+                        msg.updateMessageAsync("Origin is detected as a live stream and will not be played.\nJoin the dev server linked in the info command to report a bug.", null);
                         return;
                     }
                     player.getAudioQueue().add(source);

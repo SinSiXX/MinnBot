@@ -41,6 +41,10 @@ public class PlayCommand extends CommandAdapter {
             return;
         }
         event.sendMessage("Fetching information.");
+        if(event.allArguments.contains("https://gaming.youtube.com/watch?v=")) {
+            event.sendMessage("Youtube Gaming URLs are not accepted. " + EmoteUtil.getRngThumbsdown(), null);
+            return;
+        }
         AudioSource s = new RemoteSource(
                 ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
                         ? event.allArguments.substring(1, event.allArguments.length() - 1)
@@ -48,6 +52,10 @@ public class PlayCommand extends CommandAdapter {
         AudioInfo info = s.getInfo();
         if(info == null) {
             event.sendMessage("Video was not accessible! " + EmoteUtil.getRngThumbsdown());
+            return;
+        }
+        if(info.getDuration().getFullTimestamp().equals("00:30:00.000")) {
+            event.sendMessage("Origin is detected as a live stream and will not be played.\nJoin the dev server linked in the info command to report a bug.", null);
             return;
         }
         String error = info.getError();
