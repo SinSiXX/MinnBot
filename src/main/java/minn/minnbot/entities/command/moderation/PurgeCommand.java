@@ -1,5 +1,6 @@
 package minn.minnbot.entities.command.moderation;
 
+import minn.minnbot.AsyncDelete;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
@@ -33,37 +34,22 @@ public class PurgeCommand extends CommandAdapter {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public void onCommand(CommandEvent event) {
+    public void onCommand(CommandEvent event) { // TODO: Batch delete
         try {
-            User u = event.event.getMessage().getMentionedUsers().get(0);
-            Thread t = new Thread(() -> {
-                java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.event.getChannel()).retrieve(100);
-                hist.stream().filter(m -> m.getAuthor() == u).forEachOrdered(m -> {
-                    Thread t2 = new Thread(() -> {
-                        m.deleteMessage();
-                        Thread.currentThread().stop();
-                    });
-                    t2.start();
-                });
-                event.sendMessage(
-                        u.getAsMention() + " has been purged by " + event.event.getAuthor().getUsername());
-                Thread.currentThread().stop();
-            });
-            t.start();
+            User u = event.message.getMentionedUsers().get(0);
+            java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.channel).retrieve(100);
+            hist.stream().filter(m -> m.getAuthor() == u).forEachOrdered(m -> AsyncDelete.deleteAsync(m, null));
+            event.sendMessage(
+                    u.getAsMention() + " has been purged by " + event.author.getUsername());
         } catch (IndexOutOfBoundsException e) {
             event.sendMessage("I am unable to purge without mention reference. Usage: " + usage());
-        } catch (Exception e) {
-            logger.logThrowable(e);
         }
     }
 
     @Override
     public boolean isCommand(String message) {
         String[] parts = message.split(" ", 2);
-        if (parts.length < 1)
-            return false;
-        return parts[0].equalsIgnoreCase(prefix + "purge");
+        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "purge");
     }
 
     @Override

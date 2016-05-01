@@ -1,5 +1,6 @@
 package minn.minnbot.entities.command.moderation;
 
+import minn.minnbot.AsyncDelete;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
@@ -11,8 +12,7 @@ import net.dv8tion.jda.events.message.MessageReceivedEvent;
 public class ClearCommand extends CommandAdapter {
 
     public ClearCommand(String prefix, Logger logger) {
-        this.logger = logger;
-        this.prefix = prefix;
+        init(prefix, logger);
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -34,40 +34,23 @@ public class ClearCommand extends CommandAdapter {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public void onCommand(CommandEvent event) {
+    public void onCommand(CommandEvent event) { // TODO: Batch delete
+        int amount = 100;
+        final int[] count = {0};
         try {
-            Thread t = new Thread(() -> {
-                int amount = 100;
-                final int[] count = {0};
-                try {
-                    amount = Integer.parseInt(event.allArguments);
-                } catch (NumberFormatException ignored) {
-                }
-                java.util.List<Message> hist = new MessageHistory(event.event.getTextChannel()).retrieve(amount);
-                hist.parallelStream().forEach(m -> {
-                    Thread t2 = new Thread(() -> {
-                        m.deleteMessage();
-                        Thread.currentThread().stop();
-                    });
-                    t2.start();
-                    count[0]++;
-                });
-                event.sendMessage(event.event.getAuthor().getAsMention() + ", deleted " + count[0] + " messages in this channel.");
-                Thread.currentThread().stop();
-            });
-            t.start();
-        } catch (Exception e) {
-            logger.logThrowable(e);
+            amount = Integer.parseInt(event.allArguments);
+        } catch (NumberFormatException ignored) {
         }
+        java.util.List<Message> hist = new MessageHistory(event.event.getTextChannel()).retrieve(amount);
+        event.sendMessage(event.author.getAsMention() + ", cleared messages in this channel!");
+        hist.parallelStream().forEachOrdered(m -> AsyncDelete.deleteAsync(m, (Object) -> count[0]++));
+        // event.sendMessage(event.event.getAuthor().getAsMention() + ", deleted " + count[0] + " messages in this channel.");
     }
 
     @Override
     public boolean isCommand(String message) {
         String[] parts = message.split(" ", 2);
-        if (parts.length < 1)
-            return false;
-        return parts[0].equalsIgnoreCase(prefix + "clear");
+        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "clear");
     }
 
     @Override

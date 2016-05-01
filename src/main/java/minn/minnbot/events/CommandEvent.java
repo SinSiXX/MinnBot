@@ -23,6 +23,7 @@ public class CommandEvent {
     public final User author;
     public final String timeStamp;
     private static boolean checked;
+    public final Message message;
 
     public static void checked() {
         checked = true;
@@ -44,6 +45,7 @@ public class CommandEvent {
         jda = event.getJDA();
         guild = event.getGuild();
         author = event.getAuthor();
+        message = event.getMessage();
     }
 
     public void sendMessage(String content) {

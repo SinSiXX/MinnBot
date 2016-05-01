@@ -74,16 +74,8 @@ public class QueueCommand extends CommandAdapter {
                     msg.updateMessageAsync("Source had no attached/readable information. Skipping...", null);
                     continue;
                 }
-                // init executor
-                /*ThreadPoolExecutor listExecutor = new ThreadPoolExecutor(1, 50, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
-                    final Thread thread = new Thread(r, "ListValidation-Thread");
-                    thread.setPriority(Thread.MAX_PRIORITY);
-                    thread.setDaemon(true);
-                    thread.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
-                    return thread;
-                });*/
                 // execute
-                listSources.parallelStream().forEachOrdered(source -> /*listExecutor.execute(() ->*/ {
+                listSources.parallelStream().forEachOrdered(source -> {
                     AudioInfo info = source.getInfo();
                     if (info == null) {
                         if (!error[0]) {
@@ -106,7 +98,7 @@ public class QueueCommand extends CommandAdapter {
                         msg.updateMessageAsync("Enqueuing songs and starting playback...", null);
                         player.play();
                     }
-                }/*)*/);
+                });
             }
         }));
     }

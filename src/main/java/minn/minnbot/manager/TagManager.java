@@ -13,12 +13,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TagManager extends ListenerAdapter {
 
     private List<Tag> tags;
     private static TagManager manager;
     private Logger logger;
+    private Thread autoSave;
 
     public void onShutdown(ShutdownEvent event) {
         saveTags();
@@ -80,6 +82,16 @@ public class TagManager extends ListenerAdapter {
         this.logger = logger;
         this.tags = tags;
         manager = this;
+        autoSave = new Thread(() -> {
+            while(!autoSave.isInterrupted()) {
+                try {
+                    Thread.sleep(TimeUnit.HOURS.toMillis(1L));
+                } catch (InterruptedException e) {
+                    break;
+                }
+                saveTags();
+            }
+        });
     }
 
 }
