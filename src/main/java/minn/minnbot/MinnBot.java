@@ -255,6 +255,12 @@ public class MinnBot extends ListenerAdapter {
         handler.registerManager(manager.get());
         errors.addAll(manager.get().getErrors());
 
+        // Custom commands
+
+        manager.set(new CustomManager(prefix, logger));
+        handler.registerManager(manager.get());
+        // errors.addAll(manager.get().getErrors()); not checking for custom commands
+
         if (home != null) {
             registerCommand(new InviteCommand(prefix, logger, home));
             registerCommand(new MentionedListener(logger));

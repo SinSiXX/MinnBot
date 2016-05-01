@@ -6,16 +6,30 @@ import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 public class AdvancedCCommand extends CommandAdapter { // TODO: Allow use
 
     private boolean requiresOwner = false;
-    private Runnable runnable;
+    private Consumer<CommandEvent> consumer;
     private ExecutorService executor;
     private String alias;
+    private String internalAlias;
     private String example;
     private String usage;
     private boolean privateAllowed = true;
+
+    public AdvancedCCommand setConsume(Consumer<CommandEvent> consume) {
+        this.consumer = consume;
+        return this;
+    }
+
+    public AdvancedCCommand setInternalAlias(String alias) {
+        internalAlias = alias;
+        return this;
+    }
+
+    public Consumer<CommandEvent> getConsumer() { return consumer; }
 
     public AdvancedCCommand setPrivateAllowed(boolean setter) {
         privateAllowed = setter;
@@ -27,17 +41,12 @@ public class AdvancedCCommand extends CommandAdapter { // TODO: Allow use
         return this;
     }
 
-    public AdvancedCCommand setRunnable(Runnable runnable) {
-        this.runnable = runnable;
-        return this;
-    }
-
     public AdvancedCCommand setExecutor(ExecutorService executor) {
         this.executor = executor;
         return this;
     }
 
-    public AdvancedCCommand setAlias(String alias) {
+    public AdvancedCCommand setHelpAlias(String alias) {
         this.alias = alias;
         return this;
     }
@@ -64,12 +73,13 @@ public class AdvancedCCommand extends CommandAdapter { // TODO: Allow use
 
     @Override
     public void onCommand(CommandEvent event) {
-        executor.execute(runnable);
+        executor.execute(() -> consumer.accept(event));
     }
 
     @Override
     public boolean isCommand(String message) {
-        return requiresOwner;
+        String[] p = message.split(" ", 2);
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + internalAlias);
     }
 
     @Override
@@ -85,5 +95,7 @@ public class AdvancedCCommand extends CommandAdapter { // TODO: Allow use
     public String example() {
         return example;
     }
+
+    public boolean requiresOwner() { return requiresOwner; }
 
 }
