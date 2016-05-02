@@ -41,7 +41,11 @@ public class QueueCommand extends CommandAdapter {
             event.sendMessage("You have to provide at least one URL.");
             return;
         }
-        event.sendMessage("Validating request, this may take a few minutes...", msg -> executor.submit(() -> {
+        event.sendMessage("Validating request, this may take a few minutes..."
+                + (!event.guild.getAudioManager().isConnected()
+                ? "\nIn the meantime you can make me connect to the channel you are in by typing `" + prefix + "joinme` while you are in a channel."
+                : ""),
+                msg -> executor.submit(() -> {
             // System.out.println("Submit accepted."); debugging
             Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
                 t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);

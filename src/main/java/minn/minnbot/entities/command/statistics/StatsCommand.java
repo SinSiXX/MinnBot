@@ -1,4 +1,4 @@
-package minn.minnbot.entities.command;
+package minn.minnbot.entities.command.statistics;
 
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;

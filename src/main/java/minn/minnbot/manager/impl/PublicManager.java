@@ -5,6 +5,10 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.*;
 import minn.minnbot.entities.command.custom.HelpSplitter;
+import minn.minnbot.entities.command.statistics.MessagesCommand;
+import minn.minnbot.entities.command.statistics.PingCommand;
+import minn.minnbot.entities.command.statistics.StatsCommand;
+import minn.minnbot.entities.command.statistics.UptimeCommand;
 import minn.minnbot.manager.CmdManager;
 
 import java.net.UnknownHostException;
@@ -147,6 +151,13 @@ public class PublicManager extends CmdManager {
            splitter.add(com);*/
 
        com = new FeedbackCommand(prefix,logger);
+       err.set(registerCommand(com));
+       if (!err.get().isEmpty())
+           errors.add(err.get());
+       else
+           splitter.add(com);
+
+       com = new MessagesCommand(prefix, logger);
        err.set(registerCommand(com));
        if (!err.get().isEmpty())
            errors.add(err.get());
