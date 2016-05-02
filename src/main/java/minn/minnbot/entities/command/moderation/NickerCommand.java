@@ -3,6 +3,7 @@ package minn.minnbot.entities.command.moderation;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
@@ -42,7 +43,10 @@ public class NickerCommand extends CommandAdapter {
                 return;
             }
             event.guild.getManager().setNickname(user, event.allArguments);
-            event.sendMessage("Updated **your** nickname: " + event.guild.getNicknameForUser(user));
+            if (event.author.getUsername().equals(event.allArguments) || event.allArguments.isEmpty())
+                event.sendMessage("Reset **your** nickname. " + EmoteUtil.getRngOkHand());
+            else
+                event.sendMessage("Updated **your** nickname: " + event.allArguments);
         } else {
             User user = users.get(0);
             String[] p = event.allArguments.split(" ", 2);
@@ -56,8 +60,12 @@ public class NickerCommand extends CommandAdapter {
                 event.sendMessage("Nickname is too long, must be 0-20!");
                 return;
             }
+
             event.guild.getManager().setNickname(user, name);
-            event.sendMessage("Updated users nickname: " + event.guild.getNicknameForUser(user));
+            if (name.equals(user.getUsername()) || name.isEmpty())
+                event.sendMessage("Users username has been reset. " + EmoteUtil.getRngOkHand());
+            else
+                event.sendMessage("Updated users nickname: " + name);
         }
     }
 

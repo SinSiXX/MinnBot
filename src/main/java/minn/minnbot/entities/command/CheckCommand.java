@@ -23,12 +23,12 @@ public class CheckCommand extends CommandAdapter {
             u = event.event.getAuthor();
         else
             u = mentions.get(0);
-        String s = "```md\n";
+        String s = "```md";
         String name = null;
         if (event.guild != null) name = event.guild.getNicknameForUser(u);
-        if (name == null)
-            name = u.getUsername();
-        s += ("[User][" + name + '#' + u.getDiscriminator() + "]").replace("`", "\u0001`");
+        if (name != null)
+            s += ("\n[Nick][" + name + "]").replace("`", "\u0001`");
+        s += ("\n[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]").replace("`", "\u0001`");
         s += "\n[ Id ][" + u.getId() + "]";
         s += "\n[Status][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
         s += ("\n\n[Game][" + ((u.getCurrentGame() == null) ? "Ready to play!" : u.getCurrentGame()) + "]").replace("`", "\u0001`");
