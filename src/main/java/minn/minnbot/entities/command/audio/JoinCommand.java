@@ -52,7 +52,7 @@ public class JoinCommand extends CommandAdapter {
         } else {
             event.guild.getAudioManager().moveAudioConnection(channel);
         }
-        // MinnAudioManager.registerPlayer(new MusicPlayer(), event.event.getGuild());
+        // MinnAudioManager.registerPlayer(new MusicPlayer(), event.event.getGuild()); why even do this lol
         event.sendMessage("Joined `" + channel.getName() + "`! " + EmoteUtil.getRngOkHand());
     }
 

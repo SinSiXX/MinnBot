@@ -38,9 +38,10 @@ public class CommandManager extends ListenerAdapter {
         this.api = api;
         this.logger = logger;
         this.owner = owner;
-        this.executor = new ThreadPoolExecutor(5, 10, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
+        this.executor = new ThreadPoolExecutor(10, 20, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
             final Thread thread = new Thread(r, "CommandExecution-Thread");
             thread.setPriority(Thread.NORM_PRIORITY);
+            thread.setDaemon(true);
             return thread;
         });
     }
@@ -68,7 +69,7 @@ public class CommandManager extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot() || IgnoreUtil.isIgnored(event.getAuthor(), event.getGuild(), event.getTextChannel()))
             return;
-        executor.execute(() -> {
+        executor.submit(() -> {
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
             for (Command c : commands) {
                 if (c.requiresOwner()) {

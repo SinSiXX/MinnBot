@@ -11,24 +11,22 @@ import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class QueueCommand extends CommandAdapter {
 
-    private ExecutorService executor;
+    public static final ThreadPoolExecutor executor = new ThreadPoolExecutor(5, 25, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+        final Thread thread = new Thread(r, "QueueExecution-Thread");
+        thread.setPriority(Thread.MAX_PRIORITY);
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public QueueCommand(String prefix, Logger logger) {
         super.init(prefix, logger);
-        executor = new ThreadPoolExecutor(5, 15, 3L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
-            final Thread thread = new Thread(r, "QueueExecution-Thread");
-            thread.setPriority(Thread.NORM_PRIORITY + 2);
-            thread.setDaemon(true);
-            thread.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
-            return thread;
-        });
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -43,13 +41,18 @@ public class QueueCommand extends CommandAdapter {
             event.sendMessage("You have to provide at least one URL.");
             return;
         }
-        event.sendMessage("Validating request, this may take a few minutes...", msg -> executor.execute(() -> {
+        event.sendMessage("Validating request, this may take a few minutes...", msg -> executor.submit(() -> {
+            // System.out.println("Submit accepted."); debugging
+            Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
+                t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+                event.sendMessage("**An error occurred, please direct this to the developer:** `L:" + e.getStackTrace()[0].getLineNumber()
+                        + " - [" + e.getClass().getSimpleName() + "] " + e.getMessage() + "`");
+            });
             String[] urls = event.allArguments.trim().replace(" ", "").split("\\Q,\\E");
             MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
-
             final boolean[] error = {false};
             for (String url : urls) {
-                if(url.contains("https://gaming.youtube.com/watch?v=")) {
+                if (url.contains("https://gaming.youtube.com/watch?v=")) {
                     msg.updateMessageAsync("Youtube Gaming URLs are not accepted. Skipping...", null);
                     continue;
                 }
@@ -89,7 +92,7 @@ public class QueueCommand extends CommandAdapter {
                             error[0] = true;
                         }
                         return;
-                    } else if(info.isLive()) {
+                    } else if (info.isLive()) {
                         event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
                         return;
                     }
