@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +55,7 @@ public class TagManager extends ListenerAdapter {
         return arr;
     }
 
-    public static void saveTags() {
+    static void saveTags() {
         JSONArray arr = manager.getAsJsonArray();
         if (new File("tags.json").exists())
             //noinspection ResultOfMethodCallIgnored
@@ -71,7 +70,7 @@ public class TagManager extends ListenerAdapter {
                 //noinspection ThrowFromFinallyBlock
                 out.close();
             }
-            Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
+            // Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
             manager.logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
         } catch (IOException e) {
             manager.logger.logThrowable(e);
@@ -82,8 +81,10 @@ public class TagManager extends ListenerAdapter {
         this.logger = logger;
         this.tags = tags;
         manager = this;
+        if(autoSave != null)
+            autoSave.interrupt();
         autoSave = new Thread(() -> {
-            while(!autoSave.isInterrupted()) {
+            while (!autoSave.isInterrupted()) {
                 try {
                     Thread.sleep(TimeUnit.HOURS.toMillis(1L));
                 } catch (InterruptedException e) {
@@ -92,6 +93,10 @@ public class TagManager extends ListenerAdapter {
                 saveTags();
             }
         });
+        autoSave.setDaemon(true);
+        autoSave.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+        autoSave.setName("TagAutoSave-Thread");
+        autoSave.start();
     }
 
 }

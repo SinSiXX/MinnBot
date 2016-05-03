@@ -73,7 +73,6 @@ public class MinnAudioManager extends ListenerAdapter {
             p.getAudioQueue().clear();
         });
         players.clear();
-        keepAliveKeepAlive.interrupt();
         keepAliveMap.forEach((p, t) -> t.interrupt());
         keepAliveMap.clear();
     }

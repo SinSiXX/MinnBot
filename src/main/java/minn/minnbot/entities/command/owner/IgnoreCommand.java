@@ -10,6 +10,7 @@ import net.dv8tion.jda.entities.User;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class IgnoreCommand extends CommandAdapter {
 
@@ -36,12 +37,7 @@ public class IgnoreCommand extends CommandAdapter {
 
                 }
                 if (g == null) {
-                    List<Guild> matches = new LinkedList<>();
-                    for(Guild guild : event.event.getJDA().getGuilds()) {
-                        if(guild.getName().equalsIgnoreCase(event.allArguments)) {
-                            matches.add(guild);
-                        }
-                    }
+                    List<Guild> matches = event.event.getJDA().getGuilds().stream().filter(guild -> guild.getName().equalsIgnoreCase(event.allArguments)).collect(Collectors.toCollection(LinkedList::new));
                     if(matches.size() > 1) {
                         event.sendMessage("Guilds that match: ```java\n" + matches.toString() + "```");
                         return;

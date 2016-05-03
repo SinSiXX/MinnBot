@@ -85,31 +85,31 @@ public class StatsCommand extends CommandAdapter {
         int[] stats = logger.getNumbers();
         JDA api = event.jda;
         /* Ping */
-        String ping = (ms < 1) ? "[Ping][{ping}]" : "[Ping][" + ms + "]";
+        String ping = (ms < 1) ? "[Ping]({ping})" : "[Ping](" + ms + ")";
         /* Mess */
-        String messages = "[Messages][" + stats[0] + "]";
+        String messages = "[Messages](" + stats[0] + ")";
         /* Comm */
-        String commands = "[Commands][" + stats[1] + "]";
+        String commands = "[Commands](" + stats[1] + ")";
         /* Evnt */
-        String events = "[Events][" + stats[2] + "]";
+        String events = "[Events](" + stats[2] + ")";
         /* Priv */
-        String privateMessages = "[Private-Messages][" + stats[3] + "]";
+        String privateMessages = "[Private-Messages](" + stats[3] + ")";
         /* Gild */
-        String guildMessages = "[Guild-Messages][" + stats[4] + "]";
+        String guildMessages = "[Guild-Messages](" + stats[4] + ")";
         /* Glds */
-        String guilds = "[Servers][" + api.getGuilds().size() + "]";
+        String guilds = "[Servers](" + api.getGuilds().size() + ")";
 		/* Usrs */
-        String users = "[Users][" + api.getUsers().size() + "]";
+        String users = "[Users](" + api.getUsers().size() + ")";
 		/* Chns */
-        String channels = "[Channels]: [Private][" + api.getPrivateChannels().size() + "] [Text][" + api.getTextChannels().size() + "] [Voice]["
-                + api.getVoiceChannels().size() + "]";
+        String channels = "[Channels]: [Private](" + api.getPrivateChannels().size() + ") [Text](" + api.getTextChannels().size() + ") [Voice]("
+                + api.getVoiceChannels().size() + ")";
 		/* Uptm */
-        String uptime = "[Uptime][" + TimeUtil.uptime(stats[5]) + "]";
+        String uptime = "[Uptime](" + TimeUtil.uptime(stats[5]) + ")";
 		/* mems */
-        String mem = "[Memory][" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576L
-                + "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB]";
+        String mem = "[Memory](" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576L
+                + "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB)";
 		/* Rsps */
-        String responses = "[Responses][" + api.getResponseTotal() + "]";
+        String responses = "[Responses](" + api.getResponseTotal() + ")";
         /* Conn */
         int sizeChannels = getConnectedChannelSize(api);
         int sizePlayers = MinnAudioManager.getPlayers().size();
