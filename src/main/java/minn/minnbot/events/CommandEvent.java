@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public class CommandEvent {
 
     public final String allArguments;
-    public String[] arguments;
+    public final String[] arguments;
     public final MessageReceivedEvent event;
     public final boolean isPrivate;
     public final Guild guild;
@@ -22,12 +22,12 @@ public class CommandEvent {
     public final MessageChannel channel;
     public final User author;
     public final String timeStamp;
-    private static boolean checked;
+    //private static boolean checked;
     public final Message message;
 
-    public static void checked() {
+    /*public static void checked() {
         checked = true;
-    }
+    }*/
 
     public CommandEvent(MessageReceivedEvent event) {
         String[] p = event.getMessage().getRawContent().split("\\s+", 2);
@@ -57,10 +57,7 @@ public class CommandEvent {
     public void sendMessage(String content, Consumer<Message> callback) {
         content = content.replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here");
         if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification()))) {
-            event.getChannel().sendMessageAsync(content, (Message m) -> {
-                CommandEvent.checked();
-                callback.accept(m);
-            });
+            event.getChannel().sendMessageAsync(content, callback);
         }
     }
 

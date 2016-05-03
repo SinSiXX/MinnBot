@@ -31,12 +31,12 @@ public class IIgnoreListener extends IgnoreListener {
 
     @Override
     protected void onIgnoredChannel(IgnoreChannelEvent event) {
-        channel.sendMessageAsync("**__Ignored:__ #" + (event.channel.getName() + " - in - " + event.channel.getGuild()).replace("**", "*\u0001*\u0001") + "**", null);
+        channel.sendMessageAsync("**__Ignored:__ #" + (event.channel.getName() + " - in - " + event.channel.getGuild().getName()).replace("**", "*\u0001*\u0001") + "**", null);
     }
 
     @Override
     protected void onUnignoredChannel(UnignoreChannelEvent event) {
-        channel.sendMessageAsync("**__Unignored:__ #" + (event.channel.getName() + " - in - " + event.channel.getGuild()).replace("**", "*\u0001*\u0001") + "**", null);
+        channel.sendMessageAsync("**__Unignored:__ #" + (event.channel.getName() + " - in - " + event.channel.getGuild().getName()).replace("**", "*\u0001*\u0001") + "**", null);
     }
 
     public IIgnoreListener(TextChannel logChannel) {

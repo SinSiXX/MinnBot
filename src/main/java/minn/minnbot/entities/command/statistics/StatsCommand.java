@@ -110,6 +110,9 @@ public class StatsCommand extends CommandAdapter {
                 + "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB)";
 		/* Rsps */
         String responses = "[Responses](" + api.getResponseTotal() + ")";
+        /* Thrd */
+        String threads = "[Threads](" + Thread.activeCount() + ")";
+
         /* Conn */
         int sizeChannels = getConnectedChannelSize(api);
         int sizePlayers = MinnAudioManager.getPlayers().size();
@@ -121,7 +124,7 @@ public class StatsCommand extends CommandAdapter {
         return "```md\n" +
                 "Statistics: " + about + "\n\n[Connection]:\n" + uptime + "\n" + mem
                 + "\n" + ping + "\n\n[Messages]:\n" + messages + "\n" + privateMessages + "\n" + guildMessages
-                + "\n\n[Usages]:\n" + commands + "\n" + responses + "\n" + events + "\n\n[Entities]:\n" + guilds + "\n" + users + "\n"
+                + "\n\n[Usages]:\n" + commands + "\n" + responses + "\n" + events + "\n\n[Entities]:\n" + threads + "\n" + guilds + "\n" + users + "\n"
                 + channels + "``` " + connections + "";
     }
 
