@@ -5,7 +5,6 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
-import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
@@ -31,17 +30,18 @@ public class CommandManager extends ListenerAdapter {
     private List<CmdManager> managers = new LinkedList<>();
     @SuppressWarnings("unused")
     private JDA api;
-    private User owner;
+    private String owner;
     private Logger logger;
     private ThreadPoolExecutor executor;
 
-    public CommandManager(JDA api, Logger logger, User owner) {
+    public CommandManager(JDA api, Logger logger, String owner) {
         this.api = api;
         this.logger = logger;
         this.owner = owner;
-        this.executor = new ThreadPoolExecutor(1, 10, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
+        this.executor = new ThreadPoolExecutor(10, 20, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
             final Thread thread = new Thread(r, "CommandExecution-Thread");
-            thread.setPriority(Thread.NORM_PRIORITY + 1);
+            thread.setPriority(Thread.NORM_PRIORITY);
+            thread.setDaemon(true);
             return thread;
         });
     }
@@ -69,18 +69,18 @@ public class CommandManager extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot() || IgnoreUtil.isIgnored(event.getAuthor(), event.getGuild(), event.getTextChannel()))
             return;
-        executor.execute(() -> {
+        executor.submit(() -> {
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
             for (Command c : commands) {
                 if (c.requiresOwner()) {
-                    if (event.getAuthor() == owner)
+                    if (event.getAuthor().getId().equals(owner))
                         c.onMessageReceived(event);
                     continue;
                 }
                 c.onMessageReceived(event);
             }
             managers.parallelStream().forEachOrdered(manager -> {
-                if (manager.requiresOwner() && event.getAuthor() != owner)
+                if (manager.requiresOwner() && !event.getAuthor().getId().equals(owner))
                     return;
                 manager.call(event);
             });

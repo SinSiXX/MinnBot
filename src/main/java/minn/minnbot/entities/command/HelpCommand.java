@@ -6,16 +6,15 @@ import minn.minnbot.entities.command.custom.HelpSplitter;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.CommandManager;
-import net.dv8tion.jda.entities.User;
 
 import java.util.List;
 
 public class HelpCommand extends CommandAdapter {
 
-    private User owner;
+    private String owner;
     private CommandManager manager;
 
-    public HelpCommand(String prefix, Logger logger, CommandManager commands, User owner) {
+    public HelpCommand(String prefix, Logger logger, CommandManager commands, String owner) {
         this.prefix = prefix;
         this.logger = logger;
         this.manager = commands;
@@ -27,7 +26,7 @@ public class HelpCommand extends CommandAdapter {
         List<Command> commands = manager.getAllCommands();
         if (event.allArguments.isEmpty()) {
             final String[] s = {"**__Example: " + prefix + "help public__**\n"};
-            commands.parallelStream().filter(c -> !c.requiresOwner() || event.event.getAuthor() == owner).forEach((c) -> {
+            commands.parallelStream().filter(c -> !c.requiresOwner() || event.event.getAuthor().getId().equals(owner)).forEachOrdered((c) -> {
                 if (c instanceof HelpSplitter) {
                     if ((s[0] + c.getAlias()).length() > 1000) {
                         event.sendMessage(s[0]);

@@ -27,9 +27,9 @@ import java.util.List;
 public class TagCommand extends CommandAdapter {
 
     private List<Tag> tags;
-    private User owner;
+    private String owner;
 
-    public TagCommand(String prefix, Logger logger, JDA api, User pOwner) {
+    public TagCommand(String prefix, Logger logger, JDA api, String pOwner) {
         this.prefix = prefix;
         this.logger = logger;
         this.tags = new LinkedList<>();
@@ -143,7 +143,7 @@ public class TagCommand extends CommandAdapter {
             }
             if (method.equalsIgnoreCase("add")) {
                 User user = event.event.getAuthor();
-                if (!PermissionUtil.checkPermission(user, Permission.MANAGE_SERVER, event.event.getGuild()) && user != owner) {
+                if (!PermissionUtil.checkPermission(user, Permission.MANAGE_SERVER, event.event.getGuild()) && !user.getId().equals(owner)) {
                     event.sendMessage("You are missing the permission to manage the server. Ask someone with the required permissions to add the tag for you.");
                     return;
                 }

@@ -23,12 +23,8 @@ public class NameCommand extends CommandAdapter {
 
 	@Override
 	public boolean isCommand(String message) {
-		message = message.toLowerCase();
-		if (!message.startsWith(prefix)) {
-			return false;
-		}
-		String command = message.substring(prefix.length());
-		return ((command.startsWith("name ") && command.length() > "name ".length()) || command.equals("name"));
+		String[] p = message.split(" ",2);
+		return p.length > 0 && p[0].equalsIgnoreCase(prefix + "name");
 	}
 
 	@Override

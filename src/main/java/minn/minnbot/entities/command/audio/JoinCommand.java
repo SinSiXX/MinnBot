@@ -3,81 +3,69 @@ package minn.minnbot.entities.command.audio;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
-import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Guild;
-import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.entities.VoiceChannel;
-import net.dv8tion.jda.entities.VoiceStatus;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.player.MusicPlayer;
 
 public class JoinCommand extends CommandAdapter {
 
-
     public JoinCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
-    }
-
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.isPrivate())
-            return;
-        super.onMessageReceived(event);
+        init(prefix, logger);
     }
 
     @Override
     public void onCommand(CommandEvent event) {
-
-        User user = event.event.getAuthor();
-        Guild guild = event.event.getGuild();
-        VoiceStatus status = guild.getVoiceStatusOfUser(user);
-        if (status == null) {
-            event.sendMessage("You must be in a voice channel to use this command.");
+        if (event.allArguments.isEmpty()) {
+            event.sendMessage("Try joinme to make the bot join **your** channel or specify the channel via name, if multiple channels have the same name I will pick the first one.");
             return;
         }
-        if (status.getChannel() == null) {
-            event.sendMessage("You must be in a voice channel to use this command.");
+        VoiceChannel channel = getChannelFromName(event.allArguments, event.guild);
+        if (channel == null) {
+            event.sendMessage("Channel was not found. " + EmoteUtil.getRngThumbsdown() + usage());
             return;
         }
-        VoiceChannel channel = status.getChannel();
         if (!channel.checkPermission(event.jda.getSelfInfo(), Permission.VOICE_CONNECT)) {
-            event.sendMessage("I am not allowed to join you :(");
+            event.sendMessage("I am unable to connect to **" + channel.getName() + "**. " + EmoteUtil.getRngThumbsdown());
             return;
         }
         if (!channel.checkPermission(event.jda.getSelfInfo(), Permission.VOICE_SPEAK)) {
-            event.sendMessage("I wouldn't be able to speak there anyway :(");
+            event.sendMessage("I am unable to speak in **" + channel.getName() + "**. " + EmoteUtil.getRngThumbsdown());
             return;
         }
-        VoiceStatus myStatus = guild.getVoiceStatusOfUser(event.event.getJDA().getSelfInfo());
-        if (myStatus == null || myStatus.getChannel() == null) {
-            guild.getAudioManager().openAudioConnection(channel);
-        } else {
-            guild.getAudioManager().moveAudioConnection(channel);
+        if (event.guild.getAudioManager().isAttemptingToConnect()) {
+            event.sendMessage("I am already trying to connect to another channel. Try changing the voice region to fix me.");
+            return;
         }
-        MinnAudioManager.registerPlayer(new MusicPlayer(), event.event.getGuild());
-        event.sendMessage("Joined `" + channel.getName() + "`! " + EmoteUtil.getRngOkHand());
+        if (!event.guild.getAudioManager().isConnected())
+            event.guild.getAudioManager().openAudioConnection(channel);
+        else
+            event.guild.getAudioManager().moveAudioConnection(channel);
+        event.sendMessage("Connected to **" + channel.getName() + "** " + EmoteUtil.getRngOkHand());
+    }
+
+    private VoiceChannel getChannelFromName(String name, Guild guild) {
+        return guild.getVoiceChannels().parallelStream().filter(c -> c.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
 
     @Override
     public boolean isCommand(String message) {
-        try {
-            String cmd = message.split(" ", 2)[0];
-            return cmd.equalsIgnoreCase(prefix + "joinme");
-        } catch (IndexOutOfBoundsException ignore) {
-        }
-        return false;
+        String[] p = message.split(" ", 2);
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "join");
     }
 
     @Override
     public String getAlias() {
-        return "joinme";
+        return "join <channel>";
     }
 
-    @Override
     public String example() {
-        return "joinme";
+        return "join Music";
+    }
+
+    public String usage() {
+        return "\n**" + prefix + "join <channel>**\n" +
+                "**channel - the name of the voice channel the bot is supposed to join.**";
     }
 
 }

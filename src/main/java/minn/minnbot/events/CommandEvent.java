@@ -1,6 +1,5 @@
 package minn.minnbot.events;
 
-import minn.minnbot.MinnBot;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.Permission;
@@ -10,72 +9,63 @@ import net.dv8tion.jda.entities.MessageChannel;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.function.Consumer;
+
 public class CommandEvent {
 
-	public final String allArguments;
-	public String[] arguments;
-	public final MessageReceivedEvent event;
-	public final boolean isPrivate;
-	public final Guild guild;
-	public final JDA jda;
-	public final MessageChannel channel;
-	public final User author;
-	public final String timeStamp;
-	private static boolean checked;
+    public final String allArguments;
+    public final String[] arguments;
+    public final MessageReceivedEvent event;
+    public final boolean isPrivate;
+    public final Guild guild;
+    public final JDA jda;
+    public final MessageChannel channel;
+    public final User author;
+    public final String timeStamp;
+    //private static boolean checked;
+    public final Message message;
 
-	public static void checked() {
-		checked = true;
-	}
+    /*public static void checked() {
+        checked = true;
+    }*/
 
-	public CommandEvent(MessageReceivedEvent event) {
-		try {
-			arguments = event.getMessage().getContent().split(" ", 2)[1].split(" ");
-		} catch (IndexOutOfBoundsException e) {
-			arguments = new String[0];
-		}
-		String checked;
-		try {
-			checked = event.getMessage().getContent().split(" ", 2)[1];
-		} catch (ArrayIndexOutOfBoundsException e) {
-			checked = "";
-		}
-		allArguments = checked;
-		this.event = event;
-		isPrivate = event.isPrivate();
-		timeStamp = TimeUtil.timeStamp();
-		channel = event.getChannel();
-		jda = event.getJDA();
-		guild = event.getGuild();
-		author = event.getAuthor();
-	}
+    public CommandEvent(MessageReceivedEvent event) {
+        String[] p = event.getMessage().getRawContent().split("\\s+", 2);
+        if (p.length >= 2) {
+            arguments = p[1].split("\\s+");
+            allArguments = p[1];
+        } else {
+            arguments = new String[0];
+            allArguments = "";
+        }
+        this.event = event;
+        isPrivate = event.isPrivate();
+        timeStamp = TimeUtil.timeStamp();
+        channel = event.getChannel();
+        jda = event.getJDA();
+        guild = event.getGuild();
+        author = event.getAuthor();
+        message = event.getMessage();
+    }
 
-	public void sendMessage(String content) {
-		content = content.replace("@everyone", "@\u0001everyone");
-		if(content.length() >= 2000)
-			throw new IllegalArgumentException("Reached character limit.");
-		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE) &&  guild.checkVerification()) {
-			event.getChannel().sendMessageAsync(content, ((MinnBot.powersaving) ? (Message m) ->
-					CommandEvent.checked() : null));
-			if (MinnBot.powersaving) {
-				while (!checked) {
-					try {
-						Thread.sleep(50);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-				checked = false;
-			}
-		}
-	}
+    public void sendMessage(String content) {
+        content = content.replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here");
+        if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification())))
+            event.getChannel().sendMessageAsync(content, null);
+    }
 
-	public Message sendMessageBlocking(String content) {
-		content = content.replace("@everyone", "@\u0001everyone");
-		if(content.length() >= 2000)
-			throw new IllegalArgumentException("Reached character limit.");
-		if (event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification())
-			return event.getChannel().sendMessage(content);
-		return null;
-	}
-	
+    public void sendMessage(String content, Consumer<Message> callback) {
+        content = content.replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here");
+        if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification()))) {
+            event.getChannel().sendMessageAsync(content, callback);
+        }
+    }
+
+    public Message sendMessageBlocking(String content) {
+        content = content.replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here");
+        if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification())))
+            return event.getChannel().sendMessage(content);
+        return null;
+    }
+
 }

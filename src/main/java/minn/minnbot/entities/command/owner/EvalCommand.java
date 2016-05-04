@@ -29,8 +29,8 @@ public class EvalCommand extends CommandAdapter {
 
     @Override
     public boolean isCommand(String message) {
-        message = message.toLowerCase();
-        return message.startsWith(prefix + "eval ");
+        String[] p = message.split(" ",2);
+        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "eval");
     }
 
     @Override
@@ -40,7 +40,7 @@ public class EvalCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "eval code";
+        return "eval <code>";
     }
 
     public boolean requiresOwner() {

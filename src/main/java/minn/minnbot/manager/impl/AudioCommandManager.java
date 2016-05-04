@@ -34,6 +34,13 @@ public class AudioCommandManager extends CmdManager {
         else {
             splitter.add(pCom);
         }
+        com = new JoinMeCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
         com = new JoinCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())

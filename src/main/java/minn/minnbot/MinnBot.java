@@ -5,6 +5,7 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.audio.MinnPlayer;
 import minn.minnbot.entities.command.custom.InviteCommand;
 import minn.minnbot.entities.command.custom.MentionedListener;
+import minn.minnbot.entities.impl.IIgnoreListener;
 import minn.minnbot.entities.impl.LoggerImpl;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.AccountSettings;
@@ -12,13 +13,15 @@ import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.manager.*;
 import minn.minnbot.manager.impl.*;
 import minn.minnbot.util.EvalUtil;
+import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
 import net.dv8tion.jda.JDAInfo;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
+import net.dv8tion.jda.events.ReconnectedEvent;
+import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.ApplicationUtil;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.activation.UnsupportedDataTypeException;
@@ -34,15 +37,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings("unused")
-public class MinnBot {
+public class MinnBot extends ListenerAdapter {
 
-    public final static String VERSION = "Version 2.5.8b";
+    public final static String VERSION = "Version 2.9b";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     public static boolean powersaving = false;
     private static String giphy;
     private static MinnBotUserInterface console;
     private static boolean audio;
-    public final User owner;
+    public final String owner; // FIXME
     public final JDA api;
     public final CommandManager handler;
     public final String inviteurl;
@@ -64,9 +67,10 @@ public class MinnBot {
         this.logger = logger;
         this.prefix = prefix;
         log("Prefix: " + prefix);
-        this.owner = this.api.getUserById(ownerID);
+        this.owner = ownerID;
+        User uOwner = api.getUserById(owner);
         try {
-            log("Owner: " + owner.getUsername() + "#" + owner.getDiscriminator());
+            log("Owner: " + uOwner.getUsername() + "#" + uOwner.getDiscriminator());
         } catch (NullPointerException e) {
             logger.logThrowable(new NullPointerException(
                     "Owner could not be retrieved from the given id. Do you share a guild with this bot? - Caused by id: \""
@@ -80,10 +84,11 @@ public class MinnBot {
         this.bot = true;
         this.handler = new CommandManager(api, this.logger, owner);
         api.addEventListener(handler);
+        api.addEventListener(this);
         log("Powersaving: " + powersaving);
     }
 
-    public synchronized static void launch(MinnBotUserInterface console) throws Exception {
+    public synchronized static void launch(MinnBotUserInterface console) throws Exception { // DON'T LOOK
         MinnBot.console = console;
         AccountSettings as = new AccountSettings(console);
         console.setAccountSettings(as);
@@ -93,25 +98,22 @@ public class MinnBot {
             audio = obj.getBoolean("audio");
             JDA api;
             api = new JDABuilder().setBotToken(token).setAudioEnabled(audio).setAutoReconnect(true).buildBlocking();
-            try {
-                powersaving = obj.getBoolean("powersaving");
-            } catch (Exception ignored) {
-            }
             String pre = obj.getString("prefix");
-            // String inviteUrl = obj.getString("inviteurl"); REMOVED
             String ownerId = obj.getString("owner");
             String giphy = obj.getString("giphy");
-            try {
+            if (obj.has("log"))
                 LoggerImpl.log = obj.getBoolean("log");
+            if (obj.has("home"))
                 home = api.getGuildById(obj.getString("home"));
-            } catch (JSONException ignore) {
-            }
             if (giphy != null && !giphy.isEmpty() && !giphy.equalsIgnoreCase("http://api.giphy.com/submit"))
                 MinnBot.giphy = giphy;
             MinnBot bot = new MinnBot(pre, ownerId, "", console.logger, api);
             bot.initCommands(api);
             as.setApi(api);
             MinnBotUserInterface.bot = bot;
+            if (obj.has("logchan")) {
+                IgnoreUtil.addListener(new IIgnoreListener(api.getTextChannelById(obj.getString("logchan"))));
+            }
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) bot.getLogger());
             if (audio) {
                 api.addEventListener(new MinnAudioManager());
@@ -148,6 +150,11 @@ public class MinnBot {
             }
             throw e;
         }
+    }
+
+    public void onReconnect(ReconnectedEvent event) {
+
+
     }
 
     private String getInviteUrl() {
@@ -218,7 +225,7 @@ public class MinnBot {
 
         // User commands
 
-        manager.set(new PublicManager(prefix, logger, this, giphy));
+        manager.set(new PublicManager(prefix, logger, this));
         handler.registerManager(manager.get());
         errors.addAll(manager.get().getErrors());
 
@@ -239,6 +246,18 @@ public class MinnBot {
         manager.set(new RoleCommandManager(prefix, logger));
         handler.registerManager(manager.get());
         errors.addAll(manager.get().getErrors());
+
+        // Goofy manager
+
+        manager.set(new GoofyManager(prefix, logger, giphy, this));
+        handler.registerManager(manager.get());
+        errors.addAll(manager.get().getErrors());
+
+        // Custom commands
+
+        manager.set(new CustomManager(prefix, logger));
+        handler.registerManager(manager.get());
+        // errors.addAll(manager.get().getErrors()); not checking for custom commands
 
         if (home != null) {
             registerCommand(new InviteCommand(prefix, logger, home));

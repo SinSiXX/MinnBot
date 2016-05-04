@@ -2,8 +2,8 @@ package minn.minnbot.manager.impl;
 
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.command.*;
 import minn.minnbot.entities.command.custom.HelpSplitter;
+import minn.minnbot.entities.command.moderation.*;
 import minn.minnbot.manager.CmdManager;
 
 import java.util.LinkedList;
@@ -49,6 +49,13 @@ public class ModerationCommandManager extends CmdManager {
             splitter.add(com);
 
         com = new ClearCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new NickerCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());

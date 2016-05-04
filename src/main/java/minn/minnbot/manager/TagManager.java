@@ -9,16 +9,17 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TagManager extends ListenerAdapter {
 
     private List<Tag> tags;
     private static TagManager manager;
     private Logger logger;
+    private Thread autoSave;
 
     public void onShutdown(ShutdownEvent event) {
         saveTags();
@@ -54,7 +55,7 @@ public class TagManager extends ListenerAdapter {
         return arr;
     }
 
-    public static void saveTags() {
+    static void saveTags() {
         JSONArray arr = manager.getAsJsonArray();
         if (new File("tags.json").exists())
             //noinspection ResultOfMethodCallIgnored
@@ -69,7 +70,7 @@ public class TagManager extends ListenerAdapter {
                 //noinspection ThrowFromFinallyBlock
                 out.close();
             }
-            Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
+            // Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
             manager.logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
         } catch (IOException e) {
             manager.logger.logThrowable(e);
@@ -80,6 +81,22 @@ public class TagManager extends ListenerAdapter {
         this.logger = logger;
         this.tags = tags;
         manager = this;
+        if(autoSave != null)
+            autoSave.interrupt();
+        autoSave = new Thread(() -> {
+            while (!autoSave.isInterrupted()) {
+                try {
+                    Thread.sleep(TimeUnit.HOURS.toMillis(1L));
+                } catch (InterruptedException e) {
+                    break;
+                }
+                saveTags();
+            }
+        });
+        autoSave.setDaemon(true);
+        autoSave.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+        autoSave.setName("TagAutoSave-Thread");
+        autoSave.start();
     }
 
 }

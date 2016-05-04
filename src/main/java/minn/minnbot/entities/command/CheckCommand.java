@@ -8,20 +8,11 @@ import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.Role;
 import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class CheckCommand extends CommandAdapter {
 
     public CheckCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
-    }
-
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if (isCommand(event.getMessage().getContent())) {
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
-        }
+        init(prefix, logger);
     }
 
     @Override
@@ -32,33 +23,26 @@ public class CheckCommand extends CommandAdapter {
             u = event.event.getAuthor();
         else
             u = mentions.get(0);
-        String s = "```md\n";
-        s += ("[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]").replace("`", "\u0001`");
+        String s = "```md";
+        String name = null;
+        if (event.guild != null) name = event.guild.getNicknameForUser(u);
+        if (name != null)
+            s += ("\n[Nick][" + name + "]").replace("`", "\u0001`");
+        s += ("\n[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]").replace("`", "\u0001`");
         s += "\n[ Id ][" + u.getId() + "]";
         s += "\n[Status][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
         s += ("\n\n[Game][" + ((u.getCurrentGame() == null) ? "Ready to play!" : u.getCurrentGame()) + "]").replace("`", "\u0001`");
-        s += "\n[Join][" + getJoinDate(u, event.event.getGuild()) + "]";
+        s += "\n[Join][" + TimeUtil.getJoinDate(u, event.guild) + "]";
         s += "\n[Creation][" + TimeUtil.getCreationTime(Long.valueOf(u.getId())) + "]";
-        s += "\n[Known guilds][" + serversInCommon(u, event.event.getJDA()) + "]";
+        s += "\n[Known guilds][" + serversInCommon(u, event.jda) + "]";
         s += "\n\n[Avatar][ " + u.getAvatarUrl() + " ]";
         s += "\n\n" + getRolesForUser(u, event.event.getGuild()).replace("`", "\u0001`");
-        try {
-            event.sendMessage(s + "```");
-        } catch (Exception e) {
-            s = "```md\n";
-            s += ("[User][" + u.getUsername() + '#' + u.getDiscriminator() + "]").replace("`", "\u0001`");
-            s += "\n[ Id ][" + u.getId() + "]";
-            s += "\n[Status][" + ((u.getOnlineStatus() != null) ? u.getOnlineStatus().name() : "OFFLINE") + "]";
-            s += "\n\n[Game][" + ((u.getCurrentGame() == null) ? "Ready to play!" : u.getCurrentGame()) + "]";
-            s += "\n[Join][" + getJoinDate(u, event.event.getGuild()) + "]";
-            s += "\n[Creation][" + TimeUtil.getCreationTime(Long.getLong(u.getId())) + "]";
-            s += "\n[Known guilds][" + serversInCommon(u, event.event.getJDA()) + "]";
-            s += "\n\n[Avatar][ " + u.getAvatarUrl() + " ]";
-            event.sendMessage(s + "```");
-        }
+        event.sendMessage(s + "```");
     }
 
     private String getRolesForUser(User u, Guild g) {
+        if (g == null)
+            return "";
         java.util.List<Role> roles = g.getRolesForUser(u);
         if (roles.isEmpty())
             return ""; // TODO
@@ -92,21 +76,6 @@ public class CheckCommand extends CommandAdapter {
             logger.logThrowable(e);
             return 1;
         }
-    }
-
-    private String getJoinDate(User u, Guild g) {
-        java.time.OffsetDateTime time = g.getJoinDateForUser(u);
-        int day = time.getDayOfMonth();
-        int month = time.getMonthValue();
-        int year = time.getYear();
-
-        int hour = time.getHour();
-        int minute = time.getMinute();
-        int second = time.getSecond();
-
-        return "" + ((day < 10) ? "0" + day : day) + "/" + ((month < 10) ? "0" + month : month) + "/" + year + " | "
-                + ((hour < 10) ? "0" + hour : hour) + ":" + ((minute < 10) ? "0" + minute : minute) + ":"
-                + ((second < 10) ? "0" + second : second);
     }
 
     @Override

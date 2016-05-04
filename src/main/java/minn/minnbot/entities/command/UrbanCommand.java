@@ -29,7 +29,11 @@ public class UrbanCommand extends CommandAdapter {
             if (body.has("list")) {
                 String url = body.getJSONArray("list").getJSONObject(0).getString("permalink");
                 String definition = body.getJSONArray("list").getJSONObject(0).getString("definition");
-                event.sendMessage(url + " - *" + definition.trim().replace("*","") + "*");
+                String msg = url + " - *" + definition.trim().replace("*", "") + "*";
+                if (msg.length() <= 1500)
+                    event.sendMessage(msg);
+                else
+                    event.sendMessage(url);
             } else {
                 event.sendMessage("Something went wrong with your request!");
             }

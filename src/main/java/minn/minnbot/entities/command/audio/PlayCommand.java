@@ -40,23 +40,32 @@ public class PlayCommand extends CommandAdapter {
             }
             return;
         }
-        event.sendMessage("Fetching information.");
+        event.sendMessage("Fetching information. "
+                + (!event.guild.getAudioManager().isConnected()
+                ? "\nIn the meantime you can make me connect to the channel you are in by typing `" + prefix + "joinme` while you are in a channel."
+                : ""));
+        if (event.allArguments.contains("https://gaming.youtube.com/watch?v=")) {
+            event.sendMessage("Youtube Gaming URLs are not accepted. " + EmoteUtil.getRngThumbsdown(), null);
+            return;
+        }
         AudioSource s = new RemoteSource(
                 ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
                         ? event.allArguments.substring(1, event.allArguments.length() - 1)
                         : event.allArguments));
         AudioInfo info = s.getInfo();
-        if(info == null) {
+        if (info == null) {
             event.sendMessage("Video was not accessible! " + EmoteUtil.getRngThumbsdown());
             return;
         }
         String error = info.getError();
-        if (error == null) {
-            player.getAudioQueue().add(s);
-        } else {
+        if (error != null) {
             event.sendMessage("**__Error:__** `" + error + "` " + EmoteUtil.getRngThumbsdown());
             return;
+        } else if (info.isLive()) {
+            event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
+            return;
         }
+        player.getAudioQueue().add(s);
         if (!player.isPlaying()) {
             player.play();
             event.sendMessage("Added provided URL to queue and the player started playing! " + EmoteUtil.getRngOkHand());
