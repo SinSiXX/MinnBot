@@ -1,6 +1,7 @@
 package minn.minnbot.manager.impl;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
+import minn.minnbot.MinnBot;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.custom.HelpSplitter;
@@ -11,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class GoofyManager extends CmdManager {
 
-    public GoofyManager(String prefix, Logger logger, String giphy) {
+    public GoofyManager(String prefix, Logger logger, String giphy, MinnBot bot) {
         Command com;
         this.logger = logger;
         HelpSplitter splitter = new HelpSplitter("Goofy Commands", "goofy", prefix, false);
@@ -59,6 +60,13 @@ public class GoofyManager extends CmdManager {
             splitter.add(com);
         
         com = new GoogleCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
+        com = new AraCommand(prefix, logger, bot.api);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
             errors.add(err.get());

@@ -249,7 +249,7 @@ public class MinnBot extends ListenerAdapter {
 
         // Goofy manager
 
-        manager.set(new GoofyManager(prefix, logger, giphy));
+        manager.set(new GoofyManager(prefix, logger, giphy, this));
         handler.registerManager(manager.get());
         errors.addAll(manager.get().getErrors());
 

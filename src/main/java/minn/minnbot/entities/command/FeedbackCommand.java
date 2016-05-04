@@ -31,18 +31,21 @@ public class FeedbackCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        TextChannel feedback_channel = event.event.getJDA().getTextChannelById("163277437461856257");
+        TextChannel feedback_channel = event.jda.getTextChannelById("163277437461856257");
         if (feedback_channel == null || !feedback_channel.checkPermission(event.event.getJDA().getSelfInfo(), Permission.MESSAGE_WRITE)) {
-            logger.logThrowable(new UnsupportedOperationException("Feedback channel in Minn Development unreachable!"));
+            event.sendMessage("Feedback channel in Minn Development unreachable!");
             return;
         }
-        User user = event.event.getAuthor();
-        String msg = ("**__" + TimeUtil.timeStamp() + "Feedback:__** ```md\n[" + event.event.getGuild().getName() + "][" + user.getUsername().replace("```", "") + "#" + user.getDiscriminator() + "]: " + event.allArguments.replace("```", "") + "```").replace("@everyone", "(mass mention prevented)");
+        User user = event.author;
+        String msg = ("**__" + TimeUtil.timeStamp()
+                + "Feedback:__** ```md\n[" + event.guild.getName() + "][" +
+                "" + user.getUsername().replace("```", "") + "#" + user.getDiscriminator() + "]: "
+                + event.allArguments.replace("```", "") + "```").replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here").replace(". ", ".\n");
         if (cooldowns.containsKey(user)) {
             long cd = cooldowns.get(user);
             if (cd > System.currentTimeMillis() + 60000) {
                 event.sendMessage("Hey! Don't spam the feedback stream! *(You have been rate limited)*");
-                cooldowns.replace(user, cd, System.currentTimeMillis());
+                cooldowns.put(user, System.currentTimeMillis());
                 return;
             }
         }
@@ -53,11 +56,7 @@ public class FeedbackCommand extends CommandAdapter {
         }
         feedback_channel.sendMessageAsync(msg, null);
         event.sendMessage("Thank you for the feedback. " + EmoteUtil.getRngOkHand());
-        if (cooldowns.containsKey(user)) {
-            long cd = cooldowns.get(user);
-            cooldowns.replace(user, cd, System.currentTimeMillis());
-        } else
-            cooldowns.put(user, System.currentTimeMillis());
+        cooldowns.put(user, System.currentTimeMillis());
     }
 
     @Override
@@ -72,7 +71,7 @@ public class FeedbackCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "feedback <text>";
+        return "feedback <message>";
     }
 
     @Override
