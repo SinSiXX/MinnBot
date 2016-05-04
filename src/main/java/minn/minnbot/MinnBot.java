@@ -118,6 +118,7 @@ public class MinnBot extends ListenerAdapter {
             if (audio) {
                 api.addEventListener(new MinnAudioManager());
             }
+            console.setTitle(api.getSelfInfo().getUsername() + "#" + api.getSelfInfo().getDiscriminator()); // so you know which one is logged in!
             bot.log("Setup completed.");
         } catch (IllegalArgumentException e) {
             if (e.getMessage().isEmpty())

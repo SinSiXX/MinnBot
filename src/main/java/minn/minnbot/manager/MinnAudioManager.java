@@ -138,7 +138,7 @@ public class MinnAudioManager extends ListenerAdapter {
                 } catch (InterruptedException ignored) {
                     break;
                 }
-                if (player.getAudioQueue().isEmpty() && !player.isPlaying()) {
+                if ((player.getAudioQueue().isEmpty() && !player.isPlaying()) || !guild.getAudioManager().isConnected()) { // Player queue empty or not connected? If yes -> kill
                     break;
                 }
             }

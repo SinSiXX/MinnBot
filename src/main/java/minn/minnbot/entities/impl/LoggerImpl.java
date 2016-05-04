@@ -47,7 +47,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     public void onEvent(Event event) {
         if (event instanceof MessageReceivedEvent) {
             onMessageReceived((MessageReceivedEvent) event);
-        } else if(event instanceof ShutdownEvent) {
+        } else if (event instanceof ShutdownEvent) {
             saveToJson("ErrorLog-Session_" + (11 << System.currentTimeMillis()) + ".log", errorLogs);
         }
         logEvent(event);
@@ -66,7 +66,8 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             privateMessages++;
             messages++;
         }
-        logMessage(event.getMessage());
+        if (!event.getAuthor().isBot())
+            logMessage(event.getMessage());
         // if(messages > 2000)
         // saveToJson("message", messageLogs);
     }
@@ -141,10 +142,10 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     }
 
     public boolean saveToJson(String name, List<String> list) {
-        if(list.isEmpty() || name.isEmpty())
+        if (list.isEmpty() || name.isEmpty())
             return false;
         File f = new File("Logs/" + name);
-        if(f.exists())
+        if (f.exists())
             //noinspection ResultOfMethodCallIgnored
             f.delete();
         String[] s = {"<-!-Error-Logs-->\n"};

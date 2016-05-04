@@ -3,15 +3,22 @@ package minn.minnbot.entities.command.audio;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.VoiceChannel;
+import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class JoinCommand extends CommandAdapter {
 
     public JoinCommand(String prefix, Logger logger) {
         init(prefix, logger);
+    }
+
+    public void onMessageReceived(MessageReceivedEvent event) {
+        if (!event.isPrivate())
+            super.onMessageReceived(event);
     }
 
     @Override
@@ -41,6 +48,7 @@ public class JoinCommand extends CommandAdapter {
             event.guild.getAudioManager().openAudioConnection(channel);
         else
             event.guild.getAudioManager().moveAudioConnection(channel);
+        MinnAudioManager.getPlayer(event.guild); // to activate the keepAlive
         event.sendMessage("Connected to **" + channel.getName() + "** " + EmoteUtil.getRngOkHand());
     }
 

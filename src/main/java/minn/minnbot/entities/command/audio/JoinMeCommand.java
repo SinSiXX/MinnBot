@@ -3,6 +3,7 @@ package minn.minnbot.entities.command.audio;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.MinnAudioManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.VoiceChannel;
@@ -52,7 +53,7 @@ public class JoinMeCommand extends CommandAdapter {
         } else {
             event.guild.getAudioManager().moveAudioConnection(channel);
         }
-        // MinnAudioManager.registerPlayer(new MusicPlayer(), event.event.getGuild()); why even do this lol
+        MinnAudioManager.getPlayer(event.guild); // to activate the keepAlive
         event.sendMessage("Joined `" + channel.getName() + "`! " + EmoteUtil.getRngOkHand());
     }
 
