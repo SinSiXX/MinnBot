@@ -17,10 +17,8 @@ public class GifCommand extends CommandAdapter {
     private String key;
 
     public GifCommand(String prefix, Logger logger, String key) throws UnirestException {
-        this.prefix = prefix;
-        this.logger = logger;
+        init(prefix, logger);
         this.key = key;
-
         String url = "http://api.giphy.com/v1/gifs/random?api_key=" + key + "&rating=pg-13&tag=cat";
         com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest.get(url)
                 .header("accept", "application/json").asJson();
