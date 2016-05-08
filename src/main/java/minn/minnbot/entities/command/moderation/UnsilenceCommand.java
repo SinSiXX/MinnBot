@@ -3,6 +3,7 @@ package minn.minnbot.entities.command.moderation;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
@@ -21,7 +22,7 @@ public class UnsilenceCommand extends CommandAdapter {
 		if (event.isPrivate())
 			return;
 		String message = event.getMessage().getContent();
-		if (isCommand(message)) {
+		if (isCommand(message, CommandManager.getPrefixList(event.getGuild().getId()))) {
 			if (!event.getTextChannel().checkPermission(event.getAuthor(), Permission.MANAGE_PERMISSIONS)) {
 				event.getChannel().sendMessageAsync(
 						"You are not able to use that command. Missing permission: `MANAGE_PERMISSIONS`", null);
@@ -50,16 +51,15 @@ public class UnsilenceCommand extends CommandAdapter {
 	}
 
 	@Override
-	public boolean isCommand(String message) {
-		try {
-			message = message.toLowerCase();
-			if (!message.startsWith(prefix))
-				return false;
-			message = message.substring(prefix.length());
-			String command = message.split(" ", 2)[0];
-			if (command.equalsIgnoreCase("unsilence"))
+	public boolean isCommand(String message, List<String> prefixList) {
+		String[] p = message.split(" ", 2);
+		if(p.length < 1)
+			return false;
+		if(p[0].equalsIgnoreCase(prefix + "unsilence"))
+			return true;
+		for(String fix : prefixList) {
+			if(p[0].equalsIgnoreCase(fix + "unsilence"))
 				return true;
-		} catch (Exception ignored) {
 		}
 		return false;
 	}

@@ -5,6 +5,8 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Message;
 
+import java.util.List;
+
 public class PingCommand extends CommandAdapter {
 
     public PingCommand(String prefix, Logger logger) {
@@ -19,13 +21,17 @@ public class PingCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        message = message.toLowerCase();
-        if (!message.startsWith(prefix))
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
             return false;
-        message = message.substring(prefix.length());
-        String command = message.split(" ", 2)[0];
-        return command.equalsIgnoreCase("ping");
+        if(p[0].equalsIgnoreCase(prefix + "ping"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "ping"))
+                return true;
+        }
+        return false;
     }
 
     @Override

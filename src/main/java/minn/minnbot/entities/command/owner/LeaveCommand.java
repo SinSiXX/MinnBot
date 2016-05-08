@@ -5,6 +5,8 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Guild;
 
+import java.util.List;
+
 public class LeaveCommand extends CommandAdapter {
 
 	public LeaveCommand(String prefix, Logger logger) {
@@ -31,13 +33,17 @@ public class LeaveCommand extends CommandAdapter {
 	}
 
 	@Override
-	public boolean isCommand(String message) {
-		message = message.toLowerCase();
-		if (!message.startsWith(prefix)) {
+	public boolean isCommand(String message, List<String> prefixList) {
+		String[] p = message.split(" ", 2);
+		if(p.length < 1)
 			return false;
+		if(p[0].equalsIgnoreCase(prefix + "leave"))
+			return true;
+		for(String fix : prefixList) {
+			if(p[0].equalsIgnoreCase(fix + "leave"))
+				return true;
 		}
-		String command = message.substring(prefix.length());
-		return ((command.startsWith("leave ") && command.length() > "leave ".length()) || command.equals("leave"));
+		return false;
 	}
 
 	@Override

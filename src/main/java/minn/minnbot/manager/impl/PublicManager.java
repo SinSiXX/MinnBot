@@ -69,13 +69,6 @@ public class PublicManager extends CmdManager {
        else
            splitter.add(com);
 
-       com = new ResponseCommand(prefix, logger);
-       err.set(registerCommand(com));
-       if (!err.get().isEmpty())
-           errors.add(err.get());
-       else
-           splitter.add(com);
-
        com = new PingCommand(prefix, logger);
        err.set(registerCommand(com));
        if (!err.get().isEmpty())
@@ -158,6 +151,13 @@ public class PublicManager extends CmdManager {
            splitter.add(com);
 
        com = new MessagesCommand(prefix, logger);
+       err.set(registerCommand(com));
+       if (!err.get().isEmpty())
+           errors.add(err.get());
+       else
+           splitter.add(com);
+
+       com = new PrefixCommand(prefix, logger, bot.owner);
        err.set(registerCommand(com));
        if (!err.get().isEmpty())
            errors.add(err.get());

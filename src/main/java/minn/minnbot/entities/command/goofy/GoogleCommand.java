@@ -5,6 +5,7 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 
 import java.net.URLEncoder;
+import java.util.List;
 
 public class GoogleCommand extends CommandAdapter {
 
@@ -23,9 +24,18 @@ public class GoogleCommand extends CommandAdapter {
         event.sendMessage("http://lmgtfy.com/?q=" + URLEncoder.encode(event.allArguments));
     }
 
-    public boolean isCommand(String message) {
+    @Override
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "lmgtfy");
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "lmgtfy"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "lmgtfy"))
+                return true;
+        }
+        return false;
     }
 
     public String usage() {

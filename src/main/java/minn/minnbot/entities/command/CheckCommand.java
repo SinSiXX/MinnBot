@@ -9,6 +9,8 @@ import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.Role;
 import net.dv8tion.jda.entities.User;
 
+import java.util.List;
+
 public class CheckCommand extends CommandAdapter {
 
     public CheckCommand(String prefix, Logger logger) {
@@ -79,16 +81,15 @@ public class CheckCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("check"))
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "check"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "check"))
                 return true;
-        } catch (Exception ignored) {
         }
         return false;
     }

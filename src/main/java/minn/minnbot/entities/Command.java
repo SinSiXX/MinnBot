@@ -3,6 +3,8 @@ package minn.minnbot.entities;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.List;
+
 public interface Command {
 	
 	void onMessageReceived(MessageReceivedEvent event);
@@ -13,7 +15,7 @@ public interface Command {
 	
 	void onCommand(CommandEvent event);
 	
-	boolean isCommand(String message);
+	boolean isCommand(String message, List<String> prefix);
 	
 	String usage();
 	

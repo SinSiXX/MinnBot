@@ -32,14 +32,17 @@ public class GameCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "game");
-    }
-
-    @Override
-    public String usage() {
-        return "`game <game>`";
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "game"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "game"))
+                return true;
+        }
+        return false;
     }
 
     @Override

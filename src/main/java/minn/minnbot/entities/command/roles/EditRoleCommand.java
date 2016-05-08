@@ -3,11 +3,14 @@ package minn.minnbot.entities.command.roles;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
 import minn.minnbot.util.RoleUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Role;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.utils.PermissionUtil;
+
+import java.util.List;
 
 public class EditRoleCommand extends CommandAdapter {
 
@@ -19,7 +22,7 @@ public class EditRoleCommand extends CommandAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isPrivate())
             return;
-        if (isCommand(event.getMessage().getContent())) {
+        if (isCommand(event.getMessage().getContent(), CommandManager.getPrefixList(event.getGuild().getId()))) {
             if (!PermissionUtil.checkPermission(event.getAuthor(), Permission.MANAGE_ROLES, event.getGuild()))
                 event.getChannel().sendMessageAsync("You are not allowed to manage roles. :thumbsdown::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":", null);
             else {
@@ -74,16 +77,15 @@ public class EditRoleCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("editrole"))
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "editrole"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "editrole"))
                 return true;
-        } catch (Exception ignored) {
         }
         return false;
     }

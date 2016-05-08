@@ -39,19 +39,17 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot extends ListenerAdapter {
 
-    public final static String VERSION = "Version 2.9b";
+    public final static String VERSION = "Version 3.0a";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
-    public static boolean powersaving = false;
     private static String giphy;
     private static MinnBotUserInterface console;
     private static boolean audio;
-    public final String owner; // FIXME
+    public final String owner;
     public final JDA api;
     public final CommandManager handler;
     public final String inviteurl;
     private final String prefix;
     private final Logger logger;
-    private final boolean bot;
     private MinnPlayer player;
     private static Guild home;
 
@@ -81,11 +79,9 @@ public class MinnBot extends ListenerAdapter {
             this.inviteurl = invite;
         else
             this.inviteurl = inviteurl;
-        this.bot = true;
         this.handler = new CommandManager(api, this.logger, owner);
         api.addEventListener(handler);
         api.addEventListener(this);
-        log("Powersaving: " + powersaving);
     }
 
     public synchronized static void launch(MinnBotUserInterface console) throws Exception { // DON'T LOOK

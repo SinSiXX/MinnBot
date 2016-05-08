@@ -72,12 +72,17 @@ public class HelpSplitter implements Command {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] parts = message.split(" ", 2);
-        if(parts.length < 1)
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
             return false;
-        String command = parts[0];
-        return command.equalsIgnoreCase(prefix + name);
+        if(p[0].equalsIgnoreCase(prefix + name))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + name))
+                return true;
+        }
+        return false;
     }
 
 

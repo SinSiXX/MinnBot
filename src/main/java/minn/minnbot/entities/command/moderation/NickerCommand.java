@@ -38,41 +38,49 @@ public class NickerCommand extends CommandAdapter {
 
         if (users.isEmpty()) {
             User user = event.author;
-            if (event.allArguments.length() > 20) {
-                event.sendMessage("Nickname is too long, must be 0-20!");
+            if (event.allArguments.length() > 32) {
+                event.sendMessage("Nickname is too long, must be 0-32 symbols!");
                 return;
             }
             event.guild.getManager().setNickname(user, event.allArguments);
             if (event.author.getUsername().equals(event.allArguments) || event.allArguments.isEmpty())
-                event.sendMessage("Reset **your** nickname. " + EmoteUtil.getRngOkHand());
+                event.sendMessage(":heavy_check_mark: Reset **your** nickname. " + EmoteUtil.getRngOkHand());
             else
-                event.sendMessage("Updated **your** nickname: " + event.allArguments);
+                event.sendMessage(String.format(":heavy_check_mark: Updated **your** nickname: **%s**", event.allArguments));
         } else {
             User user = users.get(0);
-            String[] p = event.allArguments.split(" ", 2);
+            String[] p = event.allArguments.split("\\s+", 2);
             String name;
             if (p.length >= 2) {
                 name = p[1].trim();
             } else {
                 name = "";
             }
-            if (name.length() > 20) {
-                event.sendMessage("Nickname is too long, must be 0-20!");
+            if (name.length() > 32) {
+                event.sendMessage("Nickname is too long, must be 0-32 symbols!");
                 return;
             }
 
             event.guild.getManager().setNickname(user, name);
             if (name.equals(user.getUsername()) || name.isEmpty())
-                event.sendMessage("Users username has been reset. " + EmoteUtil.getRngOkHand());
+                event.sendMessage(":heavy_check_mark: Users username has been reset. " + EmoteUtil.getRngOkHand());
             else
-                event.sendMessage("Updated users nickname: " + name);
+                event.sendMessage(String.format(":heavy_check_mark: Updated users nickname: **%s**", name));
         }
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "nick");
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "nick"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "nick"))
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -81,9 +89,10 @@ public class NickerCommand extends CommandAdapter {
     }
 
     public String usage() {
-        return "\n**<mention>** - the user who's nickname you want to change\n**<name>** - the name to give, leave blank to reset.\n" +
-                "\n**__Syntax:__** `nick <@mention> <name>`, `nick <name>`\n" +
-                "\n**__Examples:__** \n" + prefix + example() + "\n" + prefix + "nick MyNick";
+        return String.format("\n**<mention>** - the user who's nickname you want to change\n**<name>** - the name to give, leave blank to reset.\n\n**__Syntax:__** `nick <@mention> <name>`, `nick <name>`\n\n**__Examples:__** \n%s%s\n%snick MyNick",
+                prefix,
+                example(),
+                prefix);
     }
 
     public String example() {

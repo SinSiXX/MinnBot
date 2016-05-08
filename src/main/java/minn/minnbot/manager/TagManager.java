@@ -91,6 +91,11 @@ public class TagManager extends ListenerAdapter {
                     break;
                 }
                 saveTags();
+                try {
+                    CommandManager.save();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         autoSave.setDaemon(true);

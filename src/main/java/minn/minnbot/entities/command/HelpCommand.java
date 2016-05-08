@@ -47,7 +47,7 @@ public class HelpCommand extends CommandAdapter {
         if (!event.allArguments.startsWith(prefix))
             cmd = prefix + cmd;
         for (Command c : commands) {
-            if (c.isCommand(cmd)) {
+            if (c.isCommand(cmd, CommandManager.getPrefixList(event.guild.getId()))) {
                 if (!c.usage().isEmpty())
                     event.sendMessage("Usage page for " + ((c instanceof HelpSplitter) ? "`" + c.getAlias() + "`" : cmd) + ": " + c.usage());
                 else
@@ -59,16 +59,15 @@ public class HelpCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("help"))
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "help"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "help"))
                 return true;
-        } catch (Exception ignored) {
         }
         return false;
     }

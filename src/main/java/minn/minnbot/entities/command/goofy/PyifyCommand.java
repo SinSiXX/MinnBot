@@ -4,6 +4,8 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 
+import java.util.List;
+
 public class PyifyCommand extends CommandAdapter {
 
     public PyifyCommand(String prefix, Logger logger) {
@@ -24,9 +26,17 @@ public class PyifyCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "pyify");
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "pyify"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "pyify"))
+                return true;
+        }
+        return false;
     }
 
     @Override

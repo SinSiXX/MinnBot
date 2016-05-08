@@ -111,9 +111,17 @@ public class QueueCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "queue");
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "queue"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "queue"))
+                return true;
+        }
+        return false;
     }
 
     @Override

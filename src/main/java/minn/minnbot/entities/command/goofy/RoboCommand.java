@@ -5,26 +5,33 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import org.json.JSONObject;
 
 import java.net.URLEncoder;
 import java.util.List;
 
-public class YodaCommand extends CommandAdapter{
+public class RoboCommand extends CommandAdapter {
 
-    public YodaCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
+    public RoboCommand(String prefix, Logger logger) {
+        init(prefix, logger);
     }
 
     @Override
     public void onCommand(CommandEvent event) {
         try {
-            event.sendMessage(Unirest.get("https://yoda.p.mashape.com/yoda?sentence=" + URLEncoder.encode(event.allArguments))
+            //noinspection deprecation
+            JSONObject response = Unirest.get(String.format("https://robohash.p.mashape.com/index.php?text=%s", URLEncoder.encode(event.allArguments)))
                     .header("X-Mashape-Key", "IlX3p3hnDRmsheyTT7z87aT1mrs9p1Qb4WkjsnGUnXKitYqhtf")
-                    .header("Accept", "text/plain")
-                    .asString().getBody());
+                    .header("Accept", "application/json")
+                    .asJson().getBody().getObject();
+            if(response.has("imageUrl")) {
+                event.sendMessage(response.getString("imageUrl"));
+            } else {
+                event.sendMessage(String.format("```json%s```", response.toString(4)));
+            }
+
         } catch (UnirestException e) {
-            event.sendMessage("Something is wrong with my connection. Try again later.");
+            event.sendMessage("Something went wrong with my connection.");
         }
     }
 
@@ -33,10 +40,10 @@ public class YodaCommand extends CommandAdapter{
         String[] p = message.split(" ", 2);
         if(p.length < 1)
             return false;
-        if(p[0].equalsIgnoreCase(prefix + "yoda"))
+        if(p[0].equalsIgnoreCase(prefix + "robo"))
             return true;
         for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "yoda"))
+            if(p[0].equalsIgnoreCase(fix + "robo"))
                 return true;
         }
         return false;
@@ -44,12 +51,10 @@ public class YodaCommand extends CommandAdapter{
 
     @Override
     public String getAlias() {
-        return "yoda <sentence>";
+        return "robo [<text>]";
     }
 
-    @Override
     public String example() {
-        return "yoda This is an example sentence.";
+        return "robo bot";
     }
-
 }

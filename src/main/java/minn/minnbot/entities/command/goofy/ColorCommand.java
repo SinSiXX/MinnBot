@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 public class ColorCommand extends CommandAdapter {
@@ -29,7 +30,7 @@ public class ColorCommand extends CommandAdapter {
         int val = new Random().nextInt(max + 1);
         try {
             if (!event.allArguments.isEmpty())
-                val = Math.max(Math.min(Integer.parseInt(event.allArguments, 16), 0), max);
+                val = Math.max(Math.min(Integer.parseInt(event.allArguments, 16), max), 0);
         } catch (NumberFormatException e) {
             event.sendMessage("Color **" + event.allArguments + "** not recognized. Must be a hex value between **0** and **FFFFFF**!");
             return;
@@ -52,9 +53,17 @@ public class ColorCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "color");
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "color"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "color"))
+                return true;
+        }
+        return false;
     }
 
     @Override

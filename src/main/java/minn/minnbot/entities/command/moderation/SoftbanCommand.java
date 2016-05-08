@@ -3,30 +3,39 @@ package minn.minnbot.entities.command.moderation;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.exceptions.PermissionException;
+import net.dv8tion.jda.exceptions.VerificationLevelException;
 import net.dv8tion.jda.utils.PermissionUtil;
+
+import java.util.List;
 
 public class SoftbanCommand extends CommandAdapter {
 
     public SoftbanCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
+        init(prefix, logger);
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isPrivate())
             return;
-        if (isCommand(event.getMessage().getContent())) {
-            if (!PermissionUtil.checkPermission(event.getAuthor(), Permission.BAN_MEMBERS, event.getGuild())) {
-                return;
-            } else if (!PermissionUtil.checkPermission(event.getJDA().getSelfInfo(),
-                    Permission.BAN_MEMBERS, event.getGuild())) {
-                event.getChannel()
-                        .sendMessageAsync("I am unable to ban members. Missing Permission: BAN_MEMBERS", null);
-                return;
+        if (isCommand(event.getMessage().getContent(), CommandManager.getPrefixList(event.getGuild().getId()))) {
+            try {
+                if (!PermissionUtil.checkPermission(event.getAuthor(), Permission.BAN_MEMBERS, event.getGuild())) {
+                    event.getChannel().sendMessageAsync("You are not authorized to use this command. Missing Permission: **BAN_MEMBERS**", null);
+                    return;
+                } else if (!PermissionUtil.checkPermission(event.getJDA().getSelfInfo(),
+                        Permission.BAN_MEMBERS, event.getGuild())) {
+
+                    event.getChannel()
+                            .sendMessageAsync("I am unable to ban members. Missing Permission: **BAN_MEMBERS**", null);
+                    return;
+                }
+            } catch (PermissionException | VerificationLevelException ignored) {
             }
             logger.logCommandUse(event.getMessage());
             onCommand(new CommandEvent(event));
@@ -37,21 +46,34 @@ public class SoftbanCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         try {
             User target = event.event.getMessage().getMentionedUsers().get(0);
+            if (!PermissionUtil.canBan(event.jda.getSelfInfo(), target, event.guild)) {
+                event.sendMessage(String.format("I am unable to ban **%s**.%s", target.getUsername(), EmoteUtil.getRngOkHand()));
+                return;
+            }
             event.event.getGuild().getManager().ban(target, 7);
-            try{Thread.sleep(1000);} catch (InterruptedException ignored){}
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {
+            }
             event.event.getGuild().getManager().unBan(target);
             event.sendMessage("Softbanned `" + target.getUsername() + "`. " + EmoteUtil.getRngThumbsup());
         } catch (IndexOutOfBoundsException e) {
-           event.sendMessage("Unablet to softban without mention. " + EmoteUtil.getRngThumbsdown());
-        } catch (Exception e) {
-            logger.logThrowable(e);
+            event.sendMessage("Unablet to softban without mention. " + EmoteUtil.getRngThumbsdown());
         }
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] parts = message.split(" ", 2);
-        return parts.length >= 1 && (parts[0].equalsIgnoreCase(prefix + "softban") || parts[0].equalsIgnoreCase(prefix + "sb"));
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "softban"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "softban"))
+                return true;
+        }
+        return false;
     }
 
     @Override

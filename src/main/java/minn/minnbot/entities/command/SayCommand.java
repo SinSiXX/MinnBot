@@ -4,6 +4,8 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 
+import java.util.List;
+
 public class SayCommand extends CommandAdapter {
 
 	public SayCommand(String prefix, Logger logger) {
@@ -16,9 +18,17 @@ public class SayCommand extends CommandAdapter {
 	}
 
 	@Override
-	public boolean isCommand(String message) {
-		String[] parts = message.split(" ", 2);
-		return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "say");
+	public boolean isCommand(String message, List<String> prefixList) {
+		String[] p = message.split(" ", 2);
+		if(p.length < 1)
+			return false;
+		if(p[0].equalsIgnoreCase(prefix + "say"))
+			return true;
+		for(String fix : prefixList) {
+			if(p[0].equalsIgnoreCase(fix + "say"))
+				return true;
+		}
+		return false;
 	}
 
 	@Override

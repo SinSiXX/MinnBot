@@ -10,6 +10,8 @@ import net.dv8tion.jda.entities.VoiceChannel;
 import net.dv8tion.jda.entities.VoiceStatus;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.List;
+
 public class JoinMeCommand extends CommandAdapter {
 
 
@@ -58,13 +60,17 @@ public class JoinMeCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        try {
-            String cmd = message.split(" ", 2)[0];
-            return cmd.equalsIgnoreCase(prefix + "joinme");
-        } catch (IndexOutOfBoundsException ignore) {
-        }
-        return false;
+    public boolean isCommand(String message, List<String> prefixList) {
+            String[] p = message.split(" ", 2);
+            if(p.length < 1)
+                return false;
+            if(p[0].equalsIgnoreCase(prefix + "joinme"))
+                return true;
+            for(String fix : prefixList) {
+                if(p[0].equalsIgnoreCase(fix + "joinme"))
+                    return true;
+            }
+            return false;
     }
 
     @Override

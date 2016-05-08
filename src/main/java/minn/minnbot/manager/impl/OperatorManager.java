@@ -112,6 +112,14 @@ public class OperatorManager extends CmdManager {
             errors.add(err.get());
         else
             splitter.add(com);
+
+        com = new NickResetCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
     }
 
 }

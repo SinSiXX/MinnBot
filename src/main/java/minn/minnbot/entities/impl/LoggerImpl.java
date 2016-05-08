@@ -5,6 +5,7 @@ import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.entities.Message;
+import net.dv8tion.jda.events.DisconnectEvent;
 import net.dv8tion.jda.events.Event;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
@@ -47,7 +48,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     public void onEvent(Event event) {
         if (event instanceof MessageReceivedEvent) {
             onMessageReceived((MessageReceivedEvent) event);
-        } else if (event instanceof ShutdownEvent) {
+        } else if (event instanceof ShutdownEvent || event instanceof DisconnectEvent) {
             saveToJson("ErrorLog-Session_" + (11 << System.currentTimeMillis()) + ".log", errorLogs);
         }
         logEvent(event);
@@ -141,6 +142,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
         return saveToJson("ErrorLog-Session_" + (11 << System.currentTimeMillis()) + ".log", errorLogs);
     }
 
+    @SuppressWarnings({"finally", "ThrowFromFinallyBlock", "ReturnInsideFinallyBlock"})
     public boolean saveToJson(String name, List<String> list) {
         if (list.isEmpty() || name.isEmpty())
             return false;

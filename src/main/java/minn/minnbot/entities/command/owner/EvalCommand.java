@@ -6,6 +6,8 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.EvalUtil;
 
+import java.util.List;
+
 public class EvalCommand extends CommandAdapter {
 
     private MinnBot bot;
@@ -28,9 +30,17 @@ public class EvalCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "eval");
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "eval"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "eval"))
+                return true;
+        }
+        return false;
     }
 
     @Override

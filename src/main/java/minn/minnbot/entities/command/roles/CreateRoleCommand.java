@@ -3,10 +3,13 @@ package minn.minnbot.entities.command.roles;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
 import minn.minnbot.util.EmoteUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.utils.PermissionUtil;
+
+import java.util.List;
 
 public class CreateRoleCommand extends CommandAdapter {
 
@@ -19,7 +22,7 @@ public class CreateRoleCommand extends CommandAdapter {
         if(event.isPrivate()) {
             return;
         }
-        if(isCommand(event.getMessage().getContent())) {
+        if(isCommand(event.getMessage().getContent(), CommandManager.getPrefixList(event.getGuild().getId()))) {
             if(!PermissionUtil.checkPermission(event.getAuthor(), Permission.MANAGE_ROLES, event.getGuild()))
                 event.getChannel().sendMessageAsync("You are not allowed to manage roles. " + EmoteUtil.getRngThumbsdown(), null);
             else {
@@ -40,9 +43,17 @@ public class CreateRoleCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "createrole");
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "createrole"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "createrole"))
+                return true;
+        }
+        return false;
     }
 
     @Override

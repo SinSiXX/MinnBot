@@ -8,9 +8,10 @@ import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
 
+import java.util.List;
 import java.util.Map;
 
-public class RepairPlayersCommand extends CommandAdapter {// TODO: Test
+public class RepairPlayersCommand extends CommandAdapter {
 
     public RepairPlayersCommand(String prefix, Logger logger) {
         init(prefix, logger);
@@ -35,9 +36,17 @@ public class RepairPlayersCommand extends CommandAdapter {// TODO: Test
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "vrepair");
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "vRepair"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "vRepair"))
+                return true;
+        }
+        return false;
     }
 
     @Override

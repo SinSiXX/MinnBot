@@ -7,6 +7,8 @@ import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.List;
+
 /**
  * This command is only meant to be used by Minn, not guaranteed to work and no support to be expected.
  */
@@ -39,9 +41,17 @@ public class InviteCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "invite");
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "invite"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "invite"))
+                return true;
+        }
+        return false;
     }
 
     @Override

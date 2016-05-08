@@ -64,10 +64,7 @@ public class TagCommand extends CommandAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isPrivate())
             return;
-        if (isCommand(event.getMessage().getContent())) {
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
-        }
+        super.onMessageReceived(event);
     }
 
     @Override
@@ -225,28 +222,28 @@ public class TagCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("tag"))
+    public boolean isCommand(String message, List<String> prefixList) {
+        String[] p = message.split(" ", 2);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "tag"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "tag"))
                 return true;
-        } catch (Exception ignored) {
         }
         return false;
     }
 
     @Override
     public String usage() {
-        return "tag <method> <tag> <response> " +
+        return "\n**tag <method> <tag> <response> **" +
                 "\nMethods:" +
                 "\n> `del` - delete tag." +
                 "\n> `edt` - edit tag." +
                 "\n> `add` - add new tag." +
-                "\n> `json` - print tag as a json object.";
+                "\n> `json` - print tag as a json object." +
+                "\n***Requires MANAGE_SERVER permission***";
     }
 
     @Override
