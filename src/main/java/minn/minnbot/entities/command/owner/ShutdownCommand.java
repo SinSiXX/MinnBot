@@ -4,8 +4,6 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 
-import java.util.List;
-
 public class ShutdownCommand extends CommandAdapter {
 
 	public ShutdownCommand(String prefix, Logger logger) {
@@ -21,20 +19,6 @@ public class ShutdownCommand extends CommandAdapter {
 		} catch (Exception e) {
 			event.sendMessage("Encountered Exception: " + e.getMessage());
 		}
-	}
-
-	@Override
-	public boolean isCommand(String message, List<String> prefixList) {
-		String[] p = message.split(" ", 2);
-		if(p.length < 1)
-			return false;
-		if(p[0].equalsIgnoreCase(prefix + "shutdown"))
-			return true;
-		for(String fix : prefixList) {
-			if(p[0].equalsIgnoreCase(fix + "shutdown"))
-				return true;
-		}
-		return false;
 	}
 
 	@Override

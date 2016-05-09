@@ -11,8 +11,6 @@ import net.dv8tion.jda.entities.Role;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.utils.PermissionUtil;
 
-import java.util.List;
-
 public class CopyRoleCommand extends CommandAdapter {
 
     public CopyRoleCommand(Logger logger, String prefix) {
@@ -54,20 +52,6 @@ public class CopyRoleCommand extends CommandAdapter {
         else
             r = RoleUtil.copyRole(r, "");
         event.sendMessage("Copied role: `" + r.getName() + "` " + EmoteUtil.getRngOkHand());
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "copyrole"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "copyrole"))
-                return true;
-        }
-        return false;
     }
 
     @Override

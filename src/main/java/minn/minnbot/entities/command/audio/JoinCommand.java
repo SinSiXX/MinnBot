@@ -10,8 +10,6 @@ import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.VoiceChannel;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
-import java.util.List;
-
 public class JoinCommand extends CommandAdapter {
 
     public JoinCommand(String prefix, Logger logger) {
@@ -56,20 +54,6 @@ public class JoinCommand extends CommandAdapter {
 
     private VoiceChannel getChannelFromName(String name, Guild guild) {
         return guild.getVoiceChannels().parallelStream().filter(c -> c.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "join"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "join"))
-                return true;
-        }
-        return false;
     }
 
     @Override

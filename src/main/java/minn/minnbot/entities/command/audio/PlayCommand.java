@@ -11,13 +11,21 @@ import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 import net.dv8tion.jda.player.source.RemoteSource;
 
-import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class PlayCommand extends CommandAdapter {
 
+    private ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 5, 3L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+        Thread thread = new Thread(r, "PlayRequest");
+        thread.setDaemon(true);
+        thread.setPriority(1);
+        return thread;
+    });
+
     public PlayCommand(String prefix, Logger logger) {
-        this.prefix = prefix;
-        this.logger = logger;
+        init(prefix, logger);
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -46,48 +54,36 @@ public class PlayCommand extends CommandAdapter {
                 + (!event.guild.getAudioManager().isConnected()
                 ? "\nIn the meantime you can make me connect to the channel you are in by typing `" + prefix + "joinme` while you are in a channel."
                 : ""));
-        if (event.allArguments.contains("https://gaming.youtube.com/watch?v=")) {
-            event.sendMessage("Youtube Gaming URLs are not accepted. " + EmoteUtil.getRngThumbsdown(), null);
-            return;
-        }
-        AudioSource s = new RemoteSource(
-                ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
-                        ? event.allArguments.substring(1, event.allArguments.length() - 1)
-                        : event.allArguments));
-        AudioInfo info = s.getInfo();
-        if (info == null) {
-            event.sendMessage("Video was not accessible! " + EmoteUtil.getRngThumbsdown());
-            return;
-        }
-        String error = info.getError();
-        if (error != null) {
-            event.sendMessage("**__Error:__** `" + error + "` " + EmoteUtil.getRngThumbsdown());
-            return;
-        } else if (info.isLive()) {
-            event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
-            return;
-        }
-        player.getAudioQueue().add(s);
-        if (!player.isPlaying()) {
-            player.play();
-            event.sendMessage("Added provided URL to queue and the player started playing! " + EmoteUtil.getRngOkHand());
-            return;
-        }
-        event.sendMessage("Added provided URL to queue! " + EmoteUtil.getRngThumbsup());
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "play"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "play"))
-                return true;
-        }
-        return false;
+        executor.submit(() -> {
+            if (event.allArguments.contains("https://gaming.youtube.com/watch?v=")) {
+                event.sendMessage("Youtube Gaming URLs are not accepted. " + EmoteUtil.getRngThumbsdown(), null);
+                return;
+            }
+            AudioSource s = new RemoteSource(
+                    ((event.allArguments.startsWith("<") && event.allArguments.endsWith(">"))
+                            ? event.allArguments.substring(1, event.allArguments.length() - 1)
+                            : event.allArguments));
+            AudioInfo info = s.getInfo();
+            if (info == null) {
+                event.sendMessage("Video was not accessible! " + EmoteUtil.getRngThumbsdown());
+                return;
+            }
+            String error = info.getError();
+            if (error != null) {
+                event.sendMessage("**__Error:__** `" + error + "` " + EmoteUtil.getRngThumbsdown());
+                return;
+            } else if (info.isLive()) {
+                event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
+                return;
+            }
+            player.getAudioQueue().add(s);
+            if (!player.isPlaying()) {
+                player.play();
+                event.sendMessage("Added provided URL to queue and the player started playing! " + EmoteUtil.getRngOkHand());
+                return;
+            }
+            event.sendMessage("Added provided URL to queue! " + EmoteUtil.getRngThumbsup());
+        });
     }
 
     public String usage() {
@@ -96,7 +92,7 @@ public class PlayCommand extends CommandAdapter {
 
     @Override
     public String getAlias() {
-        return "play <URL>\t<-!- Only for single videos, no playlist detection. -->";
+        return "play <URL>\t# Only for single videos, no playlist detection.";
     }
 
     @Override

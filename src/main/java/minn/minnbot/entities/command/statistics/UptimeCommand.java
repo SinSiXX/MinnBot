@@ -6,7 +6,6 @@ import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.TimeUtil;
 
 import java.net.UnknownHostException;
-import java.util.List;
 
 public class UptimeCommand extends CommandAdapter {
 
@@ -24,20 +23,6 @@ public class UptimeCommand extends CommandAdapter {
         } catch (Exception e) {
             logger.logThrowable(e);
         }
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "uptime"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "uptime"))
-                return true;
-        }
-        return false;
     }
 
     @Override

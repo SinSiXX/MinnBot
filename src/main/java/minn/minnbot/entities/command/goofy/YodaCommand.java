@@ -7,7 +7,6 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 
 import java.net.URLEncoder;
-import java.util.List;
 
 public class YodaCommand extends CommandAdapter{
 
@@ -26,20 +25,6 @@ public class YodaCommand extends CommandAdapter{
         } catch (UnirestException e) {
             event.sendMessage("Something is wrong with my connection. Try again later.");
         }
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "yoda"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "yoda"))
-                return true;
-        }
-        return false;
     }
 
     @Override

@@ -8,7 +8,6 @@ import minn.minnbot.events.CommandEvent;
 import org.json.JSONObject;
 
 import java.net.URLEncoder;
-import java.util.List;
 
 public class RoboCommand extends CommandAdapter {
 
@@ -33,20 +32,6 @@ public class RoboCommand extends CommandAdapter {
         } catch (UnirestException e) {
             event.sendMessage("Something went wrong with my connection.");
         }
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "robo"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "robo"))
-                return true;
-        }
-        return false;
     }
 
     @Override

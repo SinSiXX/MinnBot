@@ -12,8 +12,6 @@ import net.dv8tion.jda.exceptions.PermissionException;
 import net.dv8tion.jda.exceptions.VerificationLevelException;
 import net.dv8tion.jda.utils.PermissionUtil;
 
-import java.util.List;
-
 public class SoftbanCommand extends CommandAdapter {
 
     public SoftbanCommand(String prefix, Logger logger) {
@@ -60,20 +58,6 @@ public class SoftbanCommand extends CommandAdapter {
         } catch (IndexOutOfBoundsException e) {
             event.sendMessage("Unablet to softban without mention. " + EmoteUtil.getRngThumbsdown());
         }
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "softban"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "softban"))
-                return true;
-        }
-        return false;
     }
 
     @Override

@@ -5,8 +5,6 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.MinnAudioManager;
 
-import java.util.List;
-
 public class ResetCommand extends CommandAdapter {
 
     public ResetCommand(String prefix, Logger logger) {
@@ -17,20 +15,6 @@ public class ResetCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         event.sendMessage("Resetting players...");
         MinnAudioManager.reset();
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "resetPlayers"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "resetPlayers"))
-                return true;
-        }
-        return false;
     }
 
     public String usage() {

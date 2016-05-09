@@ -10,8 +10,6 @@ import net.dv8tion.jda.entities.VoiceChannel;
 import net.dv8tion.jda.entities.VoiceStatus;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
-import java.util.List;
-
 public class JoinMeCommand extends CommandAdapter {
 
 
@@ -57,20 +55,6 @@ public class JoinMeCommand extends CommandAdapter {
         }
         MinnAudioManager.getPlayer(event.guild); // to activate the keepAlive
         event.sendMessage("Joined `" + channel.getName() + "`! " + EmoteUtil.getRngOkHand());
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-            String[] p = message.split(" ", 2);
-            if(p.length < 1)
-                return false;
-            if(p[0].equalsIgnoreCase(prefix + "joinme"))
-                return true;
-            for(String fix : prefixList) {
-                if(p[0].equalsIgnoreCase(fix + "joinme"))
-                    return true;
-            }
-            return false;
     }
 
     @Override

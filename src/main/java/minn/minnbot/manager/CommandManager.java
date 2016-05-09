@@ -33,6 +33,7 @@ public class CommandManager extends ListenerAdapter {
     private Logger logger;
     private ThreadPoolExecutor executor;
     private static Map<String, List<String>> prefixMap;
+    private static boolean reading = true;
 
     public static List<String> getPrefixList(String id) {
         if (prefixMap.containsKey(id))
@@ -69,25 +70,31 @@ public class CommandManager extends ListenerAdapter {
         File f = new File("prefix.json");
         if (!f.exists()) {
             logger.logThrowable(new Info("prefix.json does not exist."));
-            return;
         }
+        JSONArray arr = null;
         try {
-            JSONArray arr = new JSONArray(Files.readAllBytes(Paths.get("prefix.json")));
-            arr.forEach(obj -> {
+            arr = new JSONArray(new String(Files.readAllBytes(Paths.get("prefix.json"))));
+            for (int i = 0; i < arr.length(); i++) {
+                try {
+                    JSONObject jObj = arr.getJSONObject(i);
+                    String id = jObj.keys().next();
 
-                JSONObject jObj = (JSONObject) obj;
-                String id = jObj.getString("id");
+                    JSONArray arrlist = jObj.getJSONArray(id);
+                    List<String> prefixList = new LinkedList<>();
 
-                JSONArray list = jObj.getJSONArray("prefix");
+                    for (int j = 0; j < arrlist.length(); j++) {
+                        prefixList.add(arrlist.getString(j));
+                    }
 
-                List<String> prefixList = new LinkedList<>();
-                list.forEach(o -> prefixList.add(o.toString()));
-
-                prefixMap.put(id, prefixList);
-            });
+                    prefixMap.put(id, prefixList);
+                } catch (Exception ex) {
+                    logger.logThrowable(ex);
+                }
+            }
         } catch (IOException e) {
-            logger.logThrowable(e);
+            logger.logThrowable(new Info("prefix.json does not exist."));
         }
+        reading = false;
     }
 
     public CommandManager(JDA api, Logger logger, String owner) {
@@ -211,6 +218,10 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void savePrefixMap() {
+        if (reading) {
+            logger.logThrowable(new Info("Tried to save prefix map before it finished reading!"));
+            return;
+        }
         try {
             save();
         } catch (IOException e) {
@@ -221,6 +232,10 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public static void save() throws IOException {
+        if (reading) {
+            new Info("Tried to save prefix map before it finished reading!").printStackTrace();
+            return;
+        }
         JSONArray arr = new JSONArray();
 
         prefixMap.forEach((id, list) -> {

@@ -10,7 +10,6 @@ import net.dv8tion.jda.exceptions.PermissionException;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -48,20 +47,6 @@ public class NickResetCommand extends CommandAdapter {
                         m.updateMessageAsync("Nicknames were reset, if possible. " + EmoteUtil.getRngOkHand(), null);
                     });
         });
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "nickReset"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "nickReset"))
-                return true;
-        }
-        return false;
     }
 
     @Override

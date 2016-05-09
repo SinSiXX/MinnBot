@@ -6,8 +6,6 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.MemeUtil;
 
-import java.util.List;
-
 public class MemeCommand extends CommandAdapter {
 
     public MemeCommand(String prefix, Logger logger) {
@@ -44,20 +42,6 @@ public class MemeCommand extends CommandAdapter {
         } catch (UnirestException e) {
             logger.logThrowable(e);
         }
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "meme"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "meme"))
-                return true;
-        }
-        return false;
     }
 
     public String usage() {

@@ -10,8 +10,6 @@ import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
-import java.util.List;
-
 public class PurgeCommand extends CommandAdapter {
 
     public PurgeCommand(String prefix, Logger logger) {
@@ -47,20 +45,6 @@ public class PurgeCommand extends CommandAdapter {
         } catch (IndexOutOfBoundsException e) {
             event.sendMessage(String.format("I am unable to purge without mention reference. Usage: %s", usage()));
         }
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "purge"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "purge"))
-                return true;
-        }
-        return false;
     }
 
     @Override

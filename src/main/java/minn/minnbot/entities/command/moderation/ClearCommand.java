@@ -10,8 +10,6 @@ import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
-import java.util.List;
-
 public class ClearCommand extends CommandAdapter {
 
     public ClearCommand(String prefix, Logger logger) {
@@ -48,20 +46,6 @@ public class ClearCommand extends CommandAdapter {
         event.sendMessage(event.author.getAsMention() + ", cleared messages in this channel!");
         hist.parallelStream().forEachOrdered(m -> AsyncDelete.deleteAsync(m, (Object) -> count[0]++));
         // event.sendMessage(event.event.getAuthor().getAsMention() + ", deleted " + count[0] + " messages in this channel.");
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "clear"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "clear"))
-                return true;
-        }
-        return false;
     }
 
     @Override

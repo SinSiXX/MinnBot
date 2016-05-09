@@ -9,8 +9,6 @@ import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.utils.PermissionUtil;
 
-import java.util.List;
-
 public class CreateRoleCommand extends CommandAdapter {
 
     public CreateRoleCommand(Logger logger, String prefix) {
@@ -40,20 +38,6 @@ public class CreateRoleCommand extends CommandAdapter {
        }
         event.event.getGuild().createRole().setName(((event.allArguments.isEmpty()) ? "new role" : event.allArguments)).update();
         event.sendMessage(":thumbsup::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":");
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "createrole"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "createrole"))
-                return true;
-        }
-        return false;
     }
 
     @Override

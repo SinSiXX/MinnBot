@@ -59,20 +59,6 @@ public class HelpCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "help"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "help"))
-                return true;
-        }
-        return false;
-    }
-
-    @Override
     public String usage() {
         return "```xml\nhelp\nhelp <command>\nhelp <category>```\n**__Examples:__** `help public`, `help help`";
     }

@@ -5,8 +5,6 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.User;
 
-import java.util.List;
-
 public class InfoCommand extends CommandAdapter {
 
     private String ownername;
@@ -38,20 +36,6 @@ public class InfoCommand extends CommandAdapter {
         if (!inviteUrl.isEmpty() && bot)
             builder.append("Make me join your server with this url:\n").append("**<").append(inviteUrl).append(">**");
         event.sendMessage(builder.toString());
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "info"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "info"))
-                return true;
-        }
-        return false;
     }
 
     @Override

@@ -8,8 +8,6 @@ import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.VoiceStatus;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
-import java.util.List;
-
 public class LeaveVoiceCommand extends CommandAdapter {
 
     public LeaveVoiceCommand(String prefix, Logger logger) {
@@ -31,20 +29,6 @@ public class LeaveVoiceCommand extends CommandAdapter {
         }
         guild.getAudioManager().closeAudioConnection();
         event.sendMessage(EmoteUtil.getRngOkHand());
-    }
-
-    @Override
-    public boolean isCommand(String message,List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "vLeave"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "vLeave"))
-                return true;
-        }
-        return false;
     }
 
     @Override

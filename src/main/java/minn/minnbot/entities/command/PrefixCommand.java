@@ -6,8 +6,6 @@ import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.CommandManager;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
-import java.util.List;
-
 public class PrefixCommand extends CommandAdapter {
 
     private String owner;
@@ -30,7 +28,7 @@ public class PrefixCommand extends CommandAdapter {
             return;
         }
         if (event.allArguments.isEmpty()) {
-            event.sendMessage("Usage: " + usage());
+            event.sendMessage(String.format("Usage: %s\n**__Prefixes:__ %s**", usage(), CommandManager.getPrefixList(event.guild.getId())));
             return;
         }
         if (event.arguments.length < 2) {
@@ -52,20 +50,6 @@ public class PrefixCommand extends CommandAdapter {
             else
                 event.sendMessage("Prefix has been removed from the list.");
         }
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ", 2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "prefix"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "prefix"))
-                return true;
-        }
-        return false;
     }
 
     public String usage() {

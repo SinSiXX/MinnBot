@@ -6,8 +6,6 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 
-import java.util.List;
-
 public class CatCommand extends CommandAdapter {
 
     public CatCommand(String prefix, Logger logger) {
@@ -24,20 +22,6 @@ public class CatCommand extends CommandAdapter {
             logger.logThrowable(e);
             event.sendMessage("Something went wrong. Contact the dev please. " + e.getMessage());
         }
-    }
-
-    @Override
-    public boolean isCommand(String message, List<String> prefixList) {
-        String[] p = message.split(" ",2);
-        if(p.length < 1)
-            return false;
-        if(p[0].equalsIgnoreCase(prefix + "car"))
-            return true;
-        for(String fix : prefixList) {
-            if(p[0].equalsIgnoreCase(fix + "cat"))
-                return true;
-        }
-        return false;
     }
 
     @Override
