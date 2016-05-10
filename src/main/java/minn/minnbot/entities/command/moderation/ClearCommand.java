@@ -9,6 +9,9 @@ import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 public class ClearCommand extends CommandAdapter {
 
     public ClearCommand(String prefix, Logger logger) {
@@ -35,22 +38,27 @@ public class ClearCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        int amount = 0;
-        try {
-            amount = Integer.parseInt(event.allArguments);
-            if (amount < 1) {
-                event.sendMessage("Unable to delete less than one message!");
+        int amount[] = {0};
+        Consumer<List<Exception>> callbaok = e -> {
+            if (e.isEmpty()) {
+                if (amount[0] != 0)
+                    event.sendMessage(String.format("%s deleted %d messages in this channel!", event.author.getAsMention(), amount[0]));
+                else
+                    event.sendMessage(String.format("%s cleared the room.", event.author.getAsMention()));
                 return;
             }
+            event.sendMessage(String.format("**__ERROR:__ %s**", e.get(0).toString()));
+        };
+        try {
+            amount[0] = Integer.parseInt(event.allArguments);
+            if (amount[0] < 1) {
+                event.sendMessage("Unable to delete less than one message!");
+            }
         } catch (NumberFormatException ignored) {
-            Misc.deleteFrom((TextChannel) event.channel);
+            Misc.deleteFrom((TextChannel) event.channel, callbaok);
         } finally {
-            Misc.deleteFrom((TextChannel) event.channel, amount);
+            Misc.deleteFrom((TextChannel) event.channel, callbaok, amount);
         }
-        if (amount != 0)
-            event.sendMessage(String.format("%s deleted %d messages in this channel!", event.author.getAsMention(), amount));
-        else
-            event.sendMessage(String.format("%s cleared the room.", event.author.getAsMention()));
     }
 
     @Override

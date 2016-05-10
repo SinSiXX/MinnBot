@@ -35,13 +35,17 @@ public class PurgeCommand extends CommandAdapter {
     }
 
     @Override
-    public void onCommand(CommandEvent event) { // TODO: Batch delete
+    public void onCommand(CommandEvent event) {
         try {
             User u = event.message.getMentionedUsers().get(0);
-            Misc.deleteFrom(((TextChannel) event.channel), u);
-
-            event.sendMessage(
-                    u.getAsMention() + " has been purged by " + event.author.getUsername());
+            Misc.deleteFrom(((TextChannel) event.channel), e -> {
+                if(e.isEmpty()) {
+                    event.sendMessage(
+                            u.getAsMention() + " has been purged by " + event.author.getUsername());
+                    return;
+                }
+                event.sendMessage(String.format("**__ERROR:__ %s**", e.get(0).toString()));
+            }, u);
         } catch (IndexOutOfBoundsException e) {
             event.sendMessage(String.format("I am unable to purge without mention reference. Usage: %s", usage()));
         }

@@ -5,6 +5,7 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.*;
 import minn.minnbot.entities.command.custom.HelpSplitter;
+import minn.minnbot.entities.command.owner.FlushCommand;
 import minn.minnbot.entities.command.statistics.MessagesCommand;
 import minn.minnbot.entities.command.statistics.PingCommand;
 import minn.minnbot.entities.command.statistics.StatsCommand;
@@ -35,6 +36,12 @@ public class PublicManager extends CmdManager {
        else
            splitter.add(com);
 
+       com = new FlushCommand(prefix, logger, bot.owner);
+       err.set(registerCommand(com));
+       if (!err.get().isEmpty())
+           errors.add(err.get());
+       else
+           splitter.add(com);
 
        com = new HelpCommand(prefix, logger, bot.handler, bot.owner);
        err = new AtomicReference<>(registerCommand(com));

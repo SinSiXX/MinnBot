@@ -14,93 +14,73 @@ import org.json.JSONObject;
 import java.rmi.UnexpectedException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Misc {
 
-    public synchronized static void deleteFrom(TextChannel channel, User user, int... amount) {
+    public synchronized static void deleteFrom(TextChannel channel, Consumer<List<Exception>> callback, User user, int... amount) {
         if (user == null || channel == null)
             return;
-        JDA api = channel.getJDA();
-        Requester requester = ((JDAImpl) api).getRequester();
-        int count = 100;
-        if (amount.length > 0)
-            count = amount[0];
 
-        List<Message> hist = new MessageHistory(channel).retrieve(count).parallelStream().filter(m -> m.getAuthor() == user).collect(Collectors.toList());
-        List<String> messageList = new LinkedList<>();
-        hist.stream().forEach(m -> messageList.add(m.getId()));
-        List<List<String>> histories = new LinkedList<>();
+        Thread t = new Thread(() -> {
+            JDA api = channel.getJDA();
+            Requester requester = ((JDAImpl) api).getRequester();
+            int count = 99;
+            if (amount.length > 0)
+                count = amount[0];
 
-        if ((messageList.size() % 99) > 0 && (messageList.size() % 99) != messageList.size()) {
-            List<String> current = new LinkedList<>();
-            current.addAll(messageList);
-            histories.add(current);
-            while (histories.get(histories.size() - 1).size() > 99) {
-                List<String> next = new LinkedList<>();
-                List<String> sub = current.subList(100, current.size());
-                next.addAll(sub);
-                current.removeAll(sub);
-                histories.add(next);
-            }
-            delete(histories, requester, channel.getId());
-            return;
-        }
-        List<List<String>> list = new LinkedList<>();
-        list.add(messageList);
-        delete(list, requester, channel.getId());
+            List<Message> hist = new MessageHistory(channel).retrieve(count).parallelStream().filter(m -> m.getAuthor() == user).collect(Collectors.toList());
+            List<List<String>> histories = getSplitIDs(hist);
+
+            List<Exception> exceptions = delete(histories, requester, channel.getId());
+            if (callback != null)
+                callback.accept(exceptions);
+        });
+        t.start();
     }
 
-    public synchronized static void deleteFrom(TextChannel channel, int... amount) {
-        JDA api = channel.getJDA();
-        Requester requester = ((JDAImpl) api).getRequester();
-        int count = 99;
-        if (amount.length > 0)
-            count = amount[0];
-
-        List<Message> hist = new MessageHistory(channel).retrieve(count);
-        List<String> messageList = new LinkedList<>();
-        hist.stream().forEach(m -> messageList.add(m.getId()));
-        List<List<String>> histories = new LinkedList<>();
-        List<String> current = new LinkedList<>();
-
-        current.addAll(messageList);
-
-        if (current.size() > 99) {
-            histories.add(current);
-            while (histories.get(histories.size() - 1).size() > 99) {
-                List<String> next = new LinkedList<>();
-                List<String> sub = current.subList(99, current.size());
-                next.addAll(sub);
-                current.removeAll(sub);
-                histories.add(next);
-            }
-            delete(histories, requester, channel.getId());
+    public synchronized static void deleteFrom(TextChannel channel, Consumer<List<Exception>> callback, int... amount) {
+        if (channel == null)
             return;
-        }
-        List<List<String>> list = new LinkedList<>();
-        list.add(messageList);
-        delete(list, requester, channel.getId());
 
+        Thread t = new Thread(() -> {
+
+            JDA api = channel.getJDA();
+            Requester requester = ((JDAImpl) api).getRequester();
+            int count = 99;
+            if (amount.length > 0)
+                count = amount[0];
+
+            List<Message> hist = new MessageHistory(channel).retrieve(count);
+            List<List<String>> histories = getSplitIDs(hist);
+
+            List<Exception> exceptions = delete(histories, requester, channel.getId());
+            if (callback != null)
+                callback.accept(exceptions);
+        });
+        t.start();
     }
 
-    private static synchronized void delete(List<List<String>> histories, Requester requester, String id) {
-        histories.parallelStream().forEach(list -> {
-            Requester.Response response = null;
+    private static synchronized List<Exception> delete(List<List<String>> histories, Requester requester, String id) {
+        List<Exception> exceptions = new LinkedList<>();
+        for(List<String> list : histories) {
             if (list.size() <= 0) {
-                new IllegalArgumentException("MessageList/Array was empty!").printStackTrace();
-                return;
-            } else if (list.size() == 1)
+                exceptions.add(new IllegalArgumentException("MessageList/Array was empty!"));
+                continue;
+            }
+
+            Requester.Response response = null;
+            if (list.size() == 1)
                 response = requester.delete(Requester.DISCORD_API_PREFIX + "channels/" + id + "/messages/" + list.get(0));
             else
                 response = requester.post(Requester.DISCORD_API_PREFIX + "channels/" + id + "/messages/bulk_delete", new JSONObject().put("messages", new JSONArray(list.toString())));
-            // System.out.println("Object: \n" + response.getObject() + "\nCode: " + response.code);
 
             // Check if it worked or not
             if (response.isRateLimit()) {
-                new RateLimitedException(response.getObject().getLong("retry_after")).printStackTrace();
+                exceptions.add(new RateLimitedException(response.getObject().getLong("retry_after")));
             } else if (!response.isOk()) {
-                new UnexpectedException("" + response.code).printStackTrace();
+                exceptions.add(new UnexpectedException("" + response.code));
             }
 
             // Avoid rate limitation.
@@ -109,7 +89,30 @@ public class Misc {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        });
+        }
+        return exceptions;
+    }
+
+    private static List<List<String>> getSplitIDs(List<Message> messages) {
+        if(messages == null)
+            return new LinkedList<>();
+        List<String> listing = new LinkedList<>();
+
+        messages.parallelStream().forEachOrdered(m -> listing.add(m.getId()));
+        List<List<String>> histories = new LinkedList<>();
+
+        List<String> current = listing;
+        histories.add(current);
+
+
+        while (current.size() > 99) {
+            List<String> next = new LinkedList<>();
+            next.addAll(current.subList(99, current.size()));
+            current.subList(99, current.size()).clear();
+            histories.add(next);
+            current = next;
+        }
+        return histories;
     }
 
 

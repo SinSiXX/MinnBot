@@ -17,7 +17,7 @@ public class SayCommand extends CommandAdapter {
 
 	@Override
 	public String getAlias() {
-		return "`say <arguments>`";
+		return "say <arguments>";
 	}
 
 	@Override
