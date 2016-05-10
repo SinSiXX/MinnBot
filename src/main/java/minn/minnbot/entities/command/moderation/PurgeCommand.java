@@ -1,12 +1,12 @@
 package minn.minnbot.entities.command.moderation;
 
-import minn.minnbot.AsyncDelete;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.CommandManager;
+import minn.minnbot.util.Misc;
 import net.dv8tion.jda.Permission;
-import net.dv8tion.jda.entities.Message;
+import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
@@ -38,8 +38,8 @@ public class PurgeCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) { // TODO: Batch delete
         try {
             User u = event.message.getMentionedUsers().get(0);
-            java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.channel).retrieve(100);
-            hist.stream().filter(m -> m.getAuthor() == u).forEachOrdered(m -> AsyncDelete.deleteAsync(m, null));
+            Misc.deleteFrom(((TextChannel) event.channel), u);
+
             event.sendMessage(
                     u.getAsMention() + " has been purged by " + event.author.getUsername());
         } catch (IndexOutOfBoundsException e) {

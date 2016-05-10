@@ -1,13 +1,12 @@
 package minn.minnbot.entities.command.moderation;
 
-import minn.minnbot.AsyncDelete;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.CommandManager;
-import net.dv8tion.jda.MessageHistory;
+import minn.minnbot.util.Misc;
 import net.dv8tion.jda.Permission;
-import net.dv8tion.jda.entities.Message;
+import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class ClearCommand extends CommandAdapter {
@@ -35,17 +34,23 @@ public class ClearCommand extends CommandAdapter {
     }
 
     @Override
-    public void onCommand(CommandEvent event) { // TODO: Batch delete
-        int amount = 100;
-        final int[] count = {0};
+    public void onCommand(CommandEvent event) {
+        int amount = 0;
         try {
             amount = Integer.parseInt(event.allArguments);
+            if (amount < 1) {
+                event.sendMessage("Unable to delete less than one message!");
+                return;
+            }
         } catch (NumberFormatException ignored) {
+            Misc.deleteFrom((TextChannel) event.channel);
+        } finally {
+            Misc.deleteFrom((TextChannel) event.channel, amount);
         }
-        java.util.List<Message> hist = new MessageHistory(event.event.getTextChannel()).retrieve(amount);
-        event.sendMessage(event.author.getAsMention() + ", cleared messages in this channel!");
-        hist.parallelStream().forEachOrdered(m -> AsyncDelete.deleteAsync(m, (Object) -> count[0]++));
-        // event.sendMessage(event.event.getAuthor().getAsMention() + ", deleted " + count[0] + " messages in this channel.");
+        if (amount != 0)
+            event.sendMessage(String.format("%s deleted %d messages in this channel!", event.author.getAsMention(), amount));
+        else
+            event.sendMessage(String.format("%s cleared the room.", event.author.getAsMention()));
     }
 
     @Override

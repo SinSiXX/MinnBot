@@ -44,7 +44,7 @@ public class SoftbanCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         try {
             User target = event.event.getMessage().getMentionedUsers().get(0);
-            if (!PermissionUtil.canBan(event.jda.getSelfInfo(), target, event.guild)) {
+            if (!PermissionUtil.canInteract(event.jda.getSelfInfo(), target, event.guild)) {
                 event.sendMessage(String.format("I am unable to ban **%s**.%s", target.getUsername(), EmoteUtil.getRngOkHand()));
                 return;
             }

@@ -56,7 +56,7 @@ public class CommandEvent {
 
     public void sendMessage(String content, Consumer<Message> callback) {
         content = content.replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here");
-        if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification()))) {
+        if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE)&& guild.checkVerification()))) {
             event.getChannel().sendMessageAsync(content, callback);
         }
     }

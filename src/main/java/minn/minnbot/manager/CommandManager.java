@@ -71,20 +71,17 @@ public class CommandManager extends ListenerAdapter {
         if (!f.exists()) {
             logger.logThrowable(new Info("prefix.json does not exist."));
         }
-        JSONArray arr = null;
         try {
-            arr = new JSONArray(new String(Files.readAllBytes(Paths.get("prefix.json"))));
-            for (int i = 0; i < arr.length(); i++) {
+            JSONArray arr = new JSONArray(new String(Files.readAllBytes(Paths.get("prefix.json"))));
+            for (Object anArr : arr) {
                 try {
-                    JSONObject jObj = arr.getJSONObject(i);
+                    JSONObject jObj = (JSONObject) anArr;
                     String id = jObj.keys().next();
 
-                    JSONArray arrlist = jObj.getJSONArray(id);
+                    JSONArray list = jObj.getJSONArray(id);
                     List<String> prefixList = new LinkedList<>();
 
-                    for (int j = 0; j < arrlist.length(); j++) {
-                        prefixList.add(arrlist.getString(j));
-                    }
+                    for (Object aFix : list) prefixList.add(aFix.toString());
 
                     prefixMap.put(id, prefixList);
                 } catch (Exception ex) {
