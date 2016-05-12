@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot extends ListenerAdapter {
 
-    public final static String VERSION = "Version 3.0a";
+    public final static String VERSION = "Version 3.2a";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     private static String giphy;
     private static MinnBotUserInterface console;

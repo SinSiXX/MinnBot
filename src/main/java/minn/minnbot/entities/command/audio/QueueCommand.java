@@ -43,10 +43,9 @@ public class QueueCommand extends CommandAdapter {
         }
         event.sendMessage("Validating request, this may take a few minutes..."
                 + (!event.guild.getAudioManager().isConnected()
-                ? "\nIn the meantime you can make me connect to the channel you are in by typing `" + prefix + "joinme` while you are in a channel."
+                ? String.format("\nIn the meantime you can make me connect to the channel you are in by typing `%sjoinme` while you are in a channel.", prefix)
                 : ""),
                 msg -> executor.submit(() -> {
-            // System.out.println("Submit accepted."); debugging
             Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
                 t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
                 event.sendMessage("**An error occurred, please direct this to the developer:** `L:" + e.getStackTrace()[0].getLineNumber()
@@ -82,7 +81,8 @@ public class QueueCommand extends CommandAdapter {
                     continue;
                 }
                 // execute
-                listSources.parallelStream().forEachOrdered(source -> {
+
+                for(AudioSource source : listSources) { // Use for/each to stop mutli process spawns
                     AudioInfo info = source.getInfo();
                     if (info == null) {
                         if (!error[0]) {
@@ -103,9 +103,42 @@ public class QueueCommand extends CommandAdapter {
                     player.getAudioQueue().add(source);
                     if (!player.isPlaying()) {
                         msg.updateMessageAsync("Enqueuing songs and starting playback...", null);
+                        try {
+                            Thread.sleep(3000); // Build buffer
+                        } catch (InterruptedException ignored) {
+                        }
                         player.play();
                     }
-                });
+                }
+
+                /*listSources.parallelStream().forEachOrdered(source -> {
+                    AudioInfo info = source.getInfo();
+                    if (info == null) {
+                        if (!error[0]) {
+                            msg.updateMessageAsync("Source was not available. Skipping.", null);
+                            error[0] = true;
+                        }
+                        return;
+                    } else if (info.getError() != null) {
+                        if (!error[0]) {
+                            msg.updateMessageAsync("**One or more sources were not available. Sorry fam.**", null);
+                            error[0] = true;
+                        }
+                        return;
+                    } else if (info.isLive()) {
+                        event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
+                        return;
+                    }
+                    player.getAudioQueue().add(source);
+                    if (!player.isPlaying()) {
+                        msg.updateMessageAsync("Enqueuing songs and starting playback...", null);
+                        try {
+                            Thread.sleep(3000); // Build buffer
+                        } catch (InterruptedException ignored) {
+                        }
+                        player.play();
+                    }
+                });*/
             }
         }));
     }
@@ -117,7 +150,7 @@ public class QueueCommand extends CommandAdapter {
 
     @Override
     public String example() {
-        return "queue https://www.youtube.com/watch?v=58mah_0Y8TU , 58mah_0Y8TU,58mah_0Y8TU";
+        return "queue <https://www.youtube.com/watch?v=58mah_0Y8TU> , 58mah_0Y8TU,58mah_0Y8TU";
     }
 }
 
