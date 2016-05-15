@@ -101,7 +101,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
         if (!logMessages)
             return false;
         try {
-            String s = String.format("%s[%s] %s", TimeUtil.timeStamp(), m.getAuthor(), m.getContent());
+            String s = String.format("%s [%s] %s", TimeUtil.timeStamp(), String.format("%s#%s", m.getAuthor().getUsername(), m.getAuthor().getDiscriminator()), m.getContent());
             messageLogWriter.writeLn(s);
             console.writeln(s);
             // messageLogs.add(s);

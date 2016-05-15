@@ -4,28 +4,16 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.MinnAudioManager;
+import minn.minnbot.manager.QueueRequestManager;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.player.MusicPlayer;
 import net.dv8tion.jda.player.Playlist;
 import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class PlayCommand extends CommandAdapter {
-
-    private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 25, 10L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
-        final Thread thread = new Thread(r, "QueueExecution-Thread");
-        thread.setPriority(Thread.MAX_PRIORITY);
-        thread.setDaemon(true);
-        return thread;
-    });
-    private Map<String, Long> limitation = new HashMap<>();
 
     public PlayCommand(String prefix, Logger logger) {
         init(prefix, logger);
@@ -39,21 +27,9 @@ public class PlayCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        if(limitation.containsKey(event.guild.getId())) {
-            long time = limitation.get(event.guild.getId());
-            long retry_after = time - System.currentTimeMillis();
-            if(retry_after > 0) {
-                long seconds = TimeUnit.MILLISECONDS.toSeconds(retry_after);
-                if(seconds > 60)
-                    event.sendMessage(String.format("**You are being rate limited! Retry after: %d Minutes!**", TimeUnit.SECONDS.toMinutes(seconds)));
-                else
-                    event.sendMessage(String.format("**You are being rate limited! Retry after: %d Seconds!**", seconds));
-                return;
-            }
-        }
         MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
         if (event.allArguments.isEmpty()) {
-            if(!player.isPlaying() && !player.getAudioQueue().isEmpty()) {
+            if (!player.isPlaying() && !player.getAudioQueue().isEmpty()) {
                 player.play();
                 event.sendMessage("Started playback!");
                 return;
@@ -65,7 +41,11 @@ public class PlayCommand extends CommandAdapter {
                         + (!event.guild.getAudioManager().isConnected()
                         ? String.format("\nIn the meantime you can make me connect to the channel you are in by typing `%sjoinme` while you are in a channel.", prefix)
                         : ""),
-                msg -> executor.submit(() -> {
+                msg -> QueueRequestManager.requestEnqueue(event.guild, (accepted) -> {
+                    if(!accepted) {
+                        msg.updateMessageAsync("**All request slots are filled. Try again in a few minutes!**", null);
+                        return;
+                    }
                     Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
                         t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
                         event.sendMessage("**An error occurred, please direct this to the developer:** `L:" + e.getStackTrace()[0].getLineNumber()
@@ -132,8 +112,8 @@ public class PlayCommand extends CommandAdapter {
                             }
                         }
                     }
+                    QueueRequestManager.dequeue(event.guild);
                 }));
-        limitation.put(event.guild.getId(), System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5L));
     }
 
     public String usage() {
