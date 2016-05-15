@@ -18,6 +18,7 @@ public class YodaCommand extends CommandAdapter{
     @Override
     public void onCommand(CommandEvent event) {
         try {
+            //noinspection deprecation
             event.sendMessage(Unirest.get("https://yoda.p.mashape.com/yoda?sentence=" + URLEncoder.encode(event.allArguments))
                     .header("X-Mashape-Key", "IlX3p3hnDRmsheyTT7z87aT1mrs9p1Qb4WkjsnGUnXKitYqhtf")
                     .header("Accept", "text/plain")

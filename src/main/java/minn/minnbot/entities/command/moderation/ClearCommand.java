@@ -33,8 +33,9 @@ public class ClearCommand extends CommandAdapter {
                             .sendMessageAsync("I am unable to delete messages. Missing Permission: MESSAGE_MANAGE", null);
                 return;
             }
-            logger.logCommandUse(event.getMessage(), this);
-            onCommand(new CommandEvent(event));
+            CommandEvent e = new CommandEvent(event);
+            onCommand(e);
+            logger.logCommandUse(event.getMessage(), this, e);
         }
     }
 
@@ -43,8 +44,8 @@ public class ClearCommand extends CommandAdapter {
         int amount[] = {0};
         Consumer<List<Exception>> callbaok = e -> {
             if (e.isEmpty()) {
-                if (amount[0] != 0)
-                    event.sendMessage(String.format("%s deleted %d messages in this channel!", event.author.getAsMention(), amount[0]));
+                if (amount[0] != 99)
+                    event.sendMessage(String.format("%s deleted %d messages in this channel!", event.author.getAsMention(), --amount[0]));
                 else
                     event.sendMessage(String.format("%s cleared the room.", event.author.getAsMention()));
                 return;

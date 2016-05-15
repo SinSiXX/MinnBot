@@ -35,8 +35,9 @@ public class SoftbanCommand extends CommandAdapter {
                 }
             } catch (PermissionException | VerificationLevelException ignored) {
             }
-            logger.logCommandUse(event.getMessage(), this);
-            onCommand(new CommandEvent(event));
+            CommandEvent e = new CommandEvent(event);
+            onCommand(e);
+            logger.logCommandUse(event.getMessage(), this, e);
         }
     }
 

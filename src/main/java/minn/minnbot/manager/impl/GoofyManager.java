@@ -63,6 +63,10 @@ public class GoofyManager extends CmdManager {
         com = new RoboCommand(prefix, logger);
         registerCommand(com);
         splitter.add(com);
+
+        com = new FactCommand(prefix, logger);
+        registerCommand(com);
+        splitter.add(com);
     }
 
 }

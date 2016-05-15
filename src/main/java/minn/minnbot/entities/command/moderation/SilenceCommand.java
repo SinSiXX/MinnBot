@@ -36,8 +36,9 @@ public class SilenceCommand extends CommandAdapter {
                         "I am not able to complete that command. Missing permission: `MANAGE_PERMISSIONS`", null);
                 return;
             }
-            logger.logCommandUse(event.getMessage(), this);
-            onCommand(new CommandEvent(event));
+            CommandEvent e = new CommandEvent(event);
+            onCommand(e);
+            logger.logCommandUse(event.getMessage(), this, e);
         }
     }
 

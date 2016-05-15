@@ -5,6 +5,7 @@ import minn.minnbot.entities.LogWriter;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.PublicLog;
 import minn.minnbot.entities.throwable.Info;
+import minn.minnbot.events.CommandEvent;
 import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.entities.Message;
@@ -113,11 +114,11 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     }
 
     @Override
-    public boolean logCommandUse(Message m, Command c) {
+    public boolean logCommandUse(Message m, Command c, CommandEvent event) {
         PublicLog.log(String.format("**%s %s#%s used `%s` in #%s**", TimeUtil.timeStamp(), m.getAuthor().getUsername(), m.getAuthor().getDiscriminator(), c.getAlias().split("\\s+", 2)[0],
                 (m.isPrivate()
                         ? m.getAuthor().getUsername()
-                        : String.format("%s of %s", ((TextChannel) m.getChannel()).getName(), ((TextChannel) m.getChannel()).getGuild().getName()))));
+                        : String.format("%s of %s", ((TextChannel) m.getChannel()).getName(), ((TextChannel) m.getChannel()).getGuild().getName()))), event.author);
         if (commandUse.containsKey(c)) commandUse.put(c, commandUse.get(c) + 1);
         else commandUse.put(c, 1);
         commands++;

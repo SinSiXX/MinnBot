@@ -71,6 +71,7 @@ public class MinnAudioManager extends ListenerAdapter {
         players.clear();
         keepAliveMap.forEach((p, t) -> {
             t.interrupt(); //noinspection deprecation
+            //noinspection deprecation
             t.stop();
         });
         keepAliveMap.clear();

@@ -271,6 +271,7 @@ public class MinnBot extends ListenerAdapter {
     }
 
     private String registerCommand(Command com) {
+        //noinspection deprecation
         return handler.registerCommand(com);
     }
 

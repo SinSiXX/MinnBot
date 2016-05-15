@@ -51,9 +51,7 @@ public class TwitchUtil {
 
         public String getGame() {
             Object game = stream.get("game");
-            if (game instanceof String)
-                return game.toString();
-            return "";
+            return game instanceof String ? (String) game : "";
         }
 
         public Channel getChannel() {
@@ -71,7 +69,7 @@ public class TwitchUtil {
         Channel(String name) throws UnirestException, UnexpectedException {
             //noinspection deprecation
             object = Unirest.get("https://api.twitch.tv/kraken/channels/" + URLEncoder.encode(name.toLowerCase())).header("accept", "application/vnd.twitchtv.v3+json").asJson().getBody().getObject();
-            if (object.has("_id"))
+            if (!object.has("_id"))
                 throw new UnexpectedException("Channel is not available.");
         }
 
@@ -84,15 +82,18 @@ public class TwitchUtil {
         }
 
         public String getURL() {
-            return object.getString("url");
+            Object url = object.get("url");
+            return url instanceof String ? (String) url : "undefined";
         }
 
         public boolean isPartnered() {
-            return object.getBoolean("partner");
+            Object partnered = object.get("partner");
+            return partnered instanceof Boolean && (boolean) partnered;
         }
 
         public boolean isMature() {
-            return object.getBoolean("mature");
+            Object mature = object.get("mature");
+            return mature instanceof Boolean && (boolean) mature;
         }
 
         public String getGame() {
@@ -101,11 +102,13 @@ public class TwitchUtil {
         }
 
         public String getName() {
-            return object.getString("name");
+            Object name = object.get("name");
+            return name instanceof String ? (String) name : "undefined";
         }
 
         public String getStatus() {
-            return object.getString("status");
+            Object status = object.get("status");
+            return status instanceof String ? (String) status : "undefined";
         }
 
     }

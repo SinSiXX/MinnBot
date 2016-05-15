@@ -29,8 +29,9 @@ public class PurgeCommand extends CommandAdapter {
                         .sendMessageAsync("I am unable to delete messages. Missing Permission: MESSAGE_MANAGE", null);
                 return;
             }
-            logger.logCommandUse(event.getMessage(), this);
-            onCommand(new CommandEvent(event));
+            CommandEvent e = new CommandEvent(event);
+            onCommand(e);
+            logger.logCommandUse(event.getMessage(), this, e);
         }
     }
 

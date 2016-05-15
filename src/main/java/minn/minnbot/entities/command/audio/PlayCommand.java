@@ -89,16 +89,16 @@ public class PlayCommand extends CommandAdapter {
                                     msg.updateMessageAsync("Source was not available. Skipping.", null);
                                     error[0] = true;
                                 }
-                                return;
+                                continue;
                             } else if (info.getError() != null) {
                                 if (!error[0]) {
                                     msg.updateMessageAsync("**One or more sources were not available. Sorry fam.**", null);
                                     error[0] = true;
                                 }
-                                return;
+                                continue;
                             } else if (info.isLive()) {
                                 event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
-                                return;
+                                continue;
                             }
                             player.getAudioQueue().add(source);
                             if (!player.isPlaying()) {

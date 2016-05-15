@@ -1,5 +1,6 @@
 package minn.minnbot.entities;
 
+import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.Event;
 
@@ -11,7 +12,7 @@ public interface Logger {
 
     boolean logMessage(Message m);
 
-    boolean logCommandUse(Message m, Command c);
+    boolean logCommandUse(Message m, Command c, CommandEvent event);
 
     boolean logEvent(Event e);
 

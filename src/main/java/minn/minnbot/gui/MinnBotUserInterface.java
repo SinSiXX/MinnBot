@@ -11,8 +11,6 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -90,22 +88,14 @@ public class MinnBotUserInterface extends JFrame {
         JCheckBox chckbxLogErrors = new JCheckBox("Log Events");
         chckbxLogErrors.setForeground(Color.WHITE);
         chckbxLogErrors.setBackground(Color.DARK_GRAY);
-        chckbxLogErrors.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                logger.toggleErrorLog();
-            }
-        });
+        chckbxLogErrors.addActionListener(e -> logger.toggleErrorLog());
         chckbxLogErrors.setBounds(334, 7, 126, 23);
         panel_2.add(chckbxLogErrors);
 
         JCheckBox chckbxLogMessages = new JCheckBox("Log Messages");
         chckbxLogMessages.setForeground(Color.WHITE);
         chckbxLogMessages.setBackground(Color.DARK_GRAY);
-        chckbxLogMessages.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                logger.toggleMessageLog();
-            }
-        });
+        chckbxLogMessages.addActionListener(e -> logger.toggleMessageLog());
         chckbxLogMessages.setBounds(334, 36, 126, 23);
         panel_2.add(chckbxLogMessages);
 
