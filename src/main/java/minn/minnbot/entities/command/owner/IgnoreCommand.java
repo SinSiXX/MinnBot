@@ -4,13 +4,13 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.util.EmoteUtil;
+import minn.minnbot.util.EntityUtil;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.entities.Guild;
+import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.entities.User;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class IgnoreCommand extends CommandAdapter {
 
@@ -25,30 +25,39 @@ public class IgnoreCommand extends CommandAdapter {
             event.sendMessage(IgnoreUtil.listAll());
             return;
         }
-        String method = event.arguments[0];
+        String[] args = event.allArguments.split("\\s+", 2);
+        if (args.length < 2) {
+            event.sendMessage("Missing input! `ignore <method> <input>`");
+            return;
+        }
+        String method = args[0];
+        String input = args[1];
         if (method.equalsIgnoreCase("guild")) {
             try {
                 String id;
                 Guild g = null;
                 try {
-                    id = "" + Long.parseLong(event.allArguments);
-                    g = event.event.getJDA().getGuildById(id);
+                    id = "" + Long.parseLong(input);
+                    g = event.jda.getGuildById(id);
                 } catch (NumberFormatException ignored) {
-
                 }
                 if (g == null) {
-                    List<Guild> matches = event.event.getJDA().getGuilds().stream().filter(guild -> guild.getName().equalsIgnoreCase(event.allArguments)).collect(Collectors.toCollection(LinkedList::new));
-                    if(matches.size() > 1) {
-                        event.sendMessage("Guilds that match: ```java\n" + matches.toString() + "```");
+                    List<Guild> matches = EntityUtil.getGuildsByName(input, event.jda);
+                    if (matches.size() > 1) {
+                        StringBuilder b = new StringBuilder("**Multiple Guilds match! Please be more specific!**");
+                        for (int i = 0; i < matches.size() && i < 6; i++) {
+                            b.append(String.format("\n-%s(%s)", matches.get(i).getName().toLowerCase().replace(input, String.format("**%s**", input)), matches.get(i).getId()));
+                        }
+                        event.sendMessage(b.toString());
                         return;
-                    } else if(matches.isEmpty()) {
+                    } else if (matches.isEmpty()) {
                         event.sendMessage("No guilds that match. " + EmoteUtil.getRngThumbsdown());
                         return;
                     }
                     g = matches.get(0);
                 }
-                if(IgnoreUtil.toggleIgnore(g)) {
-                  event.sendMessage("Now ignoring given guild. `" + g.getName() + "` " + EmoteUtil.getRngThumbsup());
+                if (IgnoreUtil.toggleIgnore(g)) {
+                    event.sendMessage("Now ignoring given guild. `" + g.getName() + "` " + EmoteUtil.getRngThumbsup());
                     return;
                 }
                 event.sendMessage("Stopped ignoring given guild.");
@@ -57,36 +66,56 @@ public class IgnoreCommand extends CommandAdapter {
             }
         } else if (method.equalsIgnoreCase("user")) {
             try {
-                if (event.event.getMessage().getMentionedUsers().isEmpty()) {
-                    event.sendMessage("Mention the user you want to ignore please.");
+                User target;
+                if (event.message.getMentionedUsers().isEmpty()) {
+                    target = EntityUtil.getUserByNameDisc(input, event.jda);
+                } else
+                    target = event.message.getMentionedUsers().get(0);
+                if (target == null) {
+                    event.sendMessage(String.format("I am unable to find **%s**", input));
                     return;
                 }
-                User target = event.event.getMessage().getMentionedUsers().get(0);
                 if (IgnoreUtil.toggleIgnore(target)) {
-                    event.sendMessage("Now ignoring user. " + EmoteUtil.getRngThumbsup());
+                    event.sendMessage(String.format("Now ignoring **%s**. " + EmoteUtil.getRngThumbsup(), input));
                 } else {
-                    event.sendMessage("Stopped ignoring user. " + EmoteUtil.getRngThumbsup());
+                    event.sendMessage(String.format("Stopped ignoring **%s**. " + EmoteUtil.getRngThumbsup(), input));
                 }
             } catch (UnsupportedOperationException ignored) {
                 event.sendMessage("I don't even know that user wth. " + EmoteUtil.getRngThumbsdown());
             }
-        } else if (method.equalsIgnoreCase("channel")) {
-            try {
-                if (event.event.getMessage().getMentionedChannels().isEmpty()) {
-                    if (IgnoreUtil.toggleIgnore(event.event.getTextChannel()))
-                        event.sendMessage("Now ignoring this channel. " + EmoteUtil.getRngOkHand());
-                } else {
-                    if (IgnoreUtil.toggleIgnore(event.event.getMessage().getMentionedChannels().get(0))) {
-                        event.sendMessage("Now ignoring that channel. " + EmoteUtil.getRngOkHand());
-                    } else {
-                        event.sendMessage("Stopped ignoring that channel. " + EmoteUtil.getRngOkHand());
-                    }
-                }
-            } catch (UnsupportedOperationException ignored) {
-                event.sendMessage("Not a text channel afaik. " + EmoteUtil.getRngThumbsdown());
-            }
         } else {
-            event.sendMessage(usage());
+            if (method.equalsIgnoreCase("channel")) {
+                try {
+                    if (event.message.getMentionedChannels().isEmpty()) {
+                        List<TextChannel> channels = EntityUtil.getTextChannelsByName(input, event.guild);
+                        if (channels.isEmpty()) {
+                            event.sendMessage(String.format("No channels match **%s**", input));
+                            return;
+                        }
+                        if (channels.size() > 1) {
+                            StringBuilder b = new StringBuilder("**Multiple channels match! Please be more specific!**");
+                            for (int i = 0; i < channels.size() && i < 6; i++) {
+                                b.append(String.format("\n- %s(%s)", channels.get(i).getName().toLowerCase().replace(input, String.format("**%s**", input)), channels.get(i).getId()));
+                            }
+                            event.sendMessage(b.toString());
+                            return;
+                        }
+                        if (IgnoreUtil.toggleIgnore(channels.get(0)))
+                            event.sendMessage(String.format("**Now ignoring %s!**", channels.get(0).getAsMention()));
+                        else
+                            event.sendMessage(String.format("**Stopped ignoring %s!**", channels.get(0).getAsMention()));
+                    } else {
+                        if (IgnoreUtil.toggleIgnore(event.message.getMentionedChannels().get(0)))
+                            event.sendMessage(String.format(String.format("**Now ignoring %%s. %s**", EmoteUtil.getRngOkHand()), event.message.getMentionedChannels().get(0).getAsMention()));
+                        else
+                            event.sendMessage(String.format(String.format("**Stopped ignoring %%s. %s**", EmoteUtil.getRngOkHand()), event.message.getMentionedChannels().get(0).getAsMention()));
+                    }
+                } catch (UnsupportedOperationException ignored) {
+                    event.sendMessage("Not a text channel afaik. " + EmoteUtil.getRngThumbsdown());
+                }
+            } else {
+                event.sendMessage(usage());
+            }
         }
     }
 

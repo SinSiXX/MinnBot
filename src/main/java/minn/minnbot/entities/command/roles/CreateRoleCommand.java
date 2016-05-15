@@ -24,7 +24,7 @@ public class CreateRoleCommand extends CommandAdapter {
             if(!PermissionUtil.checkPermission(event.getAuthor(), Permission.MANAGE_ROLES, event.getGuild()))
                 event.getChannel().sendMessageAsync("You are not allowed to manage roles. " + EmoteUtil.getRngThumbsdown(), null);
             else {
-                logger.logCommandUse(event.getMessage());
+                logger.logCommandUse(event.getMessage(), this);
                 onCommand(new CommandEvent(event));
             }
         }

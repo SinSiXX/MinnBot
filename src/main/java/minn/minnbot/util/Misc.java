@@ -19,6 +19,26 @@ import java.util.stream.Collectors;
 
 public class Misc {
 
+    // BULK
+
+    public synchronized static void deleteIn(List<Message> messageList, TextChannel channel, Consumer<List<Exception>> callback) {
+        if(messageList == null || messageList.isEmpty() || channel == null)
+            return;
+
+        Thread t = new Thread(() -> {
+            JDA api = channel.getJDA();
+            Requester requester = ((JDAImpl) api).getRequester();
+
+            List<List<String>> histories = getSplitIDs(messageList);
+
+            List<Exception> exceptions = delete(histories, requester, channel.getId());
+            if (callback != null)
+                callback.accept(exceptions);
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
     public synchronized static void deleteFrom(TextChannel channel, Consumer<List<Exception>> callback, User user, int... amount) {
         if (user == null || channel == null)
             return;
@@ -37,6 +57,7 @@ public class Misc {
             if (callback != null)
                 callback.accept(exceptions);
         });
+        t.setDaemon(true);
         t.start();
     }
 
@@ -45,7 +66,6 @@ public class Misc {
             return;
 
         Thread t = new Thread(() -> {
-
             JDA api = channel.getJDA();
             Requester requester = ((JDAImpl) api).getRequester();
             int count = 99;
@@ -59,12 +79,13 @@ public class Misc {
             if (callback != null)
                 callback.accept(exceptions);
         });
+        t.setDaemon(true);
         t.start();
     }
 
     private static synchronized List<Exception> delete(List<List<String>> histories, Requester requester, String id) {
         List<Exception> exceptions = new LinkedList<>();
-        for(List<String> list : histories) {
+        for (List<String> list : histories) {
             if (list.size() <= 0) {
                 exceptions.add(new IllegalArgumentException("MessageList/Array was empty!"));
                 continue;
@@ -94,7 +115,7 @@ public class Misc {
     }
 
     private static List<List<String>> getSplitIDs(List<Message> messages) {
-        if(messages == null)
+        if (messages == null)
             return new LinkedList<>();
         List<String> listing = new LinkedList<>();
 
@@ -114,6 +135,5 @@ public class Misc {
         }
         return histories;
     }
-
 
 }

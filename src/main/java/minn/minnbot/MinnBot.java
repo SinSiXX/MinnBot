@@ -4,7 +4,6 @@ import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.audio.MinnPlayer;
 import minn.minnbot.entities.command.custom.InviteCommand;
-import minn.minnbot.entities.command.custom.MentionedListener;
 import minn.minnbot.entities.impl.IIgnoreListener;
 import minn.minnbot.entities.impl.LoggerImpl;
 import minn.minnbot.entities.throwable.Info;
@@ -39,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings("unused")
 public class MinnBot extends ListenerAdapter {
 
-    public final static String VERSION = "Version 3.2a";
+    public final static String VERSION = "Version 3.5a";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     private static String giphy;
     private static MinnBotUserInterface console;
@@ -48,12 +47,13 @@ public class MinnBot extends ListenerAdapter {
     public final JDA api;
     public final CommandManager handler;
     public final String inviteurl;
+    private static IIgnoreListener ignoreListener;
     private final String prefix;
     private final Logger logger;
     private MinnPlayer player;
     private static Guild home;
 
-    public MinnBot(String prefix, String ownerID, String inviteurl, Logger logger, JDA api)
+    public MinnBot(String prefix, String ownerID, Logger logger, JDA api)
             throws Exception {
         if (prefix.contains(" "))
             throw new IllegalArgumentException("Prefix contains illegal characters. (i.e. space)");
@@ -74,13 +74,8 @@ public class MinnBot extends ListenerAdapter {
                     "Owner could not be retrieved from the given id. Do you share a guild with this bot? - Caused by id: \""
                             + ownerID + "\""));
         }
-        String invite = getInviteUrl();
-        if (!invite.isEmpty())
-            this.inviteurl = invite;
-        else
-            this.inviteurl = inviteurl;
+        inviteurl = getInviteUrl();
         this.handler = new CommandManager(api, this.logger, owner);
-        api.addEventListener(handler);
         api.addEventListener(this);
     }
 
@@ -103,19 +98,20 @@ public class MinnBot extends ListenerAdapter {
                 home = api.getGuildById(obj.getString("home"));
             if (giphy != null && !giphy.isEmpty() && !giphy.equalsIgnoreCase("http://api.giphy.com/submit"))
                 MinnBot.giphy = giphy;
-            MinnBot bot = new MinnBot(pre, ownerId, "", console.logger, api);
+            MinnBot bot = new MinnBot(pre, ownerId, console.logger, api);
             bot.initCommands(api);
             as.setApi(api);
             MinnBotUserInterface.bot = bot;
-            if (obj.has("logchan")) {
-                IgnoreUtil.addListener(new IIgnoreListener(api.getTextChannelById(obj.getString("logchan"))));
-            }
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) bot.getLogger());
             if (audio) {
                 api.addEventListener(new MinnAudioManager());
             }
             console.setTitle(api.getSelfInfo().getUsername() + "#" + api.getSelfInfo().getDiscriminator()); // so you know which one is logged in!
             bot.log("Setup completed.");
+            if (ignoreListener == null) {
+                ignoreListener = new IIgnoreListener();
+                IgnoreUtil.addListener(ignoreListener);
+            }
         } catch (IllegalArgumentException e) {
             if (e.getMessage().isEmpty())
                 console.writeEvent("The config was not populated.\n" + "Please enter a bot token.");
@@ -162,7 +158,7 @@ public class MinnBot extends ListenerAdapter {
         return invite.substring(0, invite.length() - 1) + "-1";
     }
 
-    public static void main(String[] a) {
+    public static void main(String... a) {
         console = new MinnBotUserInterface();
         console.setVisible(true);
         console.pack();
@@ -254,11 +250,12 @@ public class MinnBot extends ListenerAdapter {
 
         manager.set(new CustomManager(prefix, logger));
         handler.registerManager(manager.get());
+
         // errors.addAll(manager.get().getErrors()); not checking for custom commands
 
         if (home != null) {
             registerCommand(new InviteCommand(prefix, logger, home));
-            registerCommand(new MentionedListener(logger));
+            //registerCommand(new MentionedListener(logger));
         }
 
         // Log the outcome

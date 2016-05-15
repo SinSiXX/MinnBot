@@ -11,7 +11,7 @@ public interface Logger {
 
     boolean logMessage(Message m);
 
-    boolean logCommandUse(Message m);
+    boolean logCommandUse(Message m, Command c);
 
     boolean logEvent(Event e);
 
@@ -30,5 +30,7 @@ public interface Logger {
     int[] getNumbers();
 
     boolean saveToJson();
+
+    String mostUsedCommand();
 
 }

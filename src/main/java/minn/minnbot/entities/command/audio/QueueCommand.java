@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class QueueCommand extends CommandAdapter {
 
-    public static final ThreadPoolExecutor executor = new ThreadPoolExecutor(5, 25, 1L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
+    private static final ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 25, 10L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
         final Thread thread = new Thread(r, "QueueExecution-Thread");
         thread.setPriority(Thread.MAX_PRIORITY);
         thread.setDaemon(true);
@@ -43,7 +43,7 @@ public class QueueCommand extends CommandAdapter {
         }
         event.sendMessage("Validating request, this may take a few minutes..."
                 + (!event.guild.getAudioManager().isConnected()
-                ? String.format("\nIn the meantime you can make me connect to the channel you are in by typing `%sjoinme` while you are in a channel.", prefix)
+                ? String.format("\nIn the meantime you can make me connect to the channel you are in by typing `%sjoinme`.", prefix)
                 : ""),
                 msg -> executor.submit(() -> {
             Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
@@ -108,6 +108,7 @@ public class QueueCommand extends CommandAdapter {
                         } catch (InterruptedException ignored) {
                         }
                         player.play();
+                        msg.updateMessageAsync("Now playing...", null);
                     }
                 }
 

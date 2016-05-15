@@ -31,12 +31,7 @@ public class IgnoreUtil {
     }
 
     public static String listAll() {
-        return "Guilds: "
-                + (listGuilds().isEmpty() ? "none" : listGuilds())
-                + "\nTextChannels: "
-                + (listChannels().isEmpty() ? "none" : listChannels())
-                + "\nUsers: "
-                + (listUsers().isEmpty() ? "none" : listUsers());
+        return String.format("**__Guilds:__** %s\n**__TextChannels:__** %s\n**__Users:__** %s", listGuilds().isEmpty() ? "none" : listGuilds(), listChannels().isEmpty() ? "none" : listChannels(), listUsers().isEmpty() ? "none" : listUsers());
     }
 
     public static String listUsers() {

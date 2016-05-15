@@ -14,7 +14,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.activation.UnsupportedDataTypeException;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -33,6 +35,7 @@ public class CommandManager extends ListenerAdapter {
     private Logger logger;
     private ThreadPoolExecutor executor;
     private static Map<String, List<String>> prefixMap;
+    private static PrefixWriter writer;
     private static boolean reading = true;
 
     public static List<String> getPrefixList(String id) {
@@ -73,7 +76,7 @@ public class CommandManager extends ListenerAdapter {
         }
         try {
             JSONArray arr = new JSONArray(new String(Files.readAllBytes(Paths.get("prefix.json"))));
-            for (Object anArr : arr) {
+            for (Object anArr : arr)
                 try {
                     JSONObject jObj = (JSONObject) anArr;
                     String id = jObj.keys().next();
@@ -87,24 +90,27 @@ public class CommandManager extends ListenerAdapter {
                 } catch (Exception ex) {
                     logger.logThrowable(ex);
                 }
-            }
         } catch (IOException e) {
             logger.logThrowable(new Info("prefix.json does not exist."));
+        } catch (JSONException e) {
+            logger.logThrowable(new Info("prefix array is malformed!"));
         }
         reading = false;
     }
 
     public CommandManager(JDA api, Logger logger, String owner) {
         this.api = api;
+        if(!api.getRegisteredListeners().contains(this)) api.addEventListener(this);
         this.logger = logger;
         this.owner = owner;
         this.executor = new ThreadPoolExecutor(10, 30, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
             final Thread thread = new Thread(r, "CommandExecution-Thread");
-            thread.setPriority(Thread.NORM_PRIORITY);
+            thread.setPriority(Thread.MAX_PRIORITY);
             thread.setDaemon(true);
             return thread;
         });
         executor.submit(this::readMap);
+        writer = new PrefixWriter();
     }
 
     public List<Command> getCommands() {
@@ -243,11 +249,51 @@ public class CommandManager extends ListenerAdapter {
             obj.put(id, a);
             arr.put(obj);
         });
-        //if (new File("prefix.json").createNewFile())
-        Files.write(Paths.get("prefix.json"), arr.toString(4).getBytes());
-        /*else*/
-        // throw new UnexpectedException("Manager was unable to save prefixMap.");
+        writer.write(arr.toString(4));
+    }
 
+    private class PrefixWriter {
+        private File f;
+        private BufferedOutputStream stream;
+
+        PrefixWriter() {
+            f = new File("prefix.json");
+            try {
+                if (!f.exists())
+                    f.createNewFile();
+                stream = new BufferedOutputStream(new FileOutputStream(f));
+            } catch (IOException e) {
+                logger.logThrowable(e);
+            }
+        }
+
+        void writeln(String input) {
+            if(reading)
+                return;
+            try {
+                stream.write((input + "\n").getBytes());
+            } catch (IOException e) {
+                logger.logThrowable(e);
+            }
+        }
+
+        void write(String input) {
+            if(reading)
+                return;
+            try {
+                stream.write(input.getBytes());
+            } catch (IOException e) {
+                logger.logThrowable(e);
+            }
+        }
+
+        void close() {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                logger.logThrowable(e);
+            }
+        }
     }
 
 }

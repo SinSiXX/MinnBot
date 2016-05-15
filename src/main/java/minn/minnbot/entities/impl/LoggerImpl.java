@@ -1,10 +1,14 @@
 package minn.minnbot.entities.impl;
 
+import minn.minnbot.entities.Command;
+import minn.minnbot.entities.LogWriter;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.PublicLog;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.MinnBotUserInterface;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.entities.Message;
+import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.events.DisconnectEvent;
 import net.dv8tion.jda.events.Event;
 import net.dv8tion.jda.events.ShutdownEvent;
@@ -14,9 +18,7 @@ import net.dv8tion.jda.utils.SimpleLog;
 
 import java.io.*;
 import java.rmi.UnexpectedException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class LoggerImpl extends ListenerAdapter implements Logger, Thread.UncaughtExceptionHandler, SimpleLog.LogListener {
 
@@ -33,6 +35,10 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     private boolean logMessages = false;
     private boolean logEvents = false;
     public static boolean log = true;
+    private static Map<Command, Integer> commandUse = new HashMap<>();
+    private LogWriter errorLogWriter;
+    private LogWriter messageLogWriter;
+    private PublicLog publicLog;
 
     public LoggerImpl(MinnBotUserInterface console) {
         this.console = console;
@@ -42,14 +48,31 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
         console.writeEvent(TimeUtil.timeStamp() + "[MINNBOT] Ready!");
         console.writeln(TimeUtil.timeStamp() + "[MINNBOT] Ready!");
         SimpleLog.addListener(this);
+        try {
+            this.errorLogWriter = new LogWriter();
+            File folder = new File("Logs/Session/Messages");
+            folder.mkdirs();
+            this.messageLogWriter = new LogWriter(new File(String.format("Logs/Session/Messages/Session-%s.log", 10 << System.currentTimeMillis())));
+        } catch (IOException e) {
+            logThrowable(e);
+        }
     }
 
     @Override
     public void onEvent(Event event) {
+        if (publicLog == null)
+            publicLog = PublicLog.init(event.getJDA());
         if (event instanceof MessageReceivedEvent) {
             onMessageReceived((MessageReceivedEvent) event);
         } else if (event instanceof ShutdownEvent || event instanceof DisconnectEvent) {
             saveToJson("ErrorLog-Session_" + (11 << System.currentTimeMillis()) + ".log", errorLogs);
+            if (event instanceof ShutdownEvent)
+                try {
+                    errorLogWriter.close();
+                    messageLogWriter.close();
+                } catch (IOException e) {
+                    logThrowable(e);
+                }
         }
         logEvent(event);
     }
@@ -78,8 +101,8 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
         if (!logMessages)
             return false;
         try {
-            String stamp = TimeUtil.timeStamp();
-            String s = stamp + "[" + m.getAuthor() + "] " + m.getContent();
+            String s = String.format("%s[%s] %s", TimeUtil.timeStamp(), m.getAuthor(), m.getContent());
+            messageLogWriter.writeLn(s);
             console.writeln(s);
             // messageLogs.add(s);
             return true;
@@ -90,9 +113,31 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     }
 
     @Override
-    public boolean logCommandUse(Message m) {
+    public boolean logCommandUse(Message m, Command c) {
+        PublicLog.log(String.format("**%s %s#%s used `%s` in #%s**", TimeUtil.timeStamp(), m.getAuthor().getUsername(), m.getAuthor().getDiscriminator(), c.getAlias().split("\\s+", 2)[0],
+                (m.isPrivate()
+                        ? m.getAuthor().getUsername()
+                        : String.format("%s of %s", ((TextChannel) m.getChannel()).getName(), ((TextChannel) m.getChannel()).getGuild().getName()))));
+        if (commandUse.containsKey(c)) commandUse.put(c, commandUse.get(c) + 1);
+        else commandUse.put(c, 1);
         commands++;
         return true;
+    }
+
+    @Override
+    public String mostUsedCommand() {
+        final Command[] com = {null};
+        final int[] i = {0};
+        commandUse.forEach((c, n) -> {
+            if (n > i[0]) {
+                com[0] = c;
+                i[0] = n;
+            }
+        });
+        if (com != null)
+            return String.format("[%s](%s)", com[0].getAlias().split("\\s+", 2)[0], i[0]);
+        else
+            return "none";
     }
 
     @Override
@@ -110,6 +155,10 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             logThrowable(e);
             return false;
         }
+    }
+
+    private void write(String input) {
+        errorLogWriter.writeLn(input);
     }
 
     @Override
@@ -181,6 +230,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             s[0] = TimeUtil.timeStamp() + " " + e.getClass().getSimpleName() + ": " + e.getMessage();
         if (e instanceof Info) {
             console.writeEvent("[Info] " + s[0]);
+            write("[Error] " + s[0]);
         } else {
             final int[] elements = {0};
             Arrays.stream(e.getStackTrace()).forEachOrdered((element) -> {
@@ -190,7 +240,10 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
                 }
             });
             errorLogs.add(s[0]);
-            console.writeEvent("[Error] " + s[0]);
+            String string = "[Error] " + s[0];
+            console.writeEvent(string);
+            write(string);
+            PublicLog.log(String.format("```%s```", string));
             e.printStackTrace();
         }
         return true;

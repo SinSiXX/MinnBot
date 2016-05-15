@@ -3,11 +3,15 @@ package minn.minnbot.entities.command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.util.EntityUtil;
 import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.Role;
 import net.dv8tion.jda.entities.User;
+import net.dv8tion.jda.events.message.MessageReceivedEvent;
+
+import java.util.List;
 
 public class CheckCommand extends CommandAdapter {
 
@@ -15,13 +19,52 @@ public class CheckCommand extends CommandAdapter {
         init(prefix, logger);
     }
 
+    public void onMessageReceived(MessageReceivedEvent event) {
+        if (!event.isPrivate())
+            super.onMessageReceived(event);
+    }
+
     @Override
     public void onCommand(CommandEvent event) {
-        java.util.List<User> mentions = event.event.getMessage().getMentionedUsers();
+        java.util.List<User> mentions = event.message.getMentionedUsers();
         User u;
-        if (mentions.isEmpty())
-            u = event.event.getAuthor();
-        else
+        if (mentions.isEmpty()) {
+            if (event.allArguments.isEmpty()) {
+                u = event.author;
+            } else {
+                u = EntityUtil.getUserByNameDisc(event.allArguments, event.guild);
+                if (u == null) {
+                    List<User> userList = EntityUtil.getUsersByName(event.allArguments, event.event.getTextChannel());
+                    if (userList.size() > 1) {
+                        StringBuilder builder = new StringBuilder("Found multiple users fitting that name, please be more specific!");
+
+                        String match = event.allArguments.toLowerCase();
+
+                        for (int i = 0; i < userList.size() && i < 6; i++) {
+                            String nick = event.guild.getNicknameForUser(userList.get(i));
+
+                            builder.append("\n- :passport_control: ").append( // I hate this so much
+                                    (nick != null && event.guild.getNicknameForUser(userList.get(i)).toLowerCase().contains(match))
+                                            ? event.guild.getNicknameForUser(userList.get(i)).contains("**")
+                                            ? event.guild.getNicknameForUser(userList.get(i))
+                                            : event.guild.getNicknameForUser(userList.get(i)).toLowerCase().replace(match, String.format("**%s**", match))
+                                            : userList.get(i).getUsername().contains("**")
+                                            ? userList.get(i).getUsername()
+                                            : userList.get(i).getUsername().toLowerCase().replace(match, String.format("**%s**", match)));
+
+                        }
+
+                        event.sendMessage(builder.toString());
+                        return;
+                    }
+                    if (userList.isEmpty()) {
+                        event.sendMessage(String.format("**No username/nickname in this guild contains __%s__!**", event.allArguments));
+                        return;
+                    } else
+                        u = userList.get(0);
+                }
+            }
+        } else
             u = mentions.get(0);
         String s = "```md";
         String name = null;
@@ -90,7 +133,7 @@ public class CheckCommand extends CommandAdapter {
 
     @Override
     public String example() {
-        return "check <@158174948488118272>";
+        return "check Minn#6688";
     }
 
 }

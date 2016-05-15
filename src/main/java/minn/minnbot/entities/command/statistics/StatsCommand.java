@@ -85,33 +85,31 @@ public class StatsCommand extends CommandAdapter {
         int[] stats = logger.getNumbers();
         JDA api = event.jda;
         /* Ping */
-        String ping = (ms < 1) ? "[Ping]({ping})" : "[Ping](" + ms + ")";
+        String ping = (ms < 1) ? "[Ping]({ping})" : String.format("[Ping](%d)", ms);
         /* Mess */
-        String messages = "[Messages](" + stats[0] + ")";
+        String messages = String.format("[Messages](%d)", stats[0]);
         /* Comm */
-        String commands = "[Commands](" + stats[1] + ")";
+        String commands = String.format("[Commands](%d)\n[Most-Used]: %s", stats[1], logger.mostUsedCommand());
         /* Evnt */
-        String events = "[Events](" + stats[2] + ")";
+        String events = String.format("[Events](%d)", stats[2]);
         /* Priv */
-        String privateMessages = "[Private-Messages](" + stats[3] + ")";
+        String privateMessages = String.format("[Private-Messages](%d)", stats[3]);
         /* Gild */
-        String guildMessages = "[Guild-Messages](" + stats[4] + ")";
+        String guildMessages = String.format("[Guild-Messages](%d)", stats[4]);
         /* Glds */
-        String guilds = "[Servers](" + api.getGuilds().size() + ")";
+        String guilds = String.format("[Servers](%d)", api.getGuilds().size());
 		/* Usrs */
-        String users = "[Users](" + api.getUsers().size() + ")";
+        String users = String.format("[Users](%d)", api.getUsers().size());
 		/* Chns */
-        String channels = "[Channels]: [Private](" + api.getPrivateChannels().size() + ") [Text](" + api.getTextChannels().size() + ") [Voice]("
-                + api.getVoiceChannels().size() + ")";
+        String channels = String.format("[Channels]: [Private](%d) [Text](%d) [Voice](%d)", api.getPrivateChannels().size(), api.getTextChannels().size(), api.getVoiceChannels().size());
 		/* Uptm */
-        String uptime = "[Uptime](" + TimeUtil.uptime(stats[5]) + ")";
+        String uptime = String.format("[Uptime](%s)", TimeUtil.uptime(stats[5]));
 		/* mems */
-        String mem = "[Memory](" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576L
-                + "MB / " + Runtime.getRuntime().totalMemory() / 1048576L + "MB)";
+        String mem = String.format("[Memory](%dMB / %dMB)", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576L, Runtime.getRuntime().totalMemory() / 1048576L);
 		/* Rsps */
-        String responses = "[Responses](" + api.getResponseTotal() + ")";
+        String responses = String.format("[Responses](%d)", api.getResponseTotal());
         /* Thrd */
-        String threads = "[Threads](" + Thread.activeCount() + ")";
+        String threads = String.format("[Threads](%d)", Thread.activeCount());
 
         /* Conn */
         int sizeChannels = getConnectedChannelSize(api);
