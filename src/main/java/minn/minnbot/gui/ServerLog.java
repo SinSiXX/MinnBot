@@ -5,10 +5,6 @@ import net.dv8tion.jda.entities.Guild;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.List;
 
 public class ServerLog extends JFrame {
@@ -46,23 +42,21 @@ public class ServerLog extends JFrame {
 
 		choice = new Choice();
 
-		choice.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				String item = choice.getSelectedItem();
-				for (Guild g : log.guilds) {
-					if (!g.getName().equals(item))
-						continue;
-					selectedGuild = g;
-				}
-				if (enabled) {
-					if (listener != null) {
-						log.api.removeEventListener(listener);
-					}
-					listener = new GuildListener(selectedGuild, textArea);
-					log.api.addEventListener(listener);
-				}
-			}
-		});
+		choice.addItemListener(e -> {
+            String item = choice.getSelectedItem();
+            for (Guild g : log.guilds) {
+                if (!g.getName().equals(item))
+                    continue;
+                selectedGuild = g;
+            }
+            if (enabled) {
+                if (listener != null) {
+                    log.api.removeEventListener(listener);
+                }
+                listener = new GuildListener(selectedGuild, textArea);
+                log.api.addEventListener(listener);
+            }
+        });
 		choice.setBackground(Color.WHITE);
 		choice.setBounds(10, 10, 275, 20);
 		for (Guild g : log.guilds) {
@@ -71,24 +65,22 @@ public class ServerLog extends JFrame {
 		panel.add(choice);
 
 		JToggleButton tglbtnEnabled = new JToggleButton("Dynamic");
-		tglbtnEnabled.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				enabled = !enabled;
-				if (enabled) {
-					String item = choice.getSelectedItem();
-					for (Guild g : log.guilds) {
-						if (!g.getName().equals(item))
-							continue;
-						selectedGuild = g;
-					}
-					if (listener != null) {
-						log.api.removeEventListener(listener);
-					}
-					listener = new GuildListener(selectedGuild, textArea);
-					log.api.addEventListener(listener);
-				}
-			}
-		});
+		tglbtnEnabled.addActionListener(e -> {
+            enabled = !enabled;
+            if (enabled) {
+                String item = choice.getSelectedItem();
+                for (Guild g : log.guilds) {
+                    if (!g.getName().equals(item))
+                        continue;
+                    selectedGuild = g;
+                }
+                if (listener != null) {
+                    log.api.removeEventListener(listener);
+                }
+                listener = new GuildListener(selectedGuild, textArea);
+                log.api.addEventListener(listener);
+            }
+        });
 		enabled = false;
 		tglbtnEnabled.setBackground(Color.WHITE);
 		tglbtnEnabled.setBounds(477, 10, 107, 23);

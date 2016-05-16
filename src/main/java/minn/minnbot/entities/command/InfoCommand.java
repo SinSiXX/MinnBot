@@ -27,43 +27,19 @@ public class InfoCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        String s = "**__Info page:__**\n\n";
-        s += "I'm the second incarnation of MinnBot:tm:\n";
-        s += "Coded in JDA(" + net.dv8tion.jda.JDAInfo.VERSION
-                + ") by my creator Minn, I was selected to work on behalf of **" + ownername + "**.\n";
-        s += "You can view my commands by typing **" + prefix + "help** in the chat.\n";
-        s += "If you want to see my **source code**,"
-                + " here is a link to my github page: **<http://minndevelopment.github.io/MinnBot>**\n";
-        s += "Visit the official development server for further information: **<https://discord.gg/0mcttggeFpcMByUz>**\n";
+        StringBuilder builder = new StringBuilder("**__Info page:__**\n\n"); // Use builder for better performance
+        builder.append("I'm the second incarnation of MinnBot:tm:\n");
+        builder.append("Coded in JDA(").append(net.dv8tion.jda.JDAInfo.VERSION).append(") by my creator Minn, I was selected to work on behalf of **").append(ownername).append("**.\n");
+        builder.append("You can view my commands by typing **").append(prefix).append("help** in the chat.\n");
+        builder.append("If you want to see my **source code**,").append(" here is a link to my github page: **<http://minndevelopment.github.io/MinnBot>**\n");
+        builder.append("Visit the official development server for further information: **<https://discord.gg/0mcttggeFpcMByUz>**\n");
         if (!inviteUrl.isEmpty() && bot)
-            //noinspection deprecation
-            s += "Make me join your server with this url:\n" +
-                    "**<" + inviteUrl + ">**";
-        event.sendMessage(s);
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("info"))
-                return true;
-        } catch (Exception ignored) {
-        }
-        return false;
+            builder.append("Make me join your server with this url:\n").append("**<").append(inviteUrl).append(">**");
+        event.sendMessage(builder.toString());
     }
 
     @Override
     public String getAlias() {
-        return "info";
-    }
-
-    @Override
-    public String example() {
         return "info";
     }
 

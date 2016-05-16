@@ -16,14 +16,8 @@ public class SayCommand extends CommandAdapter {
 	}
 
 	@Override
-	public boolean isCommand(String message) {
-		String[] parts = message.split(" ", 2);
-		return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "say");
-	}
-
-	@Override
 	public String getAlias() {
-		return "`say <arguments>`";
+		return "say <arguments>";
 	}
 
 	@Override

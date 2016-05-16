@@ -3,8 +3,12 @@ package minn.minnbot.entities.command.listener;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
+import minn.minnbot.util.CommandUtil;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
+
+import java.util.List;
 
 public abstract class CommandAdapter extends ListenerAdapter implements Command {
 
@@ -18,9 +22,10 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
 
     public void onMessageReceived(MessageReceivedEvent event) {
         String message = event.getMessage().getRawContent();
-        if (isCommand(message)) {
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
+        if (isCommand(message, CommandManager.getPrefixList(event.getGuild().getId()))) {
+            CommandEvent e = new CommandEvent(event);
+            onCommand(e);
+            logger.logCommandUse(event.getMessage(), this, e);
         }
     }
 
@@ -36,7 +41,10 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
 
     public abstract void onCommand(CommandEvent event);
 
-    public abstract boolean isCommand(String message);
+    @Override
+    public boolean isCommand(String message, List<String> prefixList) {
+        return CommandUtil.isCommand(prefix, getAlias().split("\\s+")[0], message) || CommandUtil.isCommand(prefixList, getAlias().split("\\s+")[0], message);
+    }
 
     public String usage() {
         return "";

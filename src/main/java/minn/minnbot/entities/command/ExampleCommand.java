@@ -18,22 +18,21 @@ public class ExampleCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        if(event.allArguments.isEmpty()) {
+        if (event.allArguments.isEmpty()) {
             event.sendMessage("Usage: `" + prefix + "example <command>`");
             return;
         }
-        Command com = manager.getAllCommands().parallelStream().filter((cmd) -> cmd.isCommand(((event.allArguments.startsWith(prefix)) ? event.allArguments : prefix + event.allArguments))).findFirst().orElse(null);
-        if(com == null) {
+        Command com = manager.getAllCommands().parallelStream().filter(
+                (cmd) -> cmd.isCommand((
+                                (event.allArguments.startsWith(prefix))
+                                        ? event.allArguments
+                                        : prefix + event.allArguments),
+                        CommandManager.getPrefixList(event.guild.getId()))).findFirst().orElse(null);
+        if (com == null) {
             event.sendMessage("Not a known command!");
             return;
         }
         event.sendMessage(prefix + com.example());
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] parts = message.split(" ",2);
-        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "example");
     }
 
     @Override

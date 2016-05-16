@@ -61,12 +61,6 @@ public class MessagesCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "messages");
-    }
-
-    @Override
     public String getAlias() {
         return "messages <@mention> <amount>";
     }

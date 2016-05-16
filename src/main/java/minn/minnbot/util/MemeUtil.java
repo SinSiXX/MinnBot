@@ -12,7 +12,7 @@ public class MemeUtil {
     @SuppressWarnings("deprecated")
     public static String generateMeme(String template, String arg0, String arg1) throws UnirestException {
         try {
-            JSONObject obj = Unirest.get("http://memegen.link/" + template + "/" + URLEncoder.encode(arg0) + "/" + URLEncoder.encode(arg1)).asJson().getBody().getObject();
+            @SuppressWarnings("deprecation") JSONObject obj = Unirest.get("http://memegen.link/" + template + "/" + URLEncoder.encode(arg0) + "/" + URLEncoder.encode(arg1)).asJson().getBody().getObject();
             return obj.getJSONObject("direct").getString("visible");
         } catch(JSONException ignored) {
             return "Usage: `meme <template> <text> | <text>` Templates: http://memegen.link/templates";

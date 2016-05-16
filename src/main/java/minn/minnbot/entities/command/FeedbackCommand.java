@@ -11,6 +11,7 @@ import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FeedbackCommand extends CommandAdapter {
@@ -60,13 +61,21 @@ public class FeedbackCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && (p[0].equalsIgnoreCase(prefix + "feedback") || p[0].equalsIgnoreCase(prefix + "fb"));
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + "feedback") || p[0].equalsIgnoreCase(prefix + "fb"))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + "feedback") || p[0].equalsIgnoreCase(fix + "fb"))
+                return true;
+        }
+        return false;
     }
 
     public String usage() {
-        return "`feedback <text>`, `fb <text>`\n**__Example:__** `" + prefix + "fb I love your bot, but add this cool command!`";
+        return String.format("`feedback <text>`, `fb <text>`\n**__Example:__** `%sfb I love your bot, but add this cool command!`", prefix);
     }
 
     @Override

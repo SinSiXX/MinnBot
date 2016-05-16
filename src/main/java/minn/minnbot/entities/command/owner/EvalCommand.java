@@ -28,12 +28,6 @@ public class EvalCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "eval");
-    }
-
-    @Override
     public String usage() {
         return "`evaluates java code, allows code blocks and quotations`";
     }

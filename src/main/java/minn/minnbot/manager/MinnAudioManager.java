@@ -67,17 +67,23 @@ public class MinnAudioManager extends ListenerAdapter {
     }
 
     public static void reset() {
-        players.forEach((g, p) -> {
-            if (!p.isStopped())
-                p.stop();
-            p.getAudioQueue().clear();
-        });
+        players.forEach((g, p) -> reset(g));
         players.clear();
-        keepAliveMap.forEach((p, t) -> t.interrupt());
+        keepAliveMap.forEach((p, t) -> {
+            t.interrupt(); //noinspection deprecation
+            //noinspection deprecation
+            t.stop();
+        });
         keepAliveMap.clear();
     }
 
     public static void reset(Guild guild) {
+        MusicPlayer player = getPlayer(guild);
+        if (!player.isStopped())
+            player.stop();
+        if (!player.getAudioQueue().isEmpty())
+            player.getAudioQueue().clear();
+        guild.getAudioManager().setSendingHandler(null);
         players.remove(guild);
     }
 
@@ -103,7 +109,7 @@ public class MinnAudioManager extends ListenerAdapter {
         return player != null ? player : registerPlayer(new MusicPlayer(), guild);
     }
 
-    public static MusicPlayer registerPlayer(MusicPlayer player, Guild guild) {
+    private static MusicPlayer registerPlayer(MusicPlayer player, Guild guild) {
         if (player == null) {
             throw new UnsupportedOperationException("Player can not be null!");
         }
@@ -138,7 +144,7 @@ public class MinnAudioManager extends ListenerAdapter {
                 } catch (InterruptedException ignored) {
                     break;
                 }
-                if (player.getAudioQueue().isEmpty() && !player.isPlaying()) {
+                if ((player.getAudioQueue().isEmpty() && !player.isPlaying()) || !guild.getAudioManager().isConnected()) { // Player queue empty or not connected? If yes -> kill
                     break;
                 }
             }

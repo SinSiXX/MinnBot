@@ -17,12 +17,6 @@ public class ResetCommand extends CommandAdapter {
         MinnAudioManager.reset();
     }
 
-    @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "resetplayers");
-    }
-
     public String usage() {
         return "Resets player system. Which means it **clears all queues**, **stops all players** and **removes them from the system**.\n" +
                 "However it does __not__ affect the audio connections!";

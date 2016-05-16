@@ -22,12 +22,6 @@ public class ShutdownCommand extends CommandAdapter {
 	}
 
 	@Override
-	public boolean isCommand(String message) {
-		message = message.toLowerCase();
-		return message.equals(prefix + "shutdown");
-	}
-
-	@Override
 	public String getAlias() {
 		return "shutdown";
 	}

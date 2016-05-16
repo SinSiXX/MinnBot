@@ -31,16 +31,6 @@ public class LeaveCommand extends CommandAdapter {
 	}
 
 	@Override
-	public boolean isCommand(String message) {
-		message = message.toLowerCase();
-		if (!message.startsWith(prefix)) {
-			return false;
-		}
-		String command = message.substring(prefix.length());
-		return ((command.startsWith("leave ") && command.length() > "leave ".length()) || command.equals("leave"));
-	}
-
-	@Override
 	public String usage() {
 		return "`leave <guild-id>`";
 	}

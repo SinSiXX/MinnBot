@@ -95,6 +95,7 @@ public class PlayingFieldManager {
     @SuppressWarnings("deprecated")
     private void breakThread() {
         if (managerThread.isAlive()) {
+            //noinspection deprecation
             managerThread.stop();
         }
         managerThread = null;

@@ -9,6 +9,7 @@ import minn.minnbot.manager.CmdManager;
 import minn.minnbot.manager.CommandManager;
 import minn.minnbot.util.EmoteUtil;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class DisableCommand extends CommandAdapter {
@@ -30,7 +31,7 @@ public class DisableCommand extends CommandAdapter {
             commandName = prefix + commandName;
         String finalCommandName = commandName;
         commandList.forEach(c -> {
-            if(cmd[0] == null && c.isCommand(finalCommandName)) {
+            if(cmd[0] == null && c.isCommand(finalCommandName, new LinkedList<>())) {
                 cmd[0] = c;
             }
         });
@@ -45,12 +46,6 @@ public class DisableCommand extends CommandAdapter {
         managerList.forEach((manager1 -> manager1.disable(cmd[0], true)));
         event.sendMessage("Disabled `" + cmd[0].getAlias() + "`. " + EmoteUtil.getRngOkHand());
         cmd[0].getLogger().logThrowable(new Info("[" + cmd[0].getClass().getSimpleName() + "] Disabled"));
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "disable");
     }
 
     @Override

@@ -33,13 +33,7 @@ public class ShuffleCommand extends CommandAdapter{
             return;
         }
         Collections.shuffle(sourceList);
-        event.sendMessage("Queue has been randomized! " + EmoteUtil.getRngOkHand());
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "shuffle");
+        event.sendMessage("Queue has been shuffled! " + EmoteUtil.getRngOkHand());
     }
 
     @Override

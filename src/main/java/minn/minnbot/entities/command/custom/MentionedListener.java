@@ -5,6 +5,8 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.List;
+
 public class MentionedListener extends CommandAdapter{
 
     public MentionedListener(Logger logger) {
@@ -23,7 +25,7 @@ public class MentionedListener extends CommandAdapter{
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         return false;
     }
 

@@ -23,11 +23,6 @@ public class GoogleCommand extends CommandAdapter {
         event.sendMessage("http://lmgtfy.com/?q=" + URLEncoder.encode(event.allArguments));
     }
 
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "lmgtfy");
-    }
-
     public String usage() {
         return "lmgtfy <query> | Returns a let me google that for you link with the added query";
     }

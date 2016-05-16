@@ -1,11 +1,12 @@
 package minn.minnbot.entities.command.moderation;
 
-import minn.minnbot.AsyncDelete;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
+import minn.minnbot.util.Misc;
 import net.dv8tion.jda.Permission;
-import net.dv8tion.jda.entities.Message;
+import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
@@ -19,7 +20,7 @@ public class PurgeCommand extends CommandAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isPrivate())
             return;
-        if (isCommand(event.getMessage().getContent())) {
+        if (isCommand(event.getMessage().getContent(), CommandManager.getPrefixList(event.getGuild().getId()))) {
             if (!event.getTextChannel().checkPermission(event.getAuthor(), Permission.MESSAGE_MANAGE)) {
                 return;
             } else if (!event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(),
@@ -28,28 +29,27 @@ public class PurgeCommand extends CommandAdapter {
                         .sendMessageAsync("I am unable to delete messages. Missing Permission: MESSAGE_MANAGE", null);
                 return;
             }
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
+            CommandEvent e = new CommandEvent(event);
+            onCommand(e);
+            logger.logCommandUse(event.getMessage(), this, e);
         }
     }
 
     @Override
-    public void onCommand(CommandEvent event) { // TODO: Batch delete
+    public void onCommand(CommandEvent event) {
         try {
             User u = event.message.getMentionedUsers().get(0);
-            java.util.List<Message> hist = new net.dv8tion.jda.MessageHistory(event.channel).retrieve(100);
-            hist.stream().filter(m -> m.getAuthor() == u).forEachOrdered(m -> AsyncDelete.deleteAsync(m, null));
-            event.sendMessage(
-                    u.getAsMention() + " has been purged by " + event.author.getUsername());
+            Misc.deleteFrom(((TextChannel) event.channel), e -> {
+                if(e.isEmpty()) {
+                    event.sendMessage(
+                            u.getAsMention() + " has been purged by " + event.author.getUsername());
+                    return;
+                }
+                event.sendMessage(String.format("**__ERROR:__ %s**", e.get(0).toString()));
+            }, u);
         } catch (IndexOutOfBoundsException e) {
-            event.sendMessage("I am unable to purge without mention reference. Usage: " + usage());
+            event.sendMessage(String.format("I am unable to purge without mention reference. Usage: %s", usage()));
         }
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] parts = message.split(" ", 2);
-        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "purge");
     }
 
     @Override

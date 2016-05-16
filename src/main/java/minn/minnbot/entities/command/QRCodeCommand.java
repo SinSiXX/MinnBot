@@ -31,7 +31,7 @@ public class QRCodeCommand extends CommandAdapter{
             event.sendMessage("Invalid input!" + usage());
             return;
         }
-        String input = URLEncoder.encode(event.allArguments.substring(method.length() + 1));
+        @SuppressWarnings("deprecation") String input = URLEncoder.encode(event.allArguments.substring(method.length() + 1));
         try {
             HttpResponse<String> response = Unirest.get("https://pierre2106j-qrcode.p.mashape.com/api?backcolor=ffffff&ecl=H&forecolor=000000&pixel=3+to+4&text=" + input + "&type=" + method)
                     .header("X-Mashape-Key", "IlX3p3hnDRmsheyTT7z87aT1mrs9p1Qb4WkjsnGUnXKitYqhtf")
@@ -41,12 +41,6 @@ public class QRCodeCommand extends CommandAdapter{
         } catch (UnirestException e) {
             event.sendMessage("Something is wrong with my connection try again later.");
         }
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] parts = message.split(" ",2);
-        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "qr");
     }
 
     public String usage() {

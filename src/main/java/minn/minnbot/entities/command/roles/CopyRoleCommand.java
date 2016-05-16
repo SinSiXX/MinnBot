@@ -3,6 +3,7 @@ package minn.minnbot.entities.command.roles;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
 import minn.minnbot.util.EmoteUtil;
 import minn.minnbot.util.RoleUtil;
 import net.dv8tion.jda.Permission;
@@ -19,12 +20,13 @@ public class CopyRoleCommand extends CommandAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isPrivate())
             return;
-        if (isCommand(event.getMessage().getContent())) {
+        if (isCommand(event.getMessage().getContent(), CommandManager.getPrefixList(event.getGuild().getId()))) {
             if (!PermissionUtil.checkPermission(event.getAuthor(), Permission.MANAGE_ROLES, event.getGuild()))
                 event.getChannel().sendMessageAsync("You are not allowed to manage roles. " + EmoteUtil.getRngThumbsdown(), null);
             else {
-                logger.logCommandUse(event.getMessage());
-                onCommand(new CommandEvent(event));
+                CommandEvent e = new CommandEvent(event);
+                onCommand(e);
+                logger.logCommandUse(event.getMessage(), this, e);
             }
         }
     }
@@ -51,12 +53,6 @@ public class CopyRoleCommand extends CommandAdapter {
         else
             r = RoleUtil.copyRole(r, "");
         event.sendMessage("Copied role: `" + r.getName() + "` " + EmoteUtil.getRngOkHand());
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "copyrole");
     }
 
     @Override

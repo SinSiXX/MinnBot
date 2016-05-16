@@ -10,7 +10,7 @@ import net.dv8tion.jda.player.MusicPlayer;
 
 import java.util.Map;
 
-public class RepairPlayersCommand extends CommandAdapter {// TODO: Test
+public class RepairPlayersCommand extends CommandAdapter {
 
     public RepairPlayersCommand(String prefix, Logger logger) {
         init(prefix, logger);
@@ -32,12 +32,6 @@ public class RepairPlayersCommand extends CommandAdapter {// TODO: Test
                 p.play();
         });
         event.sendMessage("Players have been repaired.");
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ",2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "vrepair");
     }
 
     @Override

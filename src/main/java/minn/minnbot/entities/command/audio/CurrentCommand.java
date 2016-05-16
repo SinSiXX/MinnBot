@@ -91,12 +91,6 @@ public class CurrentCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] parts = message.split(" ", 2);
-        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "current");
-    }
-
-    @Override
     public String getAlias() {
         return "current";
     }

@@ -3,6 +3,7 @@ package minn.minnbot.gui;
 import minn.minnbot.MinnBot;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.impl.LoggerImpl;
+import minn.minnbot.util.TimeUtil;
 import net.dv8tion.jda.JDA;
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
@@ -10,8 +11,6 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -89,22 +88,14 @@ public class MinnBotUserInterface extends JFrame {
         JCheckBox chckbxLogErrors = new JCheckBox("Log Events");
         chckbxLogErrors.setForeground(Color.WHITE);
         chckbxLogErrors.setBackground(Color.DARK_GRAY);
-        chckbxLogErrors.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                logger.toggleErrorLog();
-            }
-        });
+        chckbxLogErrors.addActionListener(e -> logger.toggleErrorLog());
         chckbxLogErrors.setBounds(334, 7, 126, 23);
         panel_2.add(chckbxLogErrors);
 
         JCheckBox chckbxLogMessages = new JCheckBox("Log Messages");
         chckbxLogMessages.setForeground(Color.WHITE);
         chckbxLogMessages.setBackground(Color.DARK_GRAY);
-        chckbxLogMessages.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                logger.toggleMessageLog();
-            }
-        });
+        chckbxLogMessages.addActionListener(e -> logger.toggleMessageLog());
         chckbxLogMessages.setBounds(334, 36, 126, 23);
         panel_2.add(chckbxLogMessages);
 
@@ -123,7 +114,7 @@ public class MinnBotUserInterface extends JFrame {
         btnAccount.setEnabled(false);
         panel_2.add(btnAccount);
 
-        JButton btnGenerateCommandJson = new JButton("Cache Information as Jsons.");
+        JButton btnGenerateCommandJson = new JButton("Store Information as Jsons.");
         btnGenerateCommandJson.setForeground(Color.WHITE);
         btnGenerateCommandJson.setBackground(Color.DARK_GRAY);
 
@@ -131,7 +122,14 @@ public class MinnBotUserInterface extends JFrame {
             try {
                 bot.handler.generateJson("commands.json");
                 bot.handler.saveTags();
-                logger.saveToJson();
+                if(logger.saveToJson()){
+                    eventArea.append(String.format("\n%s Error log saved.", String.format("%s [INFO]", TimeUtil.timeStamp())));
+                }
+                try {
+                    bot.handler.savePrefixMap();
+                } catch (Exception ex) {
+                    logger.logThrowable(ex);
+                }
             } catch (Exception e1) {
                 eventArea.append("\nThe bot must be launched to generate the commands.");
             }

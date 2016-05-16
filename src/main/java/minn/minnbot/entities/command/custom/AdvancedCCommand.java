@@ -5,6 +5,7 @@ import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
@@ -77,9 +78,17 @@ public class AdvancedCCommand extends CommandAdapter { // TODO: Allow use
     }
 
     @Override
-    public boolean isCommand(String message) {
+    public boolean isCommand(String message, List<String> prefixList) {
         String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + internalAlias);
+        if(p.length < 1)
+            return false;
+        if(p[0].equalsIgnoreCase(prefix + internalAlias))
+            return true;
+        for(String fix : prefixList) {
+            if(p[0].equalsIgnoreCase(fix + internalAlias))
+                return true;
+        }
+        return false;
     }
 
     @Override

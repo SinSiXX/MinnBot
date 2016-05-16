@@ -17,10 +17,8 @@ public class GifCommand extends CommandAdapter {
     private String key;
 
     public GifCommand(String prefix, Logger logger, String key) throws UnirestException {
-        this.prefix = prefix;
-        this.logger = logger;
+        init(prefix, logger);
         this.key = key;
-
         String url = "http://api.giphy.com/v1/gifs/random?api_key=" + key + "&rating=pg-13&tag=cat";
         com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest.get(url)
                 .header("accept", "application/json").asJson();
@@ -35,11 +33,7 @@ public class GifCommand extends CommandAdapter {
         try {
             // get request for giphy
             String term = event.allArguments;
-            String url = "http://api.giphy.com/v1/gifs/random?api_key=" + key + "&rating=pg-13&tag=" + URLEncoder.encode(term);
-            if (!term.isEmpty()) {
-                term = term.replace(" ", "+");
-                url = "http://api.giphy.com/v1/gifs/random?api_key=" + key + "&rating=pg-13&tag=" + URLEncoder.encode(term);
-            }
+            String url = String.format("http://api.giphy.com/v1/gifs/random?api_key=%s&rating=pg-13&tag=%s", key, URLEncoder.encode(term));
             com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest.get(url)
                     .header("accept", "application/json").asJson();
             JSONObject obj = new JSONObject(jsonResponse.getBody().toString());
@@ -63,12 +57,6 @@ public class GifCommand extends CommandAdapter {
             }
             logger.logThrowable(e);
         }
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] parts = message.split(" ", 2);
-        return parts.length >= 1 && parts[0].equalsIgnoreCase(prefix + "gif");
     }
 
     @Override

@@ -64,13 +64,6 @@ public class OperatorManager extends CmdManager {
         else
             splitter.add(com);
 
-        com = new FlushCommand(prefix, logger);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
-        else
-            splitter.add(com);
-
         com = new IgnoreCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
@@ -112,6 +105,14 @@ public class OperatorManager extends CmdManager {
             errors.add(err.get());
         else
             splitter.add(com);
+
+        com = new NickResetCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
     }
 
 }

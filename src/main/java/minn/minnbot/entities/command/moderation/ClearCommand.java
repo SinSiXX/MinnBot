@@ -1,13 +1,18 @@
 package minn.minnbot.entities.command.moderation;
 
-import minn.minnbot.AsyncDelete;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
+import minn.minnbot.util.Misc;
 import net.dv8tion.jda.MessageHistory;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Message;
+import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 public class ClearCommand extends CommandAdapter {
 
@@ -18,7 +23,7 @@ public class ClearCommand extends CommandAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isPrivate())
             return;
-        if (isCommand(event.getMessage().getContent())) {
+        if (isCommand(event.getMessage().getContent(), CommandManager.getPrefixList(event.getGuild().getId()))) {
             if (!event.getTextChannel().checkPermission(event.getAuthor(), Permission.MESSAGE_MANAGE)) {
                 return;
             } else if (!event.getTextChannel().checkPermission(event.getJDA().getSelfInfo(),
@@ -28,29 +33,38 @@ public class ClearCommand extends CommandAdapter {
                             .sendMessageAsync("I am unable to delete messages. Missing Permission: MESSAGE_MANAGE", null);
                 return;
             }
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
+            CommandEvent e = new CommandEvent(event);
+            onCommand(e);
+            logger.logCommandUse(event.getMessage(), this, e);
         }
     }
 
     @Override
-    public void onCommand(CommandEvent event) { // TODO: Batch delete
-        int amount = 100;
-        final int[] count = {0};
+    public void onCommand(CommandEvent event) {
+        int amount[] = {0};
+        Consumer<List<Exception>> callbaok = e -> {
+            if (e.isEmpty()) {
+                if (amount[0] != 99)
+                    event.sendMessage(String.format("%s deleted %d messages in this channel!", event.author.getAsMention(), --amount[0]));
+                else
+                    event.sendMessage(String.format("%s cleared the room.", event.author.getAsMention()));
+                return;
+            }
+            //noinspection ThrowableResultOfMethodCallIgnored
+            event.sendMessage(String.format("**__ERROR:__ %s**", e.get(0).toString()));
+        };
         try {
-            amount = Integer.parseInt(event.allArguments);
+            amount[0] = Integer.parseInt(event.allArguments);
+            if (amount[0] < 1) {
+                event.sendMessage("Unable to delete less than one message!");
+                return;
+            }
         } catch (NumberFormatException ignored) {
+            amount[0] = 98;
         }
-        java.util.List<Message> hist = new MessageHistory(event.event.getTextChannel()).retrieve(amount);
-        event.sendMessage(event.author.getAsMention() + ", cleared messages in this channel!");
-        hist.parallelStream().forEachOrdered(m -> AsyncDelete.deleteAsync(m, (Object) -> count[0]++));
-        // event.sendMessage(event.event.getAuthor().getAsMention() + ", deleted " + count[0] + " messages in this channel.");
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] parts = message.split(" ", 2);
-        return parts.length > 0 && parts[0].equalsIgnoreCase(prefix + "clear");
+        List<Message> messages = new MessageHistory(event.channel).retrieve(++amount[0]);
+        messages.removeIf(message -> message.getId().equalsIgnoreCase(event.message.getId()));
+        Misc.deleteIn(messages, (TextChannel) event.channel, callbaok);
     }
 
     @Override

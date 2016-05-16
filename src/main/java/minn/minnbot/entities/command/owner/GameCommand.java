@@ -32,17 +32,6 @@ public class GameCommand extends CommandAdapter {
     }
 
     @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "game");
-    }
-
-    @Override
-    public String usage() {
-        return "`game <game>`";
-    }
-
-    @Override
     public String getAlias() {
         return "game <game>";
     }

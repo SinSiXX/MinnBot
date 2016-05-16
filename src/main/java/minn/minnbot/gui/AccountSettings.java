@@ -6,8 +6,6 @@ import net.dv8tion.jda.utils.AvatarUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 
@@ -110,21 +108,19 @@ public class AccountSettings extends JFrame {
 		getContentPane().add(textArea);
 
 		JButton btnUpdate = new JButton("UPDATE");
-		btnUpdate.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					textArea.setEditable(true);
-					textArea.setText("[REQUESTING]\n");
-					name(nameField.getText());
-					game(gameField.getText());
-					avatar(new File(avatarField.getText()));
-					textArea.setEditable(false);
-					manager.update();
-				} catch (Exception e2) {
-					i.writeEvent("[MINNBOT] " + e2.getMessage());
-				}
-			}
-		});
+		btnUpdate.addActionListener(e -> {
+            try {
+                textArea.setEditable(true);
+                textArea.setText("[REQUESTING]\n");
+                name(nameField.getText());
+                game(gameField.getText());
+                avatar(new File(avatarField.getText()));
+                textArea.setEditable(false);
+                manager.update();
+            } catch (Exception e2) {
+                i.writeEvent("[MINNBOT] " + e2.getMessage());
+            }
+        });
 		btnUpdate.setBounds(297, 11, 89, 80);
 		getContentPane().add(btnUpdate);
 

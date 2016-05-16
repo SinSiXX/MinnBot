@@ -64,10 +64,7 @@ public class TagCommand extends CommandAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isPrivate())
             return;
-        if (isCommand(event.getMessage().getContent())) {
-            logger.logCommandUse(event.getMessage());
-            onCommand(new CommandEvent(event));
-        }
+        super.onMessageReceived(event);
     }
 
     @Override
@@ -79,7 +76,7 @@ public class TagCommand extends CommandAdapter {
             for (Tag t : tags) {
                 if(t.getGuild() == null)
                     continue;
-                if (t.getGuild() == event.event.getGuild()) {
+                if (t.getGuild() == event.guild) {
                     s += "`" + t.name() + "` ";
                     moreThanOne = true;
                 }
@@ -104,7 +101,7 @@ public class TagCommand extends CommandAdapter {
                     tagResponse += " " + event.arguments[i];
                 }
                 for (Tag t : tags) {
-                    if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
+                    if (t.name().equals(tagName) && t.getGuild() == event.guild) {
                         target = t;
                         break;
                     }
@@ -113,7 +110,7 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Not a tag.");
                     return;
                 }
-                if (event.event.getAuthor() != target.getOwner() && !PermissionUtil.checkPermission(event.event.getAuthor(), Permission.MANAGE_ROLES, event.event.getGuild())) {
+                if (event.author != target.getOwner() && !PermissionUtil.checkPermission(event.author, Permission.MANAGE_ROLES, event.guild)) {
                     event.sendMessage("You are not authorized to edit this tag.");
                     return;
                 }
@@ -124,7 +121,7 @@ public class TagCommand extends CommandAdapter {
             if (method.equalsIgnoreCase("del")) {
                 String tagName = event.arguments[1];
                 for (Tag t : tags) {
-                    if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
+                    if (t.name().equals(tagName) && t.getGuild() == event.guild) {
                         target = t;
                         break;
                     }
@@ -133,7 +130,7 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Not a tag.");
                     return;
                 }
-                if (event.event.getAuthor() != target.getOwner() && !PermissionUtil.checkPermission(event.event.getAuthor(), Permission.MANAGE_SERVER, event.event.getGuild())) {
+                if (event.author != target.getOwner() && !PermissionUtil.checkPermission(event.author, Permission.MANAGE_SERVER, event.event.getGuild())) {
                     event.sendMessage("You are not authorized to edit this tag.");
                     return;
                 }
@@ -142,8 +139,8 @@ public class TagCommand extends CommandAdapter {
                 return;
             }
             if (method.equalsIgnoreCase("add")) {
-                User user = event.event.getAuthor();
-                if (!PermissionUtil.checkPermission(user, Permission.MANAGE_SERVER, event.event.getGuild()) && !user.getId().equals(owner)) {
+                User user = event.author;
+                if (!PermissionUtil.checkPermission(user, Permission.MANAGE_SERVER, event.guild) && !user.getId().equals(owner)) {
                     event.sendMessage("You are missing the permission to manage the server. Ask someone with the required permissions to add the tag for you.");
                     return;
                 }
@@ -156,7 +153,7 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Tagname `" + tagName + "` is not allowed. " + EmoteUtil.getRngThumbsdown());
                     return;
                 }
-                String[] parts = event.event.getMessage().getRawContent().split(" ", 4);
+                String[] parts = event.message.getRawContent().split(" ", 4);
                 if(parts.length != 4) {
                     event.sendMessage("Empty names or responses are not allowed.");
                     return;
@@ -167,7 +164,7 @@ public class TagCommand extends CommandAdapter {
                     return;
                 }
                 for (Tag t : tags) {
-                    if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
+                    if (t.name().equals(tagName) && t.getGuild() == event.guild) {
                         target = t;
                         break;
                     }
@@ -176,7 +173,7 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Already a tag.");
                     return;
                 }
-                Tag t = new TagImpl(event.event.getAuthor(), event.event.getGuild(), tagName, tagResponse);
+                Tag t = new TagImpl(event.author, event.guild, tagName, tagResponse);
                 tags.add(t);
                 event.sendMessage("Created tag `" + t.name() + "`. " + EmoteUtil.getRngOkHand());
                 return;
@@ -187,7 +184,7 @@ public class TagCommand extends CommandAdapter {
                     return;
                 }
                 for (Tag t : tags) {
-                    if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
+                    if (t.name().equals(tagName) && t.getGuild() == event.guild) {
                         target = t;
                         break;
                     }
@@ -207,46 +204,36 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Unable to jsonfy given tag. " + EmoteUtil.getRngThumbsdown());
                 return;
             }
-            String tagName = event.allArguments;
+            String tagName = event.arguments[0];
             for (Tag t : tags) {
-                if (t.name().equals(tagName) && t.getGuild() == event.event.getGuild()) {
+                if (t.name().equals(tagName) && t.getGuild() == event.guild) {
                     target = t;
                     break;
                 }
             }
-            if (target == null || target.getGuild() != event.event.getGuild()) {
+            if (target == null || target.getGuild() != event.guild) {
                 event.sendMessage("Not a tag.");
                 return;
             }
-            event.sendMessage("\u0001 " + target.response());
+            event.sendMessage("\u0001 " + TagManager.scanForVars(target, event));
         } catch (Exception e) {
             logger.logThrowable(e);
         }
     }
 
     @Override
-    public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("tag"))
-                return true;
-        } catch (Exception ignored) {
-        }
-        return false;
-    }
-
-    @Override
     public String usage() {
-        return "tag <method> <tag> <response> " +
+        return "\n***Requires MANAGE_SERVER permission***" +
+                "\n**tag <method> <tag> <response> **" +
                 "\nMethods:" +
                 "\n> `del` - delete tag." +
                 "\n> `edt` - edit tag." +
                 "\n> `add` - add new tag." +
-                "\n> `json` - print tag as a json object.";
+                "\n> `json` - print tag as a json object." +
+                "\n\n**__Tag parameters:__ (Case sensitive)**" +
+                "\n\n> `%channel%` - current channel" +
+                "\n> `%touser%` - mentions given user" +
+                "\n> `%users%` - prints amount of guild users.";
     }
 
     @Override

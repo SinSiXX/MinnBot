@@ -5,6 +5,7 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
+import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
@@ -13,13 +14,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.activation.UnsupportedDataTypeException;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -33,17 +34,83 @@ public class CommandManager extends ListenerAdapter {
     private String owner;
     private Logger logger;
     private ThreadPoolExecutor executor;
+    private static Map<String, List<String>> prefixMap;
+    private static PrefixWriter writer;
+    private static boolean reading = true;
+
+    public static List<String> getPrefixList(String id) {
+        if (prefixMap.containsKey(id))
+            return prefixMap.get(id);
+        else {
+            List<String> prefixList = new LinkedList<>();
+            prefixMap.put(id, prefixList);
+            return prefixList;
+        }
+    }
+
+    public static boolean addPrefix(Guild guild, String fix) {
+        String id = guild.getId();
+        List<String> prefixList = getPrefixList(id);
+        if (prefixList.contains(fix))
+            return false;
+        prefixList.add(fix);
+        return true;
+    }
+
+    public static boolean removePrefix(Guild guild, String fix) {
+        String id = guild.getId();
+        List<String> prefixList = getPrefixList(id);
+        if (!prefixList.contains(fix))
+            return false;
+        prefixList.remove(fix);
+        if (prefixList.isEmpty())
+            prefixMap.remove(id);
+        return true;
+    }
+
+    private void readMap() {
+        prefixMap = new HashMap<>();
+        File f = new File("prefix.json");
+        if (!f.exists()) {
+            logger.logThrowable(new Info("prefix.json does not exist."));
+        }
+        try {
+            JSONArray arr = new JSONArray(new String(Files.readAllBytes(Paths.get("prefix.json"))));
+            for (Object anArr : arr)
+                try {
+                    JSONObject jObj = (JSONObject) anArr;
+                    String id = jObj.keys().next();
+
+                    JSONArray list = jObj.getJSONArray(id);
+                    List<String> prefixList = new LinkedList<>();
+
+                    for (Object aFix : list) prefixList.add(aFix.toString());
+
+                    prefixMap.put(id, prefixList);
+                } catch (Exception ex) {
+                    logger.logThrowable(ex);
+                }
+        } catch (IOException e) {
+            logger.logThrowable(new Info("prefix.json does not exist."));
+        } catch (JSONException e) {
+            logger.logThrowable(new Info("prefix array is malformed!"));
+        }
+        reading = false;
+    }
 
     public CommandManager(JDA api, Logger logger, String owner) {
         this.api = api;
+        if(!api.getRegisteredListeners().contains(this)) api.addEventListener(this);
         this.logger = logger;
         this.owner = owner;
-        this.executor = new ThreadPoolExecutor(10, 20, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
+        this.executor = new ThreadPoolExecutor(10, 30, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
             final Thread thread = new Thread(r, "CommandExecution-Thread");
-            thread.setPriority(Thread.NORM_PRIORITY);
+            thread.setPriority(Thread.MAX_PRIORITY);
             thread.setDaemon(true);
             return thread;
         });
+        executor.submit(this::readMap);
+        writer = new PrefixWriter();
     }
 
     public List<Command> getCommands() {
@@ -63,7 +130,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void onShutdown(ShutdownEvent event) {
-
+        savePrefixMap();
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -151,6 +218,82 @@ public class CommandManager extends ListenerAdapter {
 
     public void saveTags() {
         TagManager.saveTags();
+    }
+
+    public void savePrefixMap() {
+        if (reading) {
+            logger.logThrowable(new Info("Tried to save prefix map before it finished reading!"));
+            return;
+        }
+        try {
+            save();
+        } catch (IOException e) {
+            logger.logThrowable(e);
+            return;
+        }
+        logger.logThrowable(new Info("Saved Prefix Map: prefix.json"));
+    }
+
+    public static void save() throws IOException {
+        if (reading) {
+            new Info("Tried to save prefix map before it finished reading!").printStackTrace();
+            return;
+        }
+        JSONArray arr = new JSONArray();
+
+        prefixMap.forEach((id, list) -> {
+            if (list.isEmpty()) return;
+            JSONObject obj = new JSONObject();
+            JSONArray a = new JSONArray();
+            list.parallelStream().forEachOrdered(a::put);
+            obj.put(id, a);
+            arr.put(obj);
+        });
+        writer.write(arr.toString(4));
+    }
+
+    private class PrefixWriter {
+        private File f;
+        private BufferedOutputStream stream;
+
+        PrefixWriter() {
+            f = new File("prefix.json");
+            try {
+                if (!f.exists())
+                    f.createNewFile();
+                stream = new BufferedOutputStream(new FileOutputStream(f));
+            } catch (IOException e) {
+                logger.logThrowable(e);
+            }
+        }
+
+        void writeln(String input) {
+            if(reading)
+                return;
+            try {
+                stream.write((input + "\n").getBytes());
+            } catch (IOException e) {
+                logger.logThrowable(e);
+            }
+        }
+
+        void write(String input) {
+            if(reading)
+                return;
+            try {
+                stream.write(input.getBytes());
+            } catch (IOException e) {
+                logger.logThrowable(e);
+            }
+        }
+
+        void close() {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                logger.logThrowable(e);
+            }
+        }
     }
 
 }

@@ -3,6 +3,7 @@ package minn.minnbot.entities.command.roles;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.manager.CommandManager;
 import minn.minnbot.util.RoleUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Role;
@@ -19,12 +20,13 @@ public class EditRoleCommand extends CommandAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isPrivate())
             return;
-        if (isCommand(event.getMessage().getContent())) {
+        if (isCommand(event.getMessage().getContent(), CommandManager.getPrefixList(event.getGuild().getId()))) {
             if (!PermissionUtil.checkPermission(event.getAuthor(), Permission.MANAGE_ROLES, event.getGuild()))
                 event.getChannel().sendMessageAsync("You are not allowed to manage roles. :thumbsdown::skin-tone-" + ((int) Math.ceil(Math.random() * 5)) + ":", null);
             else {
-                logger.logCommandUse(event.getMessage());
-                onCommand(new CommandEvent(event));
+                CommandEvent e = new CommandEvent(event);
+                onCommand(e);
+                logger.logCommandUse(event.getMessage(), this, e);
             }
         }
     }
@@ -71,21 +73,6 @@ public class EditRoleCommand extends CommandAdapter {
         } else {
             event.sendMessage("Invalid method `" + method + "`.");
         }
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("editrole"))
-                return true;
-        } catch (Exception ignored) {
-        }
-        return false;
     }
 
     @Override

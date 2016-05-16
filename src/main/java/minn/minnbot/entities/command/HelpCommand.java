@@ -47,7 +47,7 @@ public class HelpCommand extends CommandAdapter {
         if (!event.allArguments.startsWith(prefix))
             cmd = prefix + cmd;
         for (Command c : commands) {
-            if (c.isCommand(cmd)) {
+            if (c.isCommand(cmd, CommandManager.getPrefixList(event.guild.getId()))) {
                 if (!c.usage().isEmpty())
                     event.sendMessage("Usage page for " + ((c instanceof HelpSplitter) ? "`" + c.getAlias() + "`" : cmd) + ": " + c.usage());
                 else
@@ -56,21 +56,6 @@ public class HelpCommand extends CommandAdapter {
             }
         }
         event.sendMessage("Unrecognised command/category `" + event.allArguments + "`\nUsage: " + usage());
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        try {
-            message = message.toLowerCase();
-            if (!message.startsWith(prefix))
-                return false;
-            message = message.substring(prefix.length());
-            String command = message.split(" ", 2)[0];
-            if (command.equalsIgnoreCase("help"))
-                return true;
-        } catch (Exception ignored) {
-        }
-        return false;
     }
 
     @Override

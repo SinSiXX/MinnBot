@@ -21,19 +21,8 @@ public class DebugCommand extends CommandAdapter {
 	}
 
 	@Override
-	public boolean isCommand(String message) {
-		String[] p = message.split(" ",2);
-		return p.length > 0 && p[0].equalsIgnoreCase(prefix + "toggledebug") || p[0].equalsIgnoreCase(prefix + "td");
-	}
-
-	@Override
-	public String usage() {
-		return "`toggledebug` or `td`";
-	}
-
-	@Override
 	public String getAlias() {
-		return "toggledebug";
+		return "td";
 	}
 
 	public boolean requiresOwner() {

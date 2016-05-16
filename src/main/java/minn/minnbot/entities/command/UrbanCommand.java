@@ -21,6 +21,7 @@ public class UrbanCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         HttpResponse<JsonNode> response;
         try {
+            //noinspection deprecation
             response = Unirest.get("https://mashape-community-urban-dictionary.p.mashape.com/define?term=" + URLEncoder.encode(event.allArguments.trim()))
                     .header("X-Mashape-Key", "IlX3p3hnDRmsheyTT7z87aT1mrs9p1Qb4WkjsnGUnXKitYqhtf")
                     .header("Accept", "text/plain")
@@ -41,12 +42,6 @@ public class UrbanCommand extends CommandAdapter {
             logger.logThrowable(e);
             event.sendMessage("Something went wrong with your request!");
         }
-    }
-
-    @Override
-    public boolean isCommand(String message) {
-        String[] p = message.split(" ", 2);
-        return p.length > 0 && p[0].equalsIgnoreCase(prefix + "urban");
     }
 
     @Override

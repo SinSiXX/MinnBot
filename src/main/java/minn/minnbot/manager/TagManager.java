@@ -3,6 +3,8 @@ package minn.minnbot.manager;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.Tag;
 import minn.minnbot.entities.impl.BlockTag;
+import minn.minnbot.events.CommandEvent;
+import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.events.ShutdownEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import org.json.JSONArray;
@@ -27,6 +29,25 @@ public class TagManager extends ListenerAdapter {
 
     public List<Tag> getTags() {
         return Collections.unmodifiableList(tags);
+    }
+
+    public static String scanForVars(Tag t, CommandEvent event) {
+        String response = t.response();
+        if (response.contains("%touser%")) {
+            if (!event.message.getMentionedUsers().isEmpty())
+                response = response.replace("%touser%", event.message.getMentionedUsers().get(0).getAsMention());
+            else
+                response = response.replace("%touser%", event.author.getAsMention());
+        }
+        if (response.contains("%channel%")) {
+            if (!event.message.getMentionedChannels().isEmpty())
+                response = response.replace("%channel%", event.message.getMentionedChannels().get(0).getAsMention());
+            else
+                response = response.replace("%channel%", ((TextChannel) event.channel).getAsMention());
+        }
+        if (response.contains("%users%"))
+            response = response.replace("%users%", "" + event.guild.getUsers().size());
+        return response;
     }
 
     public static JSONObject jsonfy(Tag tag) {
@@ -81,7 +102,7 @@ public class TagManager extends ListenerAdapter {
         this.logger = logger;
         this.tags = tags;
         manager = this;
-        if(autoSave != null)
+        if (autoSave != null)
             autoSave.interrupt();
         autoSave = new Thread(() -> {
             while (!autoSave.isInterrupted()) {
@@ -91,6 +112,11 @@ public class TagManager extends ListenerAdapter {
                     break;
                 }
                 saveTags();
+                try {
+                    CommandManager.save();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         autoSave.setDaemon(true);
