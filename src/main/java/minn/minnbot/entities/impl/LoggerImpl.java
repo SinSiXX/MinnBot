@@ -13,6 +13,8 @@ import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.events.DisconnectEvent;
 import net.dv8tion.jda.events.Event;
 import net.dv8tion.jda.events.ShutdownEvent;
+import net.dv8tion.jda.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import net.dv8tion.jda.utils.SimpleLog;
@@ -23,13 +25,13 @@ import java.util.*;
 
 public class LoggerImpl extends ListenerAdapter implements Logger, Thread.UncaughtExceptionHandler, SimpleLog.LogListener {
 
-    private int messages = 0;
-    private int privateMessages = 0;
-    private int guildMessages = 0;
-    private int commands = 0;
-    private int events = 0;
-    private boolean debug = false;
-    // private List<String> messageLogs;
+    private long messages = 0;
+    private long privateMessages = 0;
+    private long guildMessages = 0;
+    private long commands = 0;
+    private long events = 0;
+    private DebugLevel debug = DebugLevel.NONE;
+    private EventWriter eventWriter;
     private List<String> errorLogs;
     private MinnBotUserInterface console;
     private long startTime;
@@ -43,7 +45,6 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     public LoggerImpl(MinnBotUserInterface console) {
         this.console = console;
-        // messageLogs = new LinkedList<String>();
         errorLogs = new LinkedList<>();
         this.startTime = System.currentTimeMillis();
         console.writeEvent(TimeUtil.timeStamp() + "[MINNBOT] Ready!");
@@ -54,6 +55,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
             File folder = new File("Logs/Session/Messages");
             folder.mkdirs();
             this.messageLogWriter = new LogWriter(new File(String.format("Logs/Session/Messages/Session-%s.log", 10 << System.currentTimeMillis())));
+            eventWriter = new EventWriter();
         } catch (IOException e) {
             logThrowable(e);
         }
@@ -62,7 +64,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     @Override
     public void onEvent(Event event) {
         if (publicLog == null)
-            publicLog = PublicLog.init(event.getJDA());
+            publicLog = PublicLog.init(event.getJDA(), this::logThrowable);
         if (event instanceof MessageReceivedEvent) {
             onMessageReceived((MessageReceivedEvent) event);
         } else if (event instanceof ShutdownEvent || event instanceof DisconnectEvent) {
@@ -71,9 +73,14 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
                 try {
                     errorLogWriter.close();
                     messageLogWriter.close();
+                    eventWriter.close();
                 } catch (IOException e) {
                     logThrowable(e);
                 }
+        } else if (event instanceof GuildJoinEvent) {
+            PublicLog.log(String.format("```diff\n+ %s JOINED %s```", TimeUtil.timeStamp(), ((GuildJoinEvent) event).getGuild().getName().toUpperCase().replaceAll("`", "\u0001`\u0001")));
+        } else if (event instanceof GuildLeaveEvent) {
+            PublicLog.log(String.format("```diff\n- %s LEFT %s```", TimeUtil.timeStamp(), ((GuildLeaveEvent) event).getGuild().getName().toUpperCase().replaceAll("`", "\u0001`\u0001")));
         }
         logEvent(event);
     }
@@ -144,14 +151,16 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     @Override
     public boolean logEvent(Event event) {
         try {
-            if (debug) {
-                String s = TimeUtil.timeStamp() + " " + event.getClass().getSimpleName() + ": "
-                        + event.getJDA();
+            events++;
+            if (debug == DebugLevel.LOG) {
+                String s = String.format("%s [%s] [%s]", TimeUtil.timeStamp(), event.getClass().getSimpleName(), event.getJDA());
                 console.writeEvent(s);
-                events++;
                 return true;
-            } else
-                return false;
+            } else if (debug == DebugLevel.FILE) {
+                eventWriter.writeln(event);
+                return true;
+            }
+            return false;
         } catch (Exception e) {
             logThrowable(e);
             return false;
@@ -163,9 +172,11 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     }
 
     @Override
-    public boolean toggleDebug() {
-        debug = !debug;
-        return debug;
+    public DebugLevel toggleDebug(DebugLevel level) {
+        if (level == null)
+            return debug;
+        debug = level;
+        return level;
     }
 
     /**
@@ -177,8 +188,8 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
      * <b>5)</b> startTimeInMillis
      */
     @Override
-    public int[] getNumbers() {
-        int[] numbers = new int[6];
+    public long[] getNumbers() {
+        long[] numbers = new long[6];
         numbers[0] = messages;
         numbers[1] = commands;
         numbers[2] = events;
@@ -278,11 +289,48 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     public void onLog(SimpleLog log, SimpleLog.Level level, Object msg) {
         if (level.getPriority() < SimpleLog.Level.INFO.getPriority()) //lower than info
             return;
-        logThrowable(new Info('[' + log.name + "] " + msg.toString()));
+        logThrowable(new Info(String.format("[%s] %s", log.name, msg.toString())));
     }
 
     @Override
     public void onError(SimpleLog simpleLog, Throwable throwable) {
+        if (throwable.getStackTrace().length < 1) return;
         logThrowable(throwable);
     }
+
+    public enum DebugLevel {FILE, LOG, NONE}
+
+    private class EventWriter {
+
+        private File folder = new File("Logs/Events");
+        private File f = new File(String.format("Logs/Events/EventLogs%d.log", 22 << System.currentTimeMillis()));
+        private OutputStream stream = new BufferedOutputStream(new FileOutputStream(f));
+
+        EventWriter() throws FileNotFoundException {
+            folder.mkdirs();
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                logThrowable(e);
+            }
+        }
+
+        void writeln(Event input) {
+            try {
+                stream.write((String.format("%s [%s]\n", TimeUtil.timeStamp(), input.getClass().getSimpleName())).getBytes());
+            } catch (IOException e) {
+                logThrowable(e);
+            }
+        }
+
+        void close() {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                logThrowable(e);
+            }
+        }
+
+    }
+
 }

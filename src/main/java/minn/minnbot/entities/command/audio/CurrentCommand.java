@@ -15,19 +15,27 @@ import java.util.List;
 public class CurrentCommand extends CommandAdapter {
 
     public CurrentCommand(String prefix, Logger logger) {
-        this.logger = logger;
-        this.prefix = prefix;
+        init(prefix, logger);
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.isPrivate())
-            return;
-        super.onMessageReceived(event);
+        if (!event.isPrivate())
+            super.onMessageReceived(event);
     }
 
     @Override
     public void onCommand(CommandEvent event) {
         MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
+
+        if(MinnAudioManager.isLive(player)) {
+            try {
+                event.sendMessage(String.format("**Playing live stream: %s**", player.getCurrentAudioSource().getInfo().getTitle()));
+            } catch (Exception e) {
+                event.sendMessage("**Playing live stream: N/A**");
+            }
+            return;
+        }
+
         List<AudioSource> playlist = player.getAudioQueue();
         AudioSource previous = player.getPreviousAudioSource();
         AudioSource current = player.getCurrentAudioSource();

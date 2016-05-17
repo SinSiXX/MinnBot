@@ -20,8 +20,7 @@ public class QueueCommand extends CommandAdapter {
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.isPrivate())
-            return;
+        if (!event.isPrivate())
         super.onMessageReceived(event);
     }
 
@@ -31,13 +30,20 @@ public class QueueCommand extends CommandAdapter {
             event.sendMessage("You have to provide at least one URL.");
             return;
         }
+
+        if(MinnAudioManager.isLive(MinnAudioManager.getPlayer(event.guild))) {
+            event.sendMessage("You cannot queue songs while the player is connected to a stream!");
+            return;
+        }
+
         event.sendMessage("Validating request, this may take a few minutes..."
                         + (!event.guild.getAudioManager().isConnected()
                         ? String.format("\nIn the meantime you can make me connect to the channel you are in by typing `%sjoinme`.", prefix)
                         : ""),
                 msg -> QueueRequestManager.requestEnqueue(event.guild, (accepted) -> {
+                    final boolean[] sent = {msg != null};
                     if(!accepted) {
-                        msg.updateMessageAsync("**All request slots are filled. Try again in a few minutes!**", null);
+                        if(sent[0]) msg.updateMessageAsync("**All request slots are filled. Try again in a few minutes!**", m -> sent[0] = m != null);
                         return;
                     }
                     Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
@@ -50,7 +56,7 @@ public class QueueCommand extends CommandAdapter {
                     final boolean[] error = {false};
                     for (String url : urls) {
                         if (url.contains("https://gaming.youtube.com/watch?v=")) {
-                            msg.updateMessageAsync("Youtube Gaming URLs are not accepted. Skipping...", null);
+                            if(sent[0]) msg.updateMessageAsync("Youtube Gaming URLs are not accepted. Skipping...", m -> sent[0] = m != null);
                             continue;
                         }
                         Playlist list;
@@ -62,16 +68,16 @@ public class QueueCommand extends CommandAdapter {
                         }
                         List<AudioSource> listSources = list.getSources();
                         if (listSources.size() > 1) {
-                            msg.updateMessageAsync("Detected Playlist! Starting to queue songs...", null);
+                            if(sent[0]) msg.updateMessageAsync("Detected Playlist! Starting to queue songs...", m -> sent[0] = m != null);
                         } else if (listSources.size() == 1) {
                             AudioInfo audioInfo = listSources.get(0).getInfo();
                             if (audioInfo.getError() != null) {
-                                msg.updateMessageAsync("**__Error with source:__ " + audioInfo.getError().trim() + "**", null);
+                                if(sent[0]) msg.updateMessageAsync("**__Error with source:__ " + audioInfo.getError().trim() + "**", m -> sent[0] = m != null);
                                 continue;
                             }
-                            msg.updateMessageAsync("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!", null);
+                            if(sent[0]) msg.updateMessageAsync("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!", m -> sent[0] = m != null);
                         } else {
-                            msg.updateMessageAsync("Source had no attached/readable information. Skipping...", null);
+                            if(sent[0]) msg.updateMessageAsync("Source had no attached/readable information. Skipping...", m -> sent[0] = m != null);
                             continue;
                         }
                         // execute
@@ -80,29 +86,29 @@ public class QueueCommand extends CommandAdapter {
                             AudioInfo info = source.getInfo();
                             if (info == null) {
                                 if (!error[0]) {
-                                    msg.updateMessageAsync("Source was not available. Skipping.", null);
+                                    if(sent[0]) msg.updateMessageAsync("Source was not available. Skipping.", m -> sent[0] = m != null);
                                     error[0] = true;
                                 }
                                 continue;
                             } else if (info.getError() != null) {
                                 if (!error[0]) {
-                                    msg.updateMessageAsync("**One or more sources were not available. Sorry fam.**", null);
+                                    if(sent[0]) msg.updateMessageAsync("**One or more sources were not available. Sorry fam.**", m -> sent[0] = m != null);
                                     error[0] = true;
                                 }
                                 continue;
                             } else if (info.isLive()) {
-                                event.sendMessage("Detected Live Stream. I don't play live streams. Skipping...");
+                                if(sent[0]) msg.updateMessageAsync("Detected Live Stream. I don't play live streams. Skipping...", m -> sent[0] = m != null);
                                 continue;
                             }
                             player.getAudioQueue().add(source);
                             if (!player.isPlaying()) {
-                                msg.updateMessageAsync("Enqueuing songs and starting playback...", null);
+                                if(sent[0]) msg.updateMessageAsync("Enqueuing songs and starting playback...", m -> sent[0] = m != null);
                                 try {
                                     Thread.sleep(3000); // Build buffer
                                 } catch (InterruptedException ignored) {
                                 }
                                 player.play();
-                                msg.updateMessageAsync("Now playing...", null);
+                                if(sent[0]) msg.updateMessageAsync("Now playing...", m -> sent[0] = m != null);
                             }
                         }
                     }

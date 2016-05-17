@@ -91,7 +91,6 @@ public class TagManager extends ListenerAdapter {
                 //noinspection ThrowFromFinallyBlock
                 out.close();
             }
-            // Files.write(Paths.get("tags.json"), arr.toString(4).getBytes());
             manager.logger.logThrowable(new minn.minnbot.entities.throwable.Info("Tags haven been saved. " + Paths.get("tags.json")));
         } catch (IOException e) {
             manager.logger.logThrowable(e);

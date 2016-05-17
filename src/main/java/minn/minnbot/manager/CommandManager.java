@@ -103,7 +103,7 @@ public class CommandManager extends ListenerAdapter {
         if(!api.getRegisteredListeners().contains(this)) api.addEventListener(this);
         this.logger = logger;
         this.owner = owner;
-        this.executor = new ThreadPoolExecutor(10, 30, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
+        this.executor = new ThreadPoolExecutor(10, 50, 5L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
             final Thread thread = new Thread(r, "CommandExecution-Thread");
             thread.setPriority(Thread.MAX_PRIORITY);
             thread.setDaemon(true);

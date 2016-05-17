@@ -23,6 +23,10 @@ public class SkipCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         MusicPlayer player = MinnAudioManager.getPlayer(event.event.getGuild());
+        if(MinnAudioManager.isLive(player)) {
+            event.sendMessage("You cannot skip a stream!");
+            return;
+        }
         if (!player.isPlaying()) {
             event.sendMessage("Player is not playing!");
             return;

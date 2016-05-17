@@ -97,6 +97,14 @@ public class AudioCommandManager extends CmdManager {
         else
             splitter.add(com);
 
+        /*com = new LinkStreamCommand(prefix, logger);
+        registerCommand(com);
+        splitter.add(com);
+
+        com = new UnlinkStreamCommand(prefix, logger);
+        registerCommand(com);
+        splitter.add(com);*/
+
         this.errors = errors;
     }
 }

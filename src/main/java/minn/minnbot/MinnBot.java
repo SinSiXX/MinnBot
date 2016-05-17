@@ -129,7 +129,6 @@ public class MinnBot extends ListenerAdapter {
             obj.put("prefix", "");
             obj.put("owner", "");
             obj.put("token", "");
-            obj.put("inviteurl", "");
             obj.put("log", true);
             obj.put("audio", false);
             obj.put("giphy", "dc6zaTOxFJmzC");

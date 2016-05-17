@@ -19,25 +19,28 @@ public class MemeCommand extends CommandAdapter {
             return;
         }
         String template = event.arguments[0];
-        String[] parts = event.allArguments.split(" ", 2);
-        parts = parts[1].split("\\Q|\\E", 2);
+        String[] parts = event.allArguments.split("\\s+", 2);
         try {
+            if (parts.length < 2) {
+                event.sendMessage(MemeUtil.generateMeme(template, "_", "_"));
+                return;
+            }
+            parts = parts[1].split("\\s*[|]\\s*", 2);
             if (parts.length == 1) {
                 if (parts[0].isEmpty()) {
                     parts[0] = "_";
                 }
                 event.sendMessage(MemeUtil.generateMeme(template, parts[0], "_"));
-            } else if (parts.length != 0) {
-                if (parts[0].isEmpty()) {
-                    parts[0] = "_";
-                }
-                if (parts[1].isEmpty()) {
-                    parts[1] = "_";
-                }
-                event.sendMessage(MemeUtil.generateMeme(template, parts[0], parts[1]));
-
             } else {
-                event.sendMessage(MemeUtil.generateMeme(template, "_", "_"));
+                if (parts.length == 2) {
+                    if (parts[0].isEmpty()) {
+                        parts[0] = "_";
+                    }
+                    if (parts[1].isEmpty()) {
+                        parts[1] = "_";
+                    }
+                    event.sendMessage(MemeUtil.generateMeme(template, parts[0], parts[1]));
+                } else event.sendMessage(MemeUtil.generateMeme(template, "_", "_"));
             }
         } catch (UnirestException e) {
             logger.logThrowable(e);

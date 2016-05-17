@@ -67,6 +67,10 @@ public class GoofyManager extends CmdManager {
         com = new FactCommand(prefix, logger);
         registerCommand(com);
         splitter.add(com);
+
+        com = new LeetifyCommand(prefix, logger);
+        registerCommand(com);
+        splitter.add(com);
     }
 
 }

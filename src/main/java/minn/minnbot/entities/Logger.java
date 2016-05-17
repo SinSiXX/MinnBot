@@ -1,5 +1,6 @@
 package minn.minnbot.entities;
 
+import minn.minnbot.entities.impl.LoggerImpl;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.Event;
@@ -18,7 +19,9 @@ public interface Logger {
 
     boolean logThrowable(Throwable e);
 
-    boolean toggleDebug();
+    LoggerImpl.DebugLevel toggleDebug(LoggerImpl.DebugLevel level);
+
+
 
     /**
      * Array with stat numbers: <b>0)</b> messages
@@ -28,7 +31,7 @@ public interface Logger {
      * <b>4)</b> guildMessages
      * <b>5)</b> startTimeInMillis
      */
-    int[] getNumbers();
+    long[] getNumbers();
 
     boolean saveToJson();
 

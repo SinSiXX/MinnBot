@@ -19,6 +19,8 @@ public class MinnAudioManager extends ListenerAdapter {
 
     private static Map<MusicPlayer, Thread> keepAliveMap = new HashMap<>();
 
+    private static Map<MusicPlayer, Boolean> isLive = new HashMap<>();
+
     public MinnAudioManager() {
         init();
     }
@@ -67,8 +69,9 @@ public class MinnAudioManager extends ListenerAdapter {
     }
 
     public static void reset() {
-        players.forEach((g, p) -> reset(g));
-        players.clear();
+        Map<Guild, MusicPlayer> tmp = new HashMap<>();
+        tmp.putAll(players);
+        tmp.forEach((g, p) -> reset(g));
         keepAliveMap.forEach((p, t) -> {
             t.interrupt(); //noinspection deprecation
             //noinspection deprecation
@@ -85,6 +88,15 @@ public class MinnAudioManager extends ListenerAdapter {
             player.getAudioQueue().clear();
         guild.getAudioManager().setSendingHandler(null);
         players.remove(guild);
+    }
+
+    public static void setIsLive(MusicPlayer player, boolean isLive) {
+        MinnAudioManager.isLive.put(player, isLive);
+    }
+
+    public static boolean isLive(MusicPlayer player) {
+        if(isLive.containsKey(player)) return isLive.get(player);
+        return false;
     }
 
     private synchronized static void removeWith(BiConsumer<Guild, MusicPlayer> runnable, Map<Guild, MusicPlayer> toRemove) {

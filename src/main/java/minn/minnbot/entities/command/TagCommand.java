@@ -39,25 +39,31 @@ public class TagCommand extends CommandAdapter {
         tags.add(new BlockTag("edt"));
         tags.add(new BlockTag("add"));
         if (new File("tags.json").exists()) {
-            try {
-                JSONArray arr = new JSONArray(new String(Files.readAllBytes(Paths.get("tags.json"))));
-                for (Object obj : arr) {
-                    try {
-                        JSONObject intObj = (JSONObject) obj;
-                        String name = intObj.getString("name");
-                        String response = intObj.getString("response");
-                        String ownerId = intObj.getString("owner");
-                        String guildId = intObj.getString("guild");
-                        User owner = api.getUserById(ownerId);
-                        Guild guild = api.getGuildById(guildId);
-                        tags.add(new TagImpl(owner, guild, name, response));
-                    } catch (Exception e) {
-                        logger.logThrowable(new MalformedParametersException("tags.json contains broken objects."));
+            Thread t = new Thread(() -> {
+                try {
+                    JSONArray arr = new JSONArray(new String(Files.readAllBytes(Paths.get("tags.json"))));
+                    for (Object obj : arr) {
+                        try {
+                            JSONObject intObj = (JSONObject) obj;
+                            String name = intObj.getString("name");
+                            String response = intObj.getString("response");
+                            String ownerId = intObj.getString("owner");
+                            String guildId = intObj.getString("guild");
+                            User owner = api.getUserById(ownerId);
+                            Guild guild = api.getGuildById(guildId);
+                            tags.add(new TagImpl(owner, guild, name, response));
+                        } catch (Exception e) {
+                            logger.logThrowable(new MalformedParametersException("tags.json contains broken objects."));
+                        }
                     }
+                } catch (Exception e) {
+                    logger.logThrowable(e);
                 }
-            } catch (Exception e) {
-                logger.logThrowable(e);
-            }
+            });
+            t.setName("TagReader");
+            t.setPriority(1);
+            t.setDaemon(true);
+            t.start();
         }
     }
 

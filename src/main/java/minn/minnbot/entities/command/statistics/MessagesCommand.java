@@ -55,7 +55,7 @@ public class MessagesCommand extends CommandAdapter {
             if ((s[0] + "\n\n" + message.getContent() + "```").length() >= 1500) {
                 return;
             }
-            s[0] += "\n\n" + message.getContent().replace("```", "\u0001`\u0001`\u0001`\u0001").replace("<@", "<@\u0001");
+            s[0] += "\n\n" + message.getContent().replaceAll("(```)", "\u0001`\u0001`\u0001`\u0001").replaceAll("(<@)", "<@\u0001");
         });
         event.sendMessage(s[0] + "```");
     }

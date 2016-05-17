@@ -14,7 +14,7 @@ public class EntityUtil {
 
     public static User getUserByNameDisc(String combo, Guild guild) {
         String trim = combo.trim();
-        return guild.getUsers().parallelStream().filter(user -> (user.getUsername() + "#" + user.getDiscriminator()).equalsIgnoreCase(trim)).findFirst().orElse(null);
+        return guild.getUsers().parallelStream().filter(user -> (user.getUsername() + "#" + user.getDiscriminator()).equals(trim)).findFirst().orElse(null);
     }
 
     public static List<User> getUsersByName(String username, TextChannel channel) {
@@ -31,7 +31,7 @@ public class EntityUtil {
 
     public static User getUserByNameDisc(String combo, JDA api) {
         String trim = combo.trim();
-        return api.getUsers().parallelStream().filter(user -> (user.getUsername() + "#" + user.getDiscriminator()).equalsIgnoreCase(trim)).findFirst().orElse(null);
+        return api.getUsers().parallelStream().filter(user -> (user.getUsername() + "#" + user.getDiscriminator()).equals(trim)).findFirst().orElse(null);
     }
 
 

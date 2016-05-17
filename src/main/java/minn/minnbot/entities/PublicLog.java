@@ -5,6 +5,8 @@ import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.entities.User;
+import net.dv8tion.jda.events.ShutdownEvent;
+import net.dv8tion.jda.exceptions.VerificationLevelException;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import org.json.JSONObject;
 
@@ -12,9 +14,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class PublicLog extends ListenerAdapter {
 
@@ -23,20 +27,23 @@ public class PublicLog extends ListenerAdapter {
     private static JDA api;
     private static BlockingQueue<Entry> queue = new LinkedBlockingDeque<>(10);
     private static Thread workingThread;
+    private static Consumer<Throwable> consumer;
+    private static String ownerId = "";
 
-    public static PublicLog init(JDA api) {
+    public static PublicLog init(JDA api, Consumer<Throwable> callback) {
+        PublicLog.consumer = callback;
         Thread t = new Thread(() -> {
             String location = "Log.json";
             File f = new File(location);
             if (f.exists()) {
+                JSONObject obj = null;
                 try {
-                    JSONObject obj = new JSONObject(new String(Files.readAllBytes(Paths.get(f.getCanonicalPath()))));
-                    if (obj.has("public-log")) {
-                        channelId = obj.getString("public-log");
-                    }
+                    obj = new JSONObject(new String(Files.readAllBytes(Paths.get(f.getCanonicalPath()))));
+                    if (obj.has("public-log")) channelId = obj.getString("public-log");
+                    if(obj.has("owner")) ownerId = obj.getString("owner");
                     setApi(api);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    callback.accept(e);
                 }
             }
             if (workingThread != null && !workingThread.isInterrupted() && workingThread.isAlive())
@@ -44,27 +51,35 @@ public class PublicLog extends ListenerAdapter {
             workingThread = new Thread(() -> {
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
-                        Entry entry = queue.poll(1L, TimeUnit.MINUTES);
-                        if(entry == null) {
-                            Thread.sleep(1500);
+                        Entry entry;
+                        try {
+                            entry = queue.poll(1L, TimeUnit.MINUTES);
+                        } catch (InterruptedException e) {
+                            Thread.sleep(2000);
+                            continue;
+                        }
+                        if (entry == null) {
+                            Thread.sleep(2000);
                             continue;
                         }
                         logInternal(entry.message);
-                        Thread.sleep(1500);
+                        Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         break;
+                    } catch (Exception e) {
+                        callback.accept(e);
                     }
-
                 }
             });
             workingThread.setPriority(3);
             workingThread.setDaemon(true);
             workingThread.setName("PublicLog-WorkingThread");
             workingThread.start();
+            workingThread.setUncaughtExceptionHandler(((t1, e) -> logInternal("**Public Log was stopped: " + e.getMessage() + "**")));
         });
         t.setDaemon(true);
-        t.setUncaughtExceptionHandler((t1, e) -> e.printStackTrace());
         t.start();
+        t.setUncaughtExceptionHandler((t1, e) -> callback.accept(e));
         return log;
     }
 
@@ -79,7 +94,11 @@ public class PublicLog extends ListenerAdapter {
         return log;
     }
 
-    public static synchronized void log(String s, User u) {
+    public void onShutdown(ShutdownEvent event) {
+        workingThread.interrupt();
+    }
+
+    public static void log(String s, User u) {
         Entry e = new Entry(s, u);
         if (!enqueue(e))
             checkForSpam(e);
@@ -89,53 +108,48 @@ public class PublicLog extends ListenerAdapter {
         enqueue(new Entry(s, null));
     }
 
-    private static synchronized boolean enqueue(Entry entry) throws IllegalStateException {
+    private static boolean enqueue(Entry entry) throws IllegalStateException {
         return queue.offer(entry);
     }
 
     private static synchronized void checkForSpam(Entry u) {
-        int count = 0;
-        if(u == null || u.user == null)
-            return;
-        for (Entry e : queue) {
-            if (e.user == null || !e.equals(u) || e.enteredAt + 2000 < u.enteredAt)
-                break;
-            count++;
-        }
-        if ((count / queue.size()) * 100 > 50) {
-            queue.clear();
-            IgnoreUtil.ignore(u.user);
-            try {
-                u.user.getPrivateChannel().sendMessageAsync("**You have been detected by the automated spam filter and are now on the global blacklist. Please request to be removed from it in the development server!**", null);
-            } catch (Exception ignored) {
-            }
-        }
 
-    }
-
-    private static void logUnprotected(String s) {
-        if (api != null) {
-            TextChannel channel = api.getTextChannelById(channelId);
-            if (s != null && !s.isEmpty() && channel != null && channel.checkPermission(api.getSelfInfo(), Permission.MESSAGE_WRITE) && s.length() < 2000) {
-                channel.sendMessageAsync(s, null);
+        Thread t = new Thread(() -> {
+            int count = 0;
+            if (u == null || u.user == null) return;
+            if(Objects.equals(u.user.getId(), ownerId)) return;
+            for (Entry e : queue) {
+                if (e == null || e.user == null || !e.equals(u) || e.enteredAt + 10000 < u.enteredAt) break;
+                count++;
             }
-        }
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ignored) {
-        }
+            if ((count / queue.size()) * 100 >= 50) {
+                queue.clear();
+                IgnoreUtil.ignore(u.user);
+                try {
+                    u.user.getPrivateChannel().sendMessageAsync("**You have been detected by the automated spam filter and are now on the global blacklist. Please request to be removed from it in the development server!**\nhttps://discord.gg/0mcttggeFpaqAWLI", null);
+                } catch (Exception ignored) {
+                }
+            }
+        });
+        t.setDaemon(true);
+        t.setPriority(10);
+        t.setName("Spam-protection");
+        t.start();
     }
 
     private static void logInternal(String s) {
-        if (api != null) {
-            TextChannel channel = api.getTextChannelById(channelId);
-            if (s != null && !s.isEmpty() && channel != null && channel.checkPermission(api.getSelfInfo(), Permission.MESSAGE_WRITE) && s.length() < 2000) {
-                channel.sendMessageAsync(s.replace("@", "\u0001@\u0001"), null);
-            }
-        }
         try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ignored) {
+            if (api != null) {
+                TextChannel channel = api.getTextChannelById(channelId);
+                if (s != null && !s.isEmpty() && channel != null && channel.checkPermission(api.getSelfInfo(), Permission.MESSAGE_WRITE) && s.length() < 2000) {
+                    try {
+                        channel.sendMessageAsync(s.replace("@", "\u0001@\u0001"), null);
+                    } catch (VerificationLevelException ignored) {
+                    }
+                }
+            }
+        } catch (Exception e) {
+            consumer.accept(e);
         }
     }
 
@@ -148,10 +162,6 @@ public class PublicLog extends ListenerAdapter {
         Entry(String string, User user) {
             this.message = string;
             this.user = user;
-        }
-
-        long getEnteredAt() {
-            return enteredAt;
         }
 
         @Override

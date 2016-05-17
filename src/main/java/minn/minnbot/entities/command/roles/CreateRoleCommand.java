@@ -37,8 +37,8 @@ public class CreateRoleCommand extends CommandAdapter {
            event.sendMessage("I am unable to manage roles. " + EmoteUtil.getRngThumbsdown());
            return;
        }
-        event.event.getGuild().createRole().setName(((event.allArguments.isEmpty()) ? "new role" : event.allArguments)).update();
-        event.sendMessage(":thumbsup::skin-tone-" + ((int)Math.ceil(Math.random() * 5)) + ":");
+        event.guild.createRole().setName(((event.allArguments.isEmpty()) ? "new role" : event.allArguments)).update();
+        event.sendMessage("**Created new role!** " + EmoteUtil.getRngThumbsup());
     }
 
     @Override

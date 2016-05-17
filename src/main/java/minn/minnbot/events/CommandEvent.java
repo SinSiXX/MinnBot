@@ -1,7 +1,6 @@
 package minn.minnbot.events;
 
 import net.dv8tion.jda.JDA;
-import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.entities.MessageChannel;
@@ -14,6 +13,8 @@ import net.dv8tion.jda.hooks.ListenerAdapter;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -52,37 +53,54 @@ public class CommandEvent {
     }
 
     public void sendMessage(String content) {
+        if (content == null || content.isEmpty())
+            throw new IllegalArgumentException("Content to send in CommandEvent was null or empty!");
         content = content.replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here");
-        if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification())))
-            event.getChannel().sendMessageAsync(content, node::setResponse);
+        try {
+            channel.sendMessageAsync(content, node::setResponse);
+        } catch (Exception ignored) {
+        }
     }
 
     public void sendMessage(String content, Consumer<Message> callback) {
+        if (content == null || content.isEmpty())
+            throw new IllegalArgumentException("Content to send in CommandEvent was null or empty!");
         content = content.replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here");
-        if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification()))) {
-            event.getChannel().sendMessageAsync(content, m -> {
+        try {
+            channel.sendMessageAsync(content, m -> {
                 node.setResponse(m);
                 callback.accept(m);
             });
+        } catch (Exception ignored) {
+            callback.accept(null);
         }
     }
 
     public Message sendMessageBlocking(String content) {
+        if (content == null || content.isEmpty())
+            throw new IllegalArgumentException("Content to send in CommandEvent was null or empty!");
         content = content.replace("@everyone", "@\u0001everyone").replace("@here", "@\u0001here");
-        if (content.length() < 2000 && (guild == null || (event.getTextChannel().checkPermission(jda.getSelfInfo(), Permission.MESSAGE_WRITE) && guild.checkVerification()))) {
-            Message m = event.getChannel().sendMessage(content);
+        try {
+            Message m = channel.sendMessage(content);
             node.setResponse(m);
             return m;
+        } catch (Exception ignored) {
+            return null;
         }
-        return null;
     }
 
-    public static class Node extends ListenerAdapter {
+    private static class Node extends ListenerAdapter {
 
         Message response;
         Message init;
         Timer keepAlive = new Timer("Checker", true);
         JDA jda;
+        private static ThreadPoolExecutor executor = new ThreadPoolExecutor(30, 50, 5L, TimeUnit.SECONDS, new LinkedBlockingDeque<>(), r -> {
+            Thread t = new Thread(r, "Checker-Pickup");
+            t.setDaemon(true);
+            t.setPriority(1);
+            return t;
+        });
 
         private Node(JDA jda, Message init) {
             this.jda = jda;
@@ -108,26 +126,31 @@ public class CommandEvent {
         private void react(String id, boolean edit) {
             if (response == null || init == null || init.getId() == null)
                 return;
-            if (init.getId().equals(id)) {
-                try {
-                    if (edit)
-                        response.updateMessageAsync("**I don't respond to edited messages!**", m -> {
-                            try {
-                                Thread.sleep(3000);
-                                m.deleteMessage();
-                            } catch (InterruptedException | RateLimitedException ignored) {
-                            }
-                        });
-                    else
-                        response.updateMessageAsync("**I don't respond to deleted messages!**", m -> {
-                            try {
-                                Thread.sleep(3000);
-                                m.deleteMessage();
-                            } catch (InterruptedException | RateLimitedException ignored) {
-                            }
-                        });
-                } catch (Exception ignored) {}
-            }
+            executor.submit(() -> {
+                if (init.getId().equals(id)) {
+                    try {
+                        if (edit)
+                            response.updateMessageAsync("**I don't respond to edited messages!**", m -> {
+                                try {
+                                    Thread.sleep(3000);
+                                    if (m != null)
+                                        m.deleteMessage();
+                                } catch (InterruptedException | RateLimitedException ignored) {
+                                }
+                            });
+                        else
+                            response.updateMessageAsync("**I don't respond to deleted messages!**", m -> {
+                                try {
+                                    Thread.sleep(3000);
+                                    if (m != null)
+                                        m.deleteMessage();
+                                } catch (InterruptedException | RateLimitedException ignored) {
+                                }
+                            });
+                    } catch (Exception ignored) {
+                    }
+                }
+            });
         }
 
         public void setResponse(Message m) {
@@ -135,7 +158,6 @@ public class CommandEvent {
                 return;
             response = m;
         }
-
 
     }
 

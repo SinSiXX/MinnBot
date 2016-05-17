@@ -3,7 +3,6 @@ package minn.minnbot.entities.command.statistics;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
-import net.dv8tion.jda.entities.Message;
 
 public class PingCommand extends CommandAdapter {
 
@@ -15,7 +14,9 @@ public class PingCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         long ping = System.currentTimeMillis();
-        event.sendMessage("**__Ping:__** ", (Message m) -> m.updateMessageAsync("**__Ping:__** **" + (System.currentTimeMillis() - ping) + "ms**", null));
+        event.sendMessage("**__Ping:__** ", m -> {
+            if(m != null) m.updateMessageAsync("**__Ping:__** **" + (System.currentTimeMillis() - ping) + "ms**", null);
+        });
     }
 
     @Override

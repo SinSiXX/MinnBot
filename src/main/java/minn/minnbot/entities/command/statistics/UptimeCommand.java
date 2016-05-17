@@ -11,15 +11,14 @@ public class UptimeCommand extends CommandAdapter {
 
 
     public UptimeCommand(String prefix, Logger logger) throws UnknownHostException {
-        this.prefix = prefix;
-        this.logger = logger;
+        init(prefix, logger);
     }
 
     @Override
     public void onCommand(CommandEvent event) {
         try {
-            int[] nums = logger.getNumbers();
-            event.sendMessage("**__Uptime:__** ***" + TimeUtil.uptime(nums[5]) + "***");
+            long[] nums = logger.getNumbers();
+            event.sendMessage("**__Uptime:__" + TimeUtil.uptime(nums[5]) + "**");
         } catch (Exception e) {
             logger.logThrowable(e);
         }
