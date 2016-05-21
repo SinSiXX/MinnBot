@@ -28,7 +28,7 @@ public class PlayCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
-        if(MinnAudioManager.isLive(player)) {
+        if (MinnAudioManager.isLive(player)) {
             event.sendMessage("You cannot queue songs while the player is connected to a stream!");
             return;
         }
@@ -47,8 +47,9 @@ public class PlayCommand extends CommandAdapter {
                         : ""),
                 msg -> QueueRequestManager.requestEnqueue(event.guild, (accepted) -> {
                     final boolean[] sent = {msg != null};
-                    if(!accepted) {
-                        msg.updateMessageAsync("**All request slots are filled. Try again in a few minutes!**", m -> sent[0] = m != null);
+                    if (!accepted) {
+                        if (sent[0])
+                            msg.updateMessageAsync("**All request slots are filled. Try again in a few minutes!**", m -> sent[0] = m != null);
                         return;
                     }
                     Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
@@ -56,65 +57,71 @@ public class PlayCommand extends CommandAdapter {
                         event.sendMessage("**An error occurred, please direct this to the developer:** `L:" + e.getStackTrace()[0].getLineNumber()
                                 + " - [" + e.getClass().getSimpleName() + "] " + e.getMessage() + "`");
                     });
-                    String[] urls = event.allArguments.trim().replace(" ", "").split("\\Q,\\E");
-
                     final boolean[] error = {false};
-                    for (String url : urls) {
-                        if (url.contains("https://gaming.youtube.com/watch?v=")) {
-                            if(sent[0]) msg.updateMessageAsync("Youtube Gaming URLs are not accepted. Skipping...", m -> sent[0] = m != null);
-                            continue;
+                    String url = event.allArguments;
+                    if (url.contains("https://gaming.youtube.com/watch?v=")) {
+                        if (sent[0])
+                            msg.updateMessageAsync("Youtube Gaming URLs are not accepted. Skipping...", m -> sent[0] = m != null);
+                        return;
+                    }
+                    Playlist list;
+                    // get playlist
+                    try {
+                        list = Playlist.getPlaylist(((url.startsWith("<") && url.endsWith(">")) ? url.substring(1, url.length() - 1) : url));
+                    } catch (NullPointerException ignored) {
+                        return;
+                    }
+                    List<AudioSource> listSources = list.getSources();
+                    if (listSources.size() > 1) {
+                        if (sent[0])
+                            msg.updateMessageAsync(String.format("Detected Playlist with **%d** entries! Starting to queue songs...", listSources.size()), m -> sent[0] = m != null);
+                    } else if (listSources.size() == 1) {
+                        AudioInfo audioInfo = listSources.get(0).getInfo();
+                        if (audioInfo.getError() != null) {
+                            if (sent[0])
+                                msg.updateMessageAsync("**__Error with source:__ " + audioInfo.getError().trim() + "**", m -> sent[0] = m != null);
+                            return;
                         }
-                        Playlist list;
-                        // get playlist
-                        try {
-                            list = Playlist.getPlaylist(((url.startsWith("<") && url.endsWith(">")) ? url.substring(1, url.length() - 1) : url));
-                        } catch (NullPointerException ignored) {
-                            continue;
-                        }
-                        List<AudioSource> listSources = list.getSources();
-                        if (listSources.size() > 1) {
-                            if(sent[0]) msg.updateMessageAsync("Detected Playlist! Starting to queue songs...", m -> sent[0] = m != null);
-                        } else if (listSources.size() == 1) {
-                            AudioInfo audioInfo = listSources.get(0).getInfo();
-                            if (audioInfo.getError() != null) {
-                                if(sent[0]) msg.updateMessageAsync("**__Error with source:__ " + audioInfo.getError().trim() + "**", m -> sent[0] = m != null);
-                                continue;
-                            }
-                            if(sent[0]) msg.updateMessageAsync("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!", m -> sent[0] = m != null);
-                        } else {
-                            if(sent[0]) msg.updateMessageAsync("Source had no attached/readable information. Skipping...", m -> sent[0] = m != null);
-                            continue;
-                        }
-                        // execute
+                        if (sent[0])
+                            msg.updateMessageAsync("Adding `" + audioInfo.getTitle().replace("`", "\u0001`\u0001") + "` to the queue!", m -> sent[0] = m != null);
+                    } else {
+                        if (sent[0])
+                            msg.updateMessageAsync("Source had no attached/readable information. Skipping...", m -> sent[0] = m != null);
+                        return;
+                    }
+                    // execute
 
-                        for (AudioSource source : listSources) { // Use for/each to stop mutli process spawns
-                            AudioInfo info = source.getInfo();
-                            if (info == null) {
-                                if (!error[0]) {
-                                    if(sent[0]) msg.updateMessageAsync("Source was not available. Skipping.", m -> sent[0] = m != null);
-                                    error[0] = true;
-                                }
-                                continue;
-                            } else if (info.getError() != null) {
-                                if (!error[0]) {
-                                    if(sent[0]) msg.updateMessageAsync("**One or more sources were not available. Sorry fam.**", m -> sent[0] = m != null);
-                                    error[0] = true;
-                                }
-                                continue;
-                            } else if (info.isLive()) {
-                                if(sent[0]) msg.updateMessageAsync("Detected Live Stream. I don't play live streams. Skipping...", m -> sent[0] = m != null);
-                                continue;
+                    for (AudioSource source : listSources) { // Use for/each to stop mutli process spawns
+                        AudioInfo info = source.getInfo();
+                        if (info == null) {
+                            if (!error[0]) {
+                                if (sent[0])
+                                    msg.updateMessageAsync("Source was not available. Skipping.", m -> sent[0] = m != null);
+                                error[0] = true;
                             }
-                            player.getAudioQueue().add(source);
-                            if (!player.isPlaying()) {
-                                if(sent[0]) msg.updateMessageAsync("Enqueuing songs and starting playback...", m -> sent[0] = m != null);
-                                try {
-                                    Thread.sleep(3000); // Build buffer
-                                } catch (InterruptedException ignored) {
-                                }
-                                player.play();
-                                if(sent[0]) msg.updateMessageAsync("Now playing...", m -> sent[0] = m != null);
+                            continue;
+                        } else if (info.getError() != null) {
+                            if (!error[0]) {
+                                if (sent[0])
+                                    msg.updateMessageAsync("One or more source downloads were rejected.", m -> sent[0] = m != null);
+                                error[0] = true;
                             }
+                            continue;
+                        } else if (info.isLive()) {
+                            if (sent[0])
+                                msg.updateMessageAsync("Detected Live Stream. I don't support live streams **yet**. Skipping...", m -> sent[0] = m != null);
+                            continue;
+                        }
+                        player.getAudioQueue().add(source);
+                        if (!player.isPlaying()) {
+                            if (sent[0])
+                                msg.updateMessageAsync("Enqueuing songs and starting playback...", m -> sent[0] = m != null);
+                            try {
+                                Thread.sleep(3000); // Build buffer
+                            } catch (InterruptedException ignored) {
+                            }
+                            player.play();
+                            if (sent[0]) msg.updateMessageAsync("**Now playing...**", m -> sent[0] = m != null);
                         }
                     }
                     QueueRequestManager.dequeue(event.guild);

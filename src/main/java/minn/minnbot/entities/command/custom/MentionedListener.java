@@ -15,7 +15,7 @@ public class MentionedListener extends CommandAdapter{
 
     public void onMessageReceived(MessageReceivedEvent event) {
         if(event.getMessage().getMentionedUsers().contains(event.getJDA().getSelfInfo())) {
-            onCommand(new CommandEvent(event));
+            onCommand(new CommandEvent(event, getAlias().split("\\s+")[0]));
         }
     }
 

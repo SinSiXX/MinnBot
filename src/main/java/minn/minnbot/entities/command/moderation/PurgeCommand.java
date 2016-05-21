@@ -4,7 +4,7 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.CommandManager;
-import minn.minnbot.util.Misc;
+import minn.minnbot.util.DeleteUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.entities.User;
@@ -29,7 +29,7 @@ public class PurgeCommand extends CommandAdapter {
                         .sendMessageAsync("I am unable to delete messages. Missing Permission: MESSAGE_MANAGE", null);
                 return;
             }
-            CommandEvent e = new CommandEvent(event);
+            CommandEvent e = new CommandEvent(event, getAlias().split("\\s+")[0]);
             onCommand(e);
             logger.logCommandUse(event.getMessage(), this, e);
         }
@@ -39,7 +39,7 @@ public class PurgeCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         try {
             User u = event.message.getMentionedUsers().get(0);
-            Misc.deleteFrom(((TextChannel) event.channel), e -> {
+            DeleteUtil.deleteFrom(((TextChannel) event.channel), e -> {
                 if(e.isEmpty()) {
                     event.sendMessage(
                             u.getAsMention() + " has been purged by " + event.author.getUsername());

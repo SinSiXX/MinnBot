@@ -1,6 +1,7 @@
 package minn.minnbot.entities;
 
 import minn.minnbot.entities.impl.LoggerImpl;
+import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.events.CommandEvent;
 import net.dv8tion.jda.entities.Message;
 import net.dv8tion.jda.events.Event;
@@ -18,6 +19,10 @@ public interface Logger {
     boolean logEvent(Event e);
 
     boolean logThrowable(Throwable e);
+
+    boolean logInfo(Info info);
+
+    boolean logInfo(String info);
 
     LoggerImpl.DebugLevel toggleDebug(LoggerImpl.DebugLevel level);
 

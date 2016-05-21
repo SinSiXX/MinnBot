@@ -23,7 +23,7 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
     public void onMessageReceived(MessageReceivedEvent event) {
         String message = event.getMessage().getRawContent();
         if (isCommand(message, CommandManager.getPrefixList(event.getGuild().getId()))) {
-            CommandEvent e = new CommandEvent(event);
+            CommandEvent e = new CommandEvent(event, getAlias().split("\\s+")[0]);
             onCommand(e);
             logger.logCommandUse(event.getMessage(), this, e);
         }
@@ -61,7 +61,7 @@ public abstract class CommandAdapter extends ListenerAdapter implements Command 
     }
 
     public String toString() {
-        return "C:" + prefix + getAlias() + "(" + logger + ")";
+        return String.format("C:%s%s(%s)", prefix, getAlias(), logger);
     }
 
 }

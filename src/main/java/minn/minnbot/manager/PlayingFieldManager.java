@@ -18,6 +18,7 @@ public class PlayingFieldManager {
     private List<String> games = new LinkedList<>();
     private int index;
     private Logger logger;
+    //private boolean iStream;
 
     public static List<String> getGames() {
         return Collections.unmodifiableList(manager.games);
@@ -76,6 +77,7 @@ public class PlayingFieldManager {
                     break;
                 } catch (IndexOutOfBoundsException ignored) {
                     api.getAccountManager().setGame(games.get(0));
+
                     try {
                         Thread.sleep(25000);
                     } catch (InterruptedException ignored2) {

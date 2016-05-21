@@ -3,11 +3,9 @@ package minn.minnbot.entities.command.audio;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
-import net.dv8tion.jda.player.Playlist;
 import net.dv8tion.jda.player.source.AudioInfo;
 import net.dv8tion.jda.player.source.AudioSource;
-
-import java.util.List;
+import net.dv8tion.jda.player.source.RemoteSource;
 
 public class AudioInfoCommand extends CommandAdapter {
 
@@ -17,33 +15,34 @@ public class AudioInfoCommand extends CommandAdapter {
 
     @Override
     public void onCommand(CommandEvent event) {
-        Playlist playlist = Playlist.getPlaylist(event.allArguments);
-        List<AudioSource> sourceList = playlist.getSources();
-        if (sourceList.isEmpty()) {
-            event.sendMessage("No info to get.");
+        if(event.allArguments.isEmpty()) {
+            event.sendMessage("Unable to get info!");
             return;
         }
-        sourceList.stream().forEach((source -> {
-            AudioInfo info = source.getInfo();
-            if (info.getError() != null) {
-                event.sendMessage("**__Error:__** " + info.getError());
-                return;
-            }
-            String title = info.getTitle();
-            String duration = info.getDuration().getFullTimestamp();
-            String extractor = info.getExtractor();
-            String origin = info.getOrigin();
-            event.sendMessage(title + "\n" + duration + "\n" + extractor + "\n" + origin);
-        }));
+        AudioSource source = new RemoteSource((event.allArguments.matches("<[a-zA-Z/.:]+>") ? event.allArguments.substring(1, event.allArguments.length()-1) : event.allArguments));
+
+        AudioInfo info = source.getInfo();
+        if (info.getError() != null) {
+            event.sendMessage(String.format("**__Error:__ %s**", info.getError()));
+            return;
+        }
+        String title = info.getTitle();
+        String duration = info.getDuration().getFullTimestamp();
+        String extractor = info.getExtractor();
+        String thumbnail = info.getThumbnail();
+        boolean isLive = info.isLive();
+
+        event.sendMessage(String.format("```\nTitle: %s\nDuration: %s\nLive: %b\nExtractor: %s\nThumbnail: %s```", title, duration, isLive, extractor, thumbnail));
 
     }
 
     @Override
     public String getAlias() {
-        return "getinfo <url>";
+        return "getInfo <url>";
     }
 
-    public boolean requiresOwner() {
-        return true;
+    public String example() {
+        return "getInfo Knjgj56khk";
     }
+
 }

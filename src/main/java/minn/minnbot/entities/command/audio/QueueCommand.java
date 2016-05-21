@@ -51,7 +51,7 @@ public class QueueCommand extends CommandAdapter {
                         event.sendMessage("**An error occurred, please direct this to the developer:** `L:" + e.getStackTrace()[0].getLineNumber()
                                 + " - [" + e.getClass().getSimpleName() + "] " + e.getMessage() + "`");
                     });
-                    String[] urls = event.allArguments.trim().replace(" ", "").split("\\Q,\\E");
+                    String[] urls = event.allArguments.trim().replaceAll("\\s+", "").split(",");
                     MusicPlayer player = MinnAudioManager.getPlayer(event.guild);
                     final boolean[] error = {false};
                     for (String url : urls) {
@@ -68,7 +68,7 @@ public class QueueCommand extends CommandAdapter {
                         }
                         List<AudioSource> listSources = list.getSources();
                         if (listSources.size() > 1) {
-                            if(sent[0]) msg.updateMessageAsync("Detected Playlist! Starting to queue songs...", m -> sent[0] = m != null);
+                            if(sent[0]) msg.updateMessageAsync(String.format("Detected Playlist with **%d** entries! Starting to queue songs...", listSources.size()), m -> sent[0] = m != null);
                         } else if (listSources.size() == 1) {
                             AudioInfo audioInfo = listSources.get(0).getInfo();
                             if (audioInfo.getError() != null) {
@@ -108,7 +108,7 @@ public class QueueCommand extends CommandAdapter {
                                 } catch (InterruptedException ignored) {
                                 }
                                 player.play();
-                                if(sent[0]) msg.updateMessageAsync("Now playing...", m -> sent[0] = m != null);
+                                if(sent[0]) msg.updateMessageAsync("**Now playing...**", m -> sent[0] = m != null);
                             }
                         }
                     }

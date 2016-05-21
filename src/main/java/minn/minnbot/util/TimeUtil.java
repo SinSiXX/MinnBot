@@ -75,7 +75,7 @@ public class TimeUtil {
             uptime += times.get(i) + ", ";
         }
 
-        if (times.size() != 1)
+        if (times.size() != 1 && uptime.length() > 2)
             return uptime.substring(0, uptime.length() - 2) + " and " + times.get(times.size() - 1);
         else
             return times.get(0);

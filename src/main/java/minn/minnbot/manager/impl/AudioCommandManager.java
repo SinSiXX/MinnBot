@@ -97,6 +97,13 @@ public class AudioCommandManager extends CmdManager {
         else
             splitter.add(com);
 
+        com = new AudioInfoCommand(prefix, logger);
+        err.set(registerCommand(com));
+        if (!err.get().isEmpty())
+            errors.add(err.get());
+        else
+            splitter.add(com);
+
         /*com = new LinkStreamCommand(prefix, logger);
         registerCommand(com);
         splitter.add(com);

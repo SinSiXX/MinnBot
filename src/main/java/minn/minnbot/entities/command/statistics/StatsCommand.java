@@ -164,7 +164,6 @@ public class StatsCommand extends CommandAdapter {
             }
             long finalStart2 = System.currentTimeMillis();
             m.updateMessageAsync(stats, ms -> {
-                System.out.println(TimeUtil.timeStamp() + " Called!");
                 ping = System.currentTimeMillis() - finalStart2;
                 if (ms == null) {
                     counters.remove(m.getId());
@@ -195,7 +194,6 @@ public class StatsCommand extends CommandAdapter {
                     Thread.sleep(10000);
                 } catch (InterruptedException ignored) {
                 }
-                System.out.println("Checker stopped!");
                 api.removeEventListener(this);
             });
             keepAlive.setDaemon(true);
@@ -206,7 +204,6 @@ public class StatsCommand extends CommandAdapter {
 
         public void onMessageDelete(MessageDeleteEvent event) {
             if (event.getMessageId().equals(messageId)) {
-                System.out.println("Detected Message!!");
                 counters.remove(messageId);
                 toStop.shutdownNow();
                 if (keepAlive.isAlive()) {

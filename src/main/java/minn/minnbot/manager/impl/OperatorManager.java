@@ -3,7 +3,6 @@ package minn.minnbot.manager.impl;
 import minn.minnbot.MinnBot;
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
-import minn.minnbot.entities.command.audio.AudioInfoCommand;
 import minn.minnbot.entities.command.custom.HelpSplitter;
 import minn.minnbot.entities.command.owner.*;
 import minn.minnbot.manager.CmdManager;
@@ -99,13 +98,6 @@ public class OperatorManager extends CmdManager {
         else
             splitter.add(com);
 
-        com = new AudioInfoCommand(prefix, logger);
-        err.set(registerCommand(com));
-        if (!err.get().isEmpty())
-            errors.add(err.get());
-        else
-            splitter.add(com);
-
         com = new NickResetCommand(prefix, logger);
         err.set(registerCommand(com));
         if (!err.get().isEmpty())
@@ -113,6 +105,13 @@ public class OperatorManager extends CmdManager {
         else
             splitter.add(com);
 
+        com = new AvatarCommand(prefix, logger);
+        registerCommand(com);
+        splitter.add(com);
+
+        com = new TrackAvatarCommand(prefix, logger);
+        registerCommand(com);
+        splitter.add(com);
     }
 
 }

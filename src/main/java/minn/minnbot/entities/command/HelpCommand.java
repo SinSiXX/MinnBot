@@ -15,8 +15,7 @@ public class HelpCommand extends CommandAdapter {
     private CommandManager manager;
 
     public HelpCommand(String prefix, Logger logger, CommandManager commands, String owner) {
-        this.prefix = prefix;
-        this.logger = logger;
+        init(prefix, logger);
         this.manager = commands;
         this.owner = owner;
     }
@@ -25,7 +24,7 @@ public class HelpCommand extends CommandAdapter {
     public void onCommand(CommandEvent event) {
         List<Command> commands = manager.getAllCommands();
         if (event.allArguments.isEmpty()) {
-            final String[] s = {"**__Example: " + prefix + "help public__**\n"};
+            final String[] s = {"**__ALL COMMANDS REQUIRE A PREFIX__**\n**__Example: " + prefix + "help public__**\n"};
             commands.parallelStream().filter(c -> !c.requiresOwner() || event.event.getAuthor().getId().equals(owner)).forEachOrdered((c) -> {
                 if (c instanceof HelpSplitter) {
                     if ((s[0] + c.getAlias()).length() > 1000) {
@@ -43,11 +42,12 @@ public class HelpCommand extends CommandAdapter {
                 event.sendMessage(s[0]);
             return;
         }
-        String cmd = event.allArguments.split(" ", 2)[0];
+        String input = event.allArguments.split("\\s+", 2)[0];
+        String cmd = input;
         if (!event.allArguments.startsWith(prefix))
-            cmd = prefix + cmd;
+            input = prefix + cmd;
         for (Command c : commands) {
-            if (c.isCommand(cmd, CommandManager.getPrefixList(event.guild.getId()))) {
+            if (c.isCommand(input, CommandManager.getPrefixList(event.guild.getId()))) {
                 if (!c.usage().isEmpty())
                     event.sendMessage("Usage page for " + ((c instanceof HelpSplitter) ? "`" + c.getAlias() + "`" : cmd) + ": " + c.usage());
                 else

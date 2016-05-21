@@ -71,6 +71,10 @@ public class GoofyManager extends CmdManager {
         com = new LeetifyCommand(prefix, logger);
         registerCommand(com);
         splitter.add(com);
+
+        com = new JokeCommand(prefix, logger);
+        registerCommand(com);
+        splitter.add(com);
     }
 
 }

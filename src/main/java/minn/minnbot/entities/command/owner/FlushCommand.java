@@ -3,7 +3,7 @@ package minn.minnbot.entities.command.owner;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
-import minn.minnbot.util.Misc;
+import minn.minnbot.util.DeleteUtil;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.TextChannel;
 
@@ -28,7 +28,7 @@ public class FlushCommand extends CommandAdapter {
                 return;
             }
         }
-        Misc.deleteFrom(((TextChannel) event.channel), e -> {
+        DeleteUtil.deleteFrom(((TextChannel) event.channel), e -> {
             if (e.isEmpty())
                 return;
             event.sendMessage(String.format("**__ERROR:__ %s**", e.get(0).toString()));

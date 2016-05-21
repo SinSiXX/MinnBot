@@ -4,6 +4,7 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.MinnAudioManager;
+import minn.minnbot.manager.QueueRequestManager;
 import net.dv8tion.jda.events.message.MessageReceivedEvent;
 
 public class ResetPlayerCommand extends CommandAdapter {
@@ -21,6 +22,7 @@ public class ResetPlayerCommand extends CommandAdapter {
     @Override
     public void onCommand(CommandEvent event) {
         event.sendMessage("Resetting player...");
+        QueueRequestManager.dequeue(event.guild);
         MinnAudioManager.reset(event.guild);
     }
 

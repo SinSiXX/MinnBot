@@ -4,7 +4,7 @@ import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
 import minn.minnbot.manager.CommandManager;
-import minn.minnbot.util.Misc;
+import minn.minnbot.util.DeleteUtil;
 import net.dv8tion.jda.MessageHistory;
 import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.Message;
@@ -33,7 +33,7 @@ public class ClearCommand extends CommandAdapter {
                             .sendMessageAsync("I am unable to delete messages. Missing Permission: MESSAGE_MANAGE", null);
                 return;
             }
-            CommandEvent e = new CommandEvent(event);
+            CommandEvent e = new CommandEvent(event, getAlias().split("\\s+")[0]);
             onCommand(e);
             logger.logCommandUse(event.getMessage(), this, e);
         }
@@ -64,7 +64,7 @@ public class ClearCommand extends CommandAdapter {
         }
         List<Message> messages = new MessageHistory(event.channel).retrieve(++amount[0]);
         messages.removeIf(message -> message.getId().equalsIgnoreCase(event.message.getId()));
-        Misc.deleteIn(messages, (TextChannel) event.channel, callbaok);
+        DeleteUtil.deleteIn(messages, (TextChannel) event.channel, callbaok);
     }
 
     @Override

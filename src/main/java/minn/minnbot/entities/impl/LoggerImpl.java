@@ -37,11 +37,9 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
     private long startTime;
     private boolean logMessages = false;
     private boolean logEvents = false;
-    public static boolean log = true;
     private static Map<Command, Integer> commandUse = new HashMap<>();
     private LogWriter errorLogWriter;
     private LogWriter messageLogWriter;
-    private PublicLog publicLog;
 
     public LoggerImpl(MinnBotUserInterface console) {
         this.console = console;
@@ -63,8 +61,6 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public void onEvent(Event event) {
-        if (publicLog == null)
-            publicLog = PublicLog.init(event.getJDA(), this::logThrowable);
         if (event instanceof MessageReceivedEvent) {
             onMessageReceived((MessageReceivedEvent) event);
         } else if (event instanceof ShutdownEvent || event instanceof DisconnectEvent) {
@@ -73,7 +69,8 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
                 try {
                     errorLogWriter.close();
                     messageLogWriter.close();
-                    eventWriter.close();
+                    if (eventWriter != null)
+                        eventWriter.close();
                 } catch (IOException e) {
                     logThrowable(e);
                 }
@@ -156,7 +153,7 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
                 String s = String.format("%s [%s] [%s]", TimeUtil.timeStamp(), event.getClass().getSimpleName(), event.getJDA());
                 console.writeEvent(s);
                 return true;
-            } else if (debug == DebugLevel.FILE) {
+            } else if (debug == DebugLevel.FILE && eventWriter != null) {
                 eventWriter.writeln(event);
                 return true;
             }
@@ -233,31 +230,39 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public boolean logThrowable(Throwable e) {
+        if (e instanceof Info) {
+            logInfo((Info) e);
+            return true;
+        }
         if (!logEvents)
             return false;
         final String[] s = new String[1];
-        if (e instanceof Info)
-            s[0] = TimeUtil.timeStamp() + " " + e.getMessage();
-        else
-            s[0] = TimeUtil.timeStamp() + " " + e.getClass().getSimpleName() + ": " + e.getMessage();
-        if (e instanceof Info) {
-            console.writeEvent("[Info] " + s[0]);
-            write("[Error] " + s[0]);
-        } else {
-            final int[] elements = {0};
-            Arrays.stream(e.getStackTrace()).forEachOrdered((element) -> {
-                if (elements[0] < 5) {
-                    s[0] += "\n\t" + element.toString();
-                    elements[0]++;
-                }
-            });
-            errorLogs.add(s[0]);
-            String string = "[Error] " + s[0];
-            console.writeEvent(string);
-            write(string);
-            PublicLog.log(String.format("```%s```", string));
-            e.printStackTrace();
-        }
+        s[0] = TimeUtil.timeStamp() + " " + e.getClass().getSimpleName() + ": " + e.getMessage();
+        final int[] elements = {0};
+        Arrays.stream(e.getStackTrace()).forEachOrdered((element) -> {
+            if (elements[0] < 5) {
+                s[0] += "\n\t" + element.toString();
+                elements[0]++;
+            }
+        });
+        errorLogs.add(s[0]);
+        String string = "[Error] " + s[0];
+        console.writeEvent(string);
+        write(string);
+        PublicLog.log(String.format("```%s```", string));
+        e.printStackTrace();
+        return true;
+    }
+
+    @Override
+    public boolean logInfo(Info info) {
+        logInfo(info.getMessage());
+        return false;
+    }
+
+    @Override
+    public boolean logInfo(String info) {
+        console.writeEvent("[Info] " + TimeUtil.timeStamp() + " " + info);
         return true;
     }
 
@@ -287,9 +292,9 @@ public class LoggerImpl extends ListenerAdapter implements Logger, Thread.Uncaug
 
     @Override
     public void onLog(SimpleLog log, SimpleLog.Level level, Object msg) {
-        if (level.getPriority() < SimpleLog.Level.INFO.getPriority()) //lower than info
+        if ((level.getPriority() < SimpleLog.Level.INFO.getPriority() || !logEvents) && debug != DebugLevel.LOG) //lower than info
             return;
-        logThrowable(new Info(String.format("[%s] %s", log.name, msg.toString())));
+        logInfo(new Info(String.format("[%s] %s", log.name, msg.toString())));
     }
 
     @Override

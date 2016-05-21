@@ -26,18 +26,11 @@ import java.util.List;
 
 public class TagCommand extends CommandAdapter {
 
-    private List<Tag> tags;
+    private static final List<Tag> tags = new LinkedList<>();
     private String owner;
 
-    public TagCommand(String prefix, Logger logger, JDA api, String pOwner) {
-        this.prefix = prefix;
-        this.logger = logger;
-        this.tags = new LinkedList<>();
-        new TagManager(tags, logger);
-        this.owner = pOwner;
-        tags.add(new BlockTag("del"));
-        tags.add(new BlockTag("edt"));
-        tags.add(new BlockTag("add"));
+
+    public static void initTags(JDA api, Logger logger) {
         if (new File("tags.json").exists()) {
             Thread t = new Thread(() -> {
                 try {
@@ -65,6 +58,17 @@ public class TagCommand extends CommandAdapter {
             t.setDaemon(true);
             t.start();
         }
+    }
+
+    public TagCommand(String prefix, Logger logger, String pOwner) {
+        this.prefix = prefix;
+        this.logger = logger;
+        new TagManager(tags, logger);
+        this.owner = pOwner;
+        tags.add(new BlockTag("del"));
+        tags.add(new BlockTag("edt"));
+        tags.add(new BlockTag("add"));
+        tags.add(new BlockTag("json"));
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -159,12 +163,12 @@ public class TagCommand extends CommandAdapter {
                     event.sendMessage("Tagname `" + tagName + "` is not allowed. " + EmoteUtil.getRngThumbsdown());
                     return;
                 }
-                String[] parts = event.message.getRawContent().split(" ", 4);
-                if(parts.length != 4) {
+                String[] parts = event.allArguments.split("\\s+", 3);
+                if(parts.length != 3) {
                     event.sendMessage("Empty names or responses are not allowed.");
                     return;
                 }
-                String tagResponse = parts[3];
+                String tagResponse = parts[2];
                 if (tagName.isEmpty()) {
                     event.sendMessage("Empty names or responses are not allowed.");
                     return;

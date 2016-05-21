@@ -4,6 +4,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import minn.minnbot.entities.Logger;
 import minn.minnbot.entities.command.listener.CommandAdapter;
 import minn.minnbot.events.CommandEvent;
+import minn.minnbot.util.TimeUtil;
 import minn.minnbot.util.TwitchUtil;
 
 import java.rmi.UnexpectedException;
@@ -26,15 +27,15 @@ public class TwitchCommand extends CommandAdapter {
                 TwitchUtil.Channel channel = stream.getChannel();
                 String tags = channel.isMature() ? channel.isPartnered() ? "[Mature/Partner]" : "[Mature]" : channel.isPartnered() ? "[Partner]" : "";
                 if (channel.getGame().isEmpty())
-                    m.updateMessageAsync(String.format(tags.isEmpty() ? "" : "**%s**\n", tags) + String.format("**%s** is streaming for **%d viewers" +
-                            "\n__Title:__%s" +
+                    m.updateMessageAsync(String.format(tags.isEmpty() ? "" : "**%s**\n", tags) + String.format("**%s** is streaming for **%s** with uptime: **%s**" +
+                            "\n**__Title:__ %s" +
                             "\n__Preview:__** %s" +
-                            "\n**__Link:__** <%s>", channel.getName().toUpperCase(), stream.getViewers(), protect(channel.getStatus()), stream.getPreview(TwitchUtil.Stream.PreviewType.LARGE), stream.getURL()), null);
+                            "\n**__Link:__** <%s>", channel.getName().toUpperCase(), (stream.getViewers() == 1 ? "1 viewer" : stream.getViewers() + " viewers"), TimeUtil.uptime(stream.getUptime()), protect(channel.getStatus()), stream.getPreview(TwitchUtil.Stream.PreviewType.LARGE), stream.getURL()), null);
                 else
-                    m.updateMessageAsync(String.format(tags.isEmpty() ? "" : "**%s**\n", tags) + String.format("**%s** is playing **%s** for **%d viewers" +
-                            "\n__Title:__ %s" +
+                    m.updateMessageAsync(String.format(tags.isEmpty() ? "" : "**%s**\n", tags) + String.format("**%s** is playing **%s** for **%s** with uptime: **%s**" +
+                            "\n**__Title:__ %s" +
                             "\n__Preview:__** %s" +
-                            "\n**__Link:__** <%s>", channel.getName().toUpperCase(), channel.getGame(), stream.getViewers(), protect(channel.getStatus()), stream.getPreview(TwitchUtil.Stream.PreviewType.LARGE), stream.getURL()), null);
+                            "\n**__Link:__** <%s>", channel.getName().toUpperCase(), channel.getGame(), (stream.getViewers() == 1 ? "1 viewer" : stream.getViewers() + " viewers"), TimeUtil.uptime(stream.getUptime()), protect(channel.getStatus()), stream.getPreview(TwitchUtil.Stream.PreviewType.LARGE), stream.getURL()), null);
             } catch (Exception e) {
                 try {
                     TwitchUtil.Channel channel = TwitchUtil.getChannel(event.allArguments.replace(" ", "_"));

@@ -2,10 +2,10 @@ package minn.minnbot;
 
 import minn.minnbot.entities.Command;
 import minn.minnbot.entities.Logger;
+import minn.minnbot.entities.PublicLog;
 import minn.minnbot.entities.audio.MinnPlayer;
-import minn.minnbot.entities.command.custom.InviteCommand;
+import minn.minnbot.entities.command.TagCommand;
 import minn.minnbot.entities.impl.IIgnoreListener;
-import minn.minnbot.entities.impl.LoggerImpl;
 import minn.minnbot.entities.throwable.Info;
 import minn.minnbot.gui.AccountSettings;
 import minn.minnbot.gui.MinnBotUserInterface;
@@ -15,11 +15,11 @@ import minn.minnbot.util.EvalUtil;
 import minn.minnbot.util.IgnoreUtil;
 import net.dv8tion.jda.JDA;
 import net.dv8tion.jda.JDABuilder;
-import net.dv8tion.jda.JDAInfo;
 import net.dv8tion.jda.entities.Guild;
 import net.dv8tion.jda.entities.User;
-import net.dv8tion.jda.events.ReconnectedEvent;
-import net.dv8tion.jda.hooks.ListenerAdapter;
+import net.dv8tion.jda.events.Event;
+import net.dv8tion.jda.events.ReadyEvent;
+import net.dv8tion.jda.hooks.EventListener;
 import net.dv8tion.jda.utils.ApplicationUtil;
 import org.json.JSONObject;
 
@@ -30,91 +30,103 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.UnexpectedException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressWarnings("unused")
-public class MinnBot extends ListenerAdapter {
+public class MinnBot implements EventListener {
 
-    public final static String VERSION = "Version 3.5a";
+    public final static String VERSION = "Version 4.0a";
     public final static String ABOUT = VERSION + " - https://github.com/MinnDevelopment/MinnBot.git";
     private static String giphy;
     private static MinnBotUserInterface console;
     private static boolean audio;
     public final String owner;
-    public final JDA api;
+    public JDA api;
     public final CommandManager handler;
-    public final String inviteurl;
+    public String inviteurl;
     private static IIgnoreListener ignoreListener;
-    private final String prefix;
+    public final String prefix;
     private final Logger logger;
     private MinnPlayer player;
     private static Guild home;
+    private boolean ready = false;
+    private static JSONObject config = null;
+    private static PublicManager tmp;
 
-    public MinnBot(String prefix, String ownerID, Logger logger, JDA api)
+
+    public void onReady(ReadyEvent event) {
+        log("Setting up api related config...");
+        Thread t = new Thread(() -> {
+            TagCommand.initTags(event.getJDA(), logger);
+            PublicLog.init(api, logger::logThrowable);
+            this.api = event.getJDA();
+            if (config.has("home"))
+                home = api.getGuildById(config.getString("home"));
+            new ModLogManager(api);
+            User uOwner = api.getUserById(owner);
+            try {
+                log("Owner: " + uOwner.getUsername() + "#" + uOwner.getDiscriminator());
+            } catch (NullPointerException e) {
+                logger.logThrowable(new NullPointerException(
+                        "Owner could not be retrieved from the given id. Do you share a guild with this bot? - Caused by id: \""
+                                + owner + "\""));
+            }
+            this.handler.setApi(event.getJDA());
+            try {
+                initCommands(api);
+            } catch (UnknownHostException | UnsupportedDataTypeException e) {
+                logger.logThrowable(e);
+            }
+            AccountSettings as = new AccountSettings(console);
+            console.setAccountSettings(as);
+            as.setApi(api);
+            if (audio) api.addEventListener(new MinnAudioManager());
+            console.setTitle(api.getSelfInfo().getUsername() + "#" + api.getSelfInfo().getDiscriminator()); // so you know which one is logged in!
+            inviteurl = getInviteUrl();
+            tmp.init(this);
+            logger.logInfo("Setup completed.");
+        });
+        t.setDaemon(false);
+        t.setPriority(Thread.MAX_PRIORITY);
+        t.setName("onReady...");
+        t.setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) logger);
+        t.start();
+    }
+
+    public MinnBot(String prefix, String ownerID, Logger logger)
             throws Exception {
         if (prefix.contains(" "))
             throw new IllegalArgumentException("Prefix contains illegal characters. (i.e. space)");
-        this.api = api;
-        if (!waitForReady(this.api))
-            throw new UnexpectedException("Guilds were unreachable");
-        // mb-mod-log
-        new ModLogManager(api);
         this.logger = logger;
         this.prefix = prefix;
-        log("Prefix: " + prefix);
         this.owner = ownerID;
-        User uOwner = api.getUserById(owner);
-        try {
-            log("Owner: " + uOwner.getUsername() + "#" + uOwner.getDiscriminator());
-        } catch (NullPointerException e) {
-            logger.logThrowable(new NullPointerException(
-                    "Owner could not be retrieved from the given id. Do you share a guild with this bot? - Caused by id: \""
-                            + ownerID + "\""));
-        }
-        inviteurl = getInviteUrl();
-        this.handler = new CommandManager(api, this.logger, owner);
-        api.addEventListener(this);
+        this.handler = new CommandManager(this.logger, owner);
+        log(String.format("\nConfig[\n\tPrefix: %s,\n\tOwner: %s\n\t]", prefix, ownerID));
+        String token = config.getString("token").trim();
+        audio = config.getBoolean("audio");
+        api = new JDABuilder().setBotToken(token).addListener(this).setAudioEnabled(audio).setAutoReconnect(true).buildAsync();
+        initCommands();
     }
 
     public synchronized static void launch(MinnBotUserInterface console) throws Exception { // DON'T LOOK
         MinnBot.console = console;
-        AccountSettings as = new AccountSettings(console);
-        console.setAccountSettings(as);
         try {
-            JSONObject obj = new JSONObject(new String(Files.readAllBytes(Paths.get("BotConfig.json"))));
-            String token = obj.getString("token").replace(" ", "");
-            audio = obj.getBoolean("audio");
-            JDA api;
-            api = new JDABuilder().setBotToken(token).setAudioEnabled(audio).setAutoReconnect(true).buildBlocking();
-            String pre = obj.getString("prefix");
-            String ownerId = obj.getString("owner");
-            String giphy = obj.getString("giphy");
-            if (obj.has("log"))
-                LoggerImpl.log = obj.getBoolean("log");
-            if (obj.has("home"))
-                home = api.getGuildById(obj.getString("home"));
-            if (giphy != null && !giphy.isEmpty() && !giphy.equalsIgnoreCase("http://api.giphy.com/submit"))
-                MinnBot.giphy = giphy;
-            MinnBot bot = new MinnBot(pre, ownerId, console.logger, api);
-            bot.initCommands(api);
-            as.setApi(api);
+            config = new JSONObject(new String(Files.readAllBytes(Paths.get("BotConfig.json"))));
+            String pre = config.getString("prefix").trim();
+            String ownerId = config.getString("owner").trim();
+            String giphy = config.getString("giphy").trim();
+            MinnBot bot = new MinnBot(pre, ownerId, console.logger);
+            MinnBot.giphy = giphy;
             MinnBotUserInterface.bot = bot;
             Thread.currentThread().setUncaughtExceptionHandler((Thread.UncaughtExceptionHandler) bot.getLogger());
-            if (audio) {
-                api.addEventListener(new MinnAudioManager());
-            }
-            console.setTitle(api.getSelfInfo().getUsername() + "#" + api.getSelfInfo().getDiscriminator()); // so you know which one is logged in!
-            bot.log("Setup completed.");
             if (ignoreListener == null) {
                 ignoreListener = new IIgnoreListener();
                 IgnoreUtil.addListener(ignoreListener);
             }
         } catch (IllegalArgumentException e) {
             if (e.getMessage().isEmpty())
-                console.writeEvent("The config was not populated.\n" + "Please enter a bot token.");
+                console.writeEvent("The config was not populated.\nPlease enter a bot token.");
             e.printStackTrace();
             throw e;
         } catch (LoginException e) {
@@ -142,11 +154,6 @@ public class MinnBot extends ListenerAdapter {
             }
             throw e;
         }
-    }
-
-    public void onReconnect(ReconnectedEvent event) {
-
-
     }
 
     private String getInviteUrl() {
@@ -191,81 +198,51 @@ public class MinnBot extends ListenerAdapter {
     public void log(String toLog) {
         if (toLog.isEmpty())
             return;
-        logger.logThrowable(new Info(toLog));
+        logger.logInfo(new Info(toLog));
     }
 
     public synchronized MinnBot initCommands(JDA api) throws UnknownHostException, UnsupportedDataTypeException {
-        List<String> errors = new LinkedList<>();
-        try {
-            EvalUtil.init();
-        } catch (ScriptException e) {
-            logger.logThrowable(e);
-        }
         PlayingFieldManager.init(api, logger);
 
         // Add logger to the listeners
         api.addEventListener(logger);
 
-        // Add each command and check for exceptions
-
-        // Operator/Owner Commands
-
-        AtomicReference<CmdManager> manager = new AtomicReference<CmdManager>(new OperatorManager(prefix, logger, this));
+        AtomicReference<CmdManager> manager = new AtomicReference<>(new OperatorManager(prefix, logger, this));
         handler.registerManager(manager.get());
-        errors.addAll(manager.get().getErrors());
 
+        // Moderation commands
 
+        manager.set(new ModerationCommandManager(prefix, logger, api));
+        handler.registerManager(manager.get());
+
+        return this;
+    }
+
+    private synchronized MinnBot initCommands() throws UnknownHostException, UnsupportedDataTypeException {
+        try {
+            EvalUtil.init();
+        } catch (ScriptException e) {
+            logger.logThrowable(e);
+        }
         // User commands
-
-        manager.set(new PublicManager(prefix, logger, this));
+        tmp = new PublicManager(prefix, logger, this);
+        AtomicReference<CmdManager> manager = new AtomicReference<>(tmp);
         handler.registerManager(manager.get());
-        errors.addAll(manager.get().getErrors());
 
         // Voice
         if (audio) {
             manager.set(new AudioCommandManager(prefix, logger));
             handler.registerManager(manager.get());
-            errors.addAll(manager.get().getErrors());
         }
-        // Moderation commands
-
-        manager.set(new ModerationCommandManager(prefix, logger));
-        handler.registerManager(manager.get());
-        errors.addAll(manager.get().getErrors());
-
-        // Role manager
 
         manager.set(new RoleCommandManager(prefix, logger));
         handler.registerManager(manager.get());
-        errors.addAll(manager.get().getErrors());
-
-        // Goofy manager
 
         manager.set(new GoofyManager(prefix, logger, giphy, this));
         handler.registerManager(manager.get());
-        errors.addAll(manager.get().getErrors());
-
-        // Custom commands
 
         manager.set(new CustomManager(prefix, logger));
         handler.registerManager(manager.get());
-
-        // errors.addAll(manager.get().getErrors()); not checking for custom commands
-
-        if (home != null) {
-            registerCommand(new InviteCommand(prefix, logger, home));
-            //registerCommand(new MentionedListener(logger));
-        }
-
-        // Log the outcome
-        if (!errors.isEmpty()) {
-            console.writeEvent("[ERROR] Some commands could not load up:");
-            for (String e : errors) {
-                console.writeEvent("[COMMAND] " + e);
-            }
-        } else {
-            log("[COMMANDS] Setup completed without exceptions.\n[JDA] [VERSION] " + JDAInfo.VERSION);
-        }
         return this;
     }
 
@@ -274,4 +251,11 @@ public class MinnBot extends ListenerAdapter {
         return handler.registerCommand(com);
     }
 
+    @Override
+    public void onEvent(Event event) {
+        if(event instanceof ReadyEvent) {
+            onReady((ReadyEvent) event);
+            event.getJDA().removeEventListener(this);
+        }
+    }
 }

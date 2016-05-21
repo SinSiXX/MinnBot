@@ -6,6 +6,8 @@ import net.dv8tion.jda.Permission;
 import net.dv8tion.jda.entities.TextChannel;
 import net.dv8tion.jda.entities.User;
 import net.dv8tion.jda.events.ShutdownEvent;
+import net.dv8tion.jda.exceptions.PermissionException;
+import net.dv8tion.jda.exceptions.RateLimitedException;
 import net.dv8tion.jda.exceptions.VerificationLevelException;
 import net.dv8tion.jda.hooks.ListenerAdapter;
 import org.json.JSONObject;
@@ -40,7 +42,7 @@ public class PublicLog extends ListenerAdapter {
                 try {
                     obj = new JSONObject(new String(Files.readAllBytes(Paths.get(f.getCanonicalPath()))));
                     if (obj.has("public-log")) channelId = obj.getString("public-log");
-                    if(obj.has("owner")) ownerId = obj.getString("owner");
+                    if (obj.has("owner")) ownerId = obj.getString("owner");
                     setApi(api);
                 } catch (IOException e) {
                     callback.accept(e);
@@ -117,7 +119,7 @@ public class PublicLog extends ListenerAdapter {
         Thread t = new Thread(() -> {
             int count = 0;
             if (u == null || u.user == null) return;
-            if(Objects.equals(u.user.getId(), ownerId)) return;
+            if (Objects.equals(u.user.getId(), ownerId)) return;
             for (Entry e : queue) {
                 if (e == null || e.user == null || !e.equals(u) || e.enteredAt + 10000 < u.enteredAt) break;
                 count++;
@@ -142,9 +144,11 @@ public class PublicLog extends ListenerAdapter {
             if (api != null) {
                 TextChannel channel = api.getTextChannelById(channelId);
                 if (s != null && !s.isEmpty() && channel != null && channel.checkPermission(api.getSelfInfo(), Permission.MESSAGE_WRITE) && s.length() < 2000) {
+                    if (!channel.getGuild().isAvailable())
+                        return;
                     try {
                         channel.sendMessageAsync(s.replace("@", "\u0001@\u0001"), null);
-                    } catch (VerificationLevelException ignored) {
+                    } catch (VerificationLevelException | RateLimitedException | PermissionException ignored) {
                     }
                 }
             }

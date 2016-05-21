@@ -16,7 +16,7 @@ public class QueueRequestManager {
     private static ThreadPoolExecutor executor = new ThreadPoolExecutor(25, 50, 10L, TimeUnit.MINUTES, new LinkedBlockingDeque<>(), r -> {
         Thread t = new Thread(r, "QueueRequest");
         t.setDaemon(true);
-        t.setPriority(7);
+        t.setPriority(5);
         return t;
     });
 
@@ -31,6 +31,13 @@ public class QueueRequestManager {
             requests.put(g.getId(), request);
             try {
                 executor.submit(() -> request.accept(true));
+                executor.submit(() -> {
+                    try {
+                        Thread.sleep(TimeUnit.MINUTES.toMillis(5L));
+                    } catch (InterruptedException ignored) {
+                    }
+                    dequeue(g);
+                });
             } catch (RejectedExecutionException e) {
                 request.accept(false);
             }

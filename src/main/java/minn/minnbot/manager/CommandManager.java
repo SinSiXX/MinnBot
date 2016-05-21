@@ -98,12 +98,10 @@ public class CommandManager extends ListenerAdapter {
         reading = false;
     }
 
-    public CommandManager(JDA api, Logger logger, String owner) {
-        this.api = api;
-        if(!api.getRegisteredListeners().contains(this)) api.addEventListener(this);
+    public CommandManager(Logger logger, String owner) {
         this.logger = logger;
         this.owner = owner;
-        this.executor = new ThreadPoolExecutor(10, 50, 5L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
+        this.executor = new ThreadPoolExecutor(50, 60, 5L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), r -> {
             final Thread thread = new Thread(r, "CommandExecution-Thread");
             thread.setPriority(Thread.MAX_PRIORITY);
             thread.setDaemon(true);
@@ -111,6 +109,11 @@ public class CommandManager extends ListenerAdapter {
         });
         executor.submit(this::readMap);
         writer = new PrefixWriter();
+    }
+
+    public void setApi(JDA api) {
+        this.api = api;
+        if(!api.getRegisteredListeners().contains(this)) api.addEventListener(this);
     }
 
     public List<Command> getCommands() {
@@ -151,13 +154,13 @@ public class CommandManager extends ListenerAdapter {
                     return;
                 manager.call(event);
             });
+            //noinspection deprecation
+            Thread.currentThread().stop();
         });
     }
 
     public void registerManager(CmdManager manager) throws UnsupportedDataTypeException {
-        if (manager == null) {
-            throw new UnsupportedDataTypeException("Manager is null!");
-        }
+        if (manager == null) throw new UnsupportedDataTypeException("Manager is null!");
         managers.add(manager);
     }
 
